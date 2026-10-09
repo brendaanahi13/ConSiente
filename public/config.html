@@ -189,7 +189,7 @@
         }
 
         try {
-            const res = await fetch("http://localhost:3000/api/perfil", {
+            const res = await fetch("/api/perfil", {
                 method: "GET",
                 headers: { 
                     "Authorization": `Bearer ${token}`,
@@ -237,7 +237,7 @@
         const nuevoSaldo = parseFloat(document.getElementById("saldoMensual").value);
 
         try {
-            const res = await fetch("http://localhost:3000/api/perfil", {
+            const res = await fetch("/api/perfil", {
                 method: "PUT",
                 headers: { 
                     "Authorization": `Bearer ${token}`, 
@@ -274,7 +274,7 @@
         }
 
         try {
-            const res = await fetch("http://localhost:3000/api/cuenta", { 
+            const res = await fetch("/api/cuenta", { 
                 method: "DELETE", 
                 headers: { 
                     "Authorization": `Bearer ${token}`,
@@ -303,7 +303,7 @@
         const correo = document.getElementById("correoRecuperar").value;
         
         try {
-            const response = await fetch("http://localhost:3000/api/solicitar-recuperacion", { 
+            const response = await fetch("/api/solicitar-recuperacion", { 
                 method: "POST", 
                 headers: { "Content-Type": "application/json" }, 
                 body: JSON.stringify({ correo }) 

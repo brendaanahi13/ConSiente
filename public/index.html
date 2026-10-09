@@ -767,7 +767,7 @@ document.getElementById("formLogin").addEventListener("submit", async function(e
   const password = passwordLoginInput.value;
   
   try {
-    const response = await fetch("http://localhost:3000/login", {
+    const response = await fetch("/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ correo, password })
@@ -807,7 +807,7 @@ document.getElementById("formRegistro").addEventListener("submit", async functio
   }
 
   try {
-    const response = await fetch("http://localhost:3000/registro", {
+    const response = await fetch("/registro", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ nombre, correo, password, saldo })
@@ -835,7 +835,7 @@ document.getElementById("formRecuperacion").addEventListener("submit", async fun
   const correo = document.getElementById("correoRecuperar").value;
 
   try {
-    const response = await fetch("http://localhost:3000/api/solicitar-recuperacion", {
+    const response = await fetch("/api/solicitar-recuperacion", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ correo })

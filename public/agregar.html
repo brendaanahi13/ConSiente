@@ -319,7 +319,7 @@
         async function renderizarGrafica() {
             try {
                 const token = localStorage.getItem("token");
-                const resGastos = await fetch("http://localhost:3000/api/lista-gastos", {
+                const resGastos = await fetch("/api/lista-gastos", {
                     headers: { "Authorization": `Bearer ${token}` }
                 });
                 const todosLosGastos = await resGastos.json();
@@ -380,7 +380,7 @@
                 return;
             }
 
-            const response = await fetch("http://localhost:3000/api/gastos", {
+            const response = await fetch("/api/gastos", {
                 method: "POST",
                 headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem("token")}` },
                 body: JSON.stringify({ categoria, monto, fecha })

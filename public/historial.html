@@ -320,7 +320,7 @@
         async function cargarDatos() {
             const token = localStorage.getItem("token");
             try {
-                const response = await fetch("http://localhost:3000/api/lista-gastos", {
+                const response = await fetch("/api/lista-gastos", {
                     headers: { "Authorization": `Bearer ${token}` }
                 });
                 const data = await response.json();
@@ -435,7 +435,7 @@
             const token = localStorage.getItem("token");
 
             try {
-                const response = await fetch(`http://localhost:3000/api/lista-gastos/${id}`, {
+                const response = await fetch(`/api/lista-gastos/${id}`, {
                     method: "PUT",
                     headers: { 
                         "Authorization": `Bearer ${token}`,
@@ -462,7 +462,7 @@
             if(!confirmar) return;
 
             try {
-                const response = await fetch(`http://localhost:3000/api/lista-gastos/${id}`, {
+                const response = await fetch(`/api/lista-gastos/${id}`, {
                     method: "DELETE",
                     headers: { "Authorization": `Bearer ${token}` }
                 });

@@ -217,7 +217,7 @@
                 
                 // 1. Obtener valor actual del dólar
                 try {
-                    const resEco = await fetch("http://localhost:3000/api/semaforo-economico", { headers: { "Authorization": `Bearer ${token}` } });
+                    const resEco = await fetch("/api/semaforo-economico", { headers: { "Authorization": `Bearer ${token}` } });
                     const datosEco = await resEco.json();
                     if(datosEco.dolar) valorDolarActual = parseFloat(datosEco.dolar);
                     document.getElementById('txt-dolar').innerText = valorDolarActual.toFixed(2);
@@ -226,7 +226,7 @@
                 }
 
                 // 2. Obtener lista completa de tus gastos
-                const resGastos = await fetch("http://localhost:3000/api/lista-gastos", { headers: { "Authorization": `Bearer ${token}` } });
+                const resGastos = await fetch("/api/lista-gastos", { headers: { "Authorization": `Bearer ${token}` } });
                 const todosLosGastos = await resGastos.json();
                 
                 const hoy = new Date();

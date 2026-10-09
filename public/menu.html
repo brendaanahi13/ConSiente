@@ -559,7 +559,7 @@
           if (!token) return window.location.href = "index.html"; 
 
           try {
-              const resPerfil = await fetch("http://localhost:3000/api/perfil", {
+              const resPerfil = await fetch("/api/perfil", {
                   headers: { "Authorization": `Bearer ${token}` }
               });
               
@@ -572,7 +572,7 @@
                   return window.location.href = "index.html";
               }
 
-              const response = await fetch("http://localhost:3000/api/resumen-gastos", {
+              const response = await fetch("/api/resumen-gastos", {
                   headers: { "Authorization": `Bearer ${token}` }
               });
               const datos = await response.json();
@@ -625,7 +625,7 @@
                   contenedorBarras.appendChild(divBarra);
               });
 
-              const resHistorial = await fetch("http://localhost:3000/api/lista-gastos", {
+              const resHistorial = await fetch("/api/lista-gastos", {
                   headers: { "Authorization": `Bearer ${token}` }
               });
               const todosLosGastos = await resHistorial.json();

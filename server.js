@@ -246,7 +246,7 @@ app.post("/api/solicitar-recuperacion", (req, res) => {
             <p style="color: #333; font-size: 16px; margin-bottom: 20px;">Hemos recibido una solicitud para restablecer tu contraseña en ConSiente.</p>
             
             <div style="text-align: center; margin: 30px 0;">
-              <a href="http://localhost:3000/restablecer.html?token=${token}" style="background-color: #66BB6A; color: white; padding: 14px 25px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">Restablecer mi Contraseña</a>
+              <a href="/restablecer.html?token=${token}" style="background-color: #66BB6A; color: white; padding: 14px 25px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">Restablecer mi Contraseña</a>
             </div>
             
             <p style="color: #666; font-size: 14px; text-align: center;">Este enlace caducará en <b>1 hora</b> por motivos de seguridad.</p>
@@ -264,7 +264,7 @@ app.post("/api/solicitar-recuperacion", (req, res) => {
             </div>
             
             <div style="text-align: center; margin-top: 15px;">
-                <a href="http://localhost:3000/privacidad.html" style="color: #2e7d32; font-size: 12px; text-decoration: underline; font-weight: bold;">Ver documento legal completo en el sitio web</a>
+                <a href="/privacidad.html" style="color: #2e7d32; font-size: 12px; text-decoration: underline; font-weight: bold;">Ver documento legal completo en el sitio web</a>
                 <p style="color: #999; font-size: 10px; margin-top: 15px;">&copy; 2026 ConSiente - Compromiso con el consumo responsable y la educación financiera.</p>
             </div>
           </div>
