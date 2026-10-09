@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ConSiente</title>
+
+<style>
+* {margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI",sans-serif;}
+
+body {
+  min-height:100vh;
+  background-color: #0f1110; /* Color base oscuro */
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* OVERLAY CON SCROLL INTERNO PARA MÓVILES */
+.overlay {
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.6);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index: 2000;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.modal {
+  display:flex;
+  width:750px;
+  max-width:100%;
+  background:white;
+  border-radius:20px;
+  overflow:hidden;
+  box-shadow:0 15px 35px rgba(0,0,0,0.4);
+  animation:fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  margin: auto;
+}
+
+.modal-image {
+  width:50%;
+  background:url("imagenes/login.png") center/cover no-repeat;
+}
+
+.modal-content {
+  width:50%;
+  padding:40px 30px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  position:relative;
+}
+
+.close {
+  position:absolute;
+  top:15px;
+  right:20px;
+  font-size:22px;
+  cursor:pointer;
+  color:#999;
+  transition: color 0.2s;
+}
+.close:hover{color:#333;}
+
+.title {
+  font-size:26px;
+  color:#2e7d32;
+  margin-bottom:20px;
+  font-weight:bold;
+  text-align:center;
+}
+
+.input-group {
+  margin-bottom:15px;
+}
+
+label {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+input {
+  width:100%;
+  padding:11px 14px;
+  border-radius:10px;
+  border:1px solid #ddd;
+  margin-top:5px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+input:focus { border-color: #66BB6A; }
+
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.password-wrapper input {
+  padding-right: 45px;
+  margin-top: 5px;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 12px;
+  top: calc(50% + 2.5px);
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  user-select: none;
+  opacity: 0.6;
+  transition: opacity 0.2s, transform 0.1s;
+}
+.toggle-password:hover { opacity: 1; }
+.toggle-password:active { transform: translateY(-50%) scale(0.9); }
+
+.toggle-password svg {
+  width: 20px;
+  height: 20px;
+  stroke: #757575;
+  stroke-width: 2;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.toggle-password:hover svg { stroke: #2e7d32; }
+
+.btn {
+  width:100%;
+  padding:12px;
+  background:#66BB6A;
+  border:none;
+  border-radius:10px;
+  color:white;
+  font-size:16px;
+  font-weight: 500;
+  cursor:pointer;
+  margin-top:10px;
+  transition:0.3s ease;
+}
+.btn:hover{background:#388e3c;}
+
+.extra {
+  margin-top:18px;
+  font-size:13.5px;
+  text-align:center;
+  color: #555;
+}
+.extra a {
+  color:#2e7d32;
+  font-weight:bold;
+  text-decoration:none;
+}
+.extra a:hover{text-decoration: underline;}
+
+@keyframes fadeIn{
+  from{transform:scale(0.96);opacity:0;}
+  to{transform:scale(1);opacity:1;}
+}
+
+/* NAVBAR PRINCIPAL */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 5%;
+  background: rgba(13, 13, 13, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.logo span {
+  font-size: 20px;
+  font-weight: bold;
+  color: white;
+}
+
+/* Botón Hamburguesa Estilizado */
+.menu-toggle {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 5px;
+}
+.menu-toggle span {
+  width: 25px;
+  height: 3px;
+  background: white;
+  border-radius: 2px;
+  transition: 0.3s;
+}
+
+.menu {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.menu a {
+  color: #e0e0e0;
+  text-decoration: none;
+  font-size: 14px;
+  transition: 0.3s;
+  cursor: pointer;
+}
+.menu a:hover { color: #66BB6A; }
+
+.btn-login {
+  padding: 8px 18px;
+  background: #66BB6A;
+  border-radius: 8px;
+  font-weight: 500;
+  color: white !important;
+}
+.btn-login:hover { background: #388e3c; }
+
+/* HERO / SECCIÓN CENTRAL COMPLETA Y SU CLASE DE FONDO CORREGIDA */
+.center {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh; /* dvh calcula exactamente el alto real de pantallas móviles */
+  height: 100vh;
+  height: 100dvh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 80px 20px 20px 20px;
+  overflow: hidden;
+}
+
+/* Contenedor interno para asegurar la correcta escala del fondo */
+.center-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url("imagenes/fondo.png") center center/cover no-repeat;
+  z-index: 1;
+}
+
+/* En computadoras grandes reactivamos el fixed con seguridad */
+@media(min-width: 992px) {
+  .center-bg {
+    background-attachment: fixed;
+  }
+}
+
+/* Asegura que el contenido pase por encima del fondo absolute */
+.center h1, .center p, .center button {
+  position: relative;
+  z-index: 2;
+}
+
+h1 {
+  font-size: clamp(38px, 7vw, 56px); 
+  letter-spacing: 1px;
+  margin-bottom: 15px;
+  color: #ffffff; 
+  text-shadow: 2px 4px 10px rgba(0,0,0,0.6);
+  font-weight: 800;
+}
+
+p.hero-desc {
+  font-size: clamp(16px, 3.5vw, 22px); 
+  margin-bottom: 35px;
+  color: #ffffff; 
+  text-shadow: 1px 2px 8px rgba(0,0,0,0.6); 
+  max-width: 600px;
+}
+
+.btn-main {
+  padding: 15px 32px;
+  background: #66BB6A;
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s ease;
+  box-shadow: 0 5px 20px rgba(76, 175, 80, 0.3);
+}
+.btn-main:hover {
+  background: #388e3c;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+}
+
+/* SECCIÓN ODS */
+.ods-section {
+  width: 100%;
+  padding: 80px max(5%, 20px);
+  background: #0f1110 !important;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+  position: relative;
+  z-index: 5;
+}
+
+.ods-row {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: all 0.8s ease;
+}
+
+.ods-row.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ods-image-container {
+  flex: 1;
+  width: 100%;
+  min-width: 300px;
+}
+
+.ods-image-container img {
+  width: 100%;
+  height: 280px;
+  object-fit: cover;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  display: block;
+}
+
+.ods-text {
+  flex: 1.2;
+  min-width: 300px;
+}
+
+.ods-text h2 {
+  font-size: 26px;
+  margin-bottom: 15px;
+  color: #66BB6A;
+  font-weight: 600;
+}
+
+.ods-text p {
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: #ccc;
+  text-shadow: none;
+}
+
+/* Reglas de orden por defecto (Escritorio) */
+.ods-row.left .ods-image-container { order: 0; }
+.ods-row.left .ods-text { order: 1; }
+.ods-row.right .ods-image-container { order: 1; }
+.ods-row.right .ods-text { order: 0; }
+
+/* REGLAS CONTRASEÑA */
+.password-rules {
+  list-style: none;
+  margin-top: 8px;
+  font-size: 12.5px;
+  padding-left: 5px;
+}
+.password-rules li { color: #aaa; margin-bottom: 4px; }
+.password-rules li.valid { color: #43a047; }
+.password-rules li::before { content: "\2022  "; font-weight: bold; }
+.password-rules li.valid::before { content: "\2713  "; font-weight: bold; }
+
+.checkbox-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 15px;
+}
+.checkbox-group input[type="checkbox"] {
+  width: auto;
+  margin-top: 4px;
+  cursor: pointer;
+}
+.checkbox-group label { font-size: 13px; color: #444; }
+.checkbox-group a { color: #1976D2; text-decoration: none; font-weight: bold; }
+.checkbox-group a:hover { text-decoration: underline; }
+
+/* --- RESPONSIVO PARA MÓVILES --- */
+@media(max-width: 850px) {
+  .center {
+    height: 100vh;
+    height: 100dvh;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+  .center-bg {
+    background-attachment: scroll !important; /* Desactiva bugs de scroll en navegadores móviles */
+  }
+  .ods-section {
+    padding: 50px 20px;
+    gap: 40px;
+  }
+  .ods-row {
+    flex-direction: column !important;
+    gap: 20px;
+    text-align: center;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  .ods-image-container {
+    width: 100% !important;
+    min-width: 100% !important;
+  }
+  .ods-image-container img {
+    width: 100% !important;
+    height: auto !important;
+    max-height: 220px;
+    object-fit: contain;
+    box-shadow: none;
+    border-radius: 12px;
+  }
+  .ods-text {
+    width: 100% !important;
+    min-width: 100% !important;
+    padding: 0;
+  }
+  .ods-text h2 {
+    font-size: 21px;
+    margin-bottom: 10px;
+  }
+  .ods-text p {
+    font-size: 14.5px;
+    line-height: 1.5;
+  }
+  .ods-row.left .ods-image-container, .ods-row.right .ods-image-container { order: 0 !important; }
+  .ods-row.left .ods-text, .ods-row.right .ods-text { order: 1 !important; }
+}
+
+@media(max-width: 768px) {
+  .menu-toggle { display: flex !important; }
+  
+  .menu {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 69px;
+    left: 0;
+    width: 100%;
+    background: #111111;
+    padding: 25px;
+    gap: 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+  }
+  .menu.active { display: flex !important; }
+  .menu a { width: 100%; text-align: center; font-size: 15px; padding: 8px 0; }
+  .btn-login { width: 100%; max-width: 260px; margin: 0 auto; text-align: center; }
+
+  .modal {
+    flex-direction: column;
+    width: 100%;
+    max-width: 420px;
+  }
+  .modal-image {
+    width: 100%;
+    height: 150px;
+  }
+  .modal-content {
+    width: 100%;
+    padding: 25px 15px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="overlay" id="loginModal" style="display:none;">
+  <div class="modal">
+    <div class="modal-image"></div>
+    <div class="modal-content">
+      <span class="close" onclick="cerrarLogin()">✖</span>
+      <div class="title">Iniciar Sesión</div>
+      <form id="formLogin">
+        <div class="input-group">
+          <label>Correo</label>
+          <input type="email" id="correo" required>
+        </div>
+        <div class="input-group">
+          <label>Contraseña</label>
+          <div class="password-wrapper">
+            <input type="password" id="password" required>
+            <button type="button" id="toggleLoginPassword" class="toggle-password" aria-label="Mostrar contraseña">
+              <svg id="eyeIconLogin" viewBox="0 0 24 24">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div style="text-align: right; margin-bottom: 15px;">
+          <a href="#" onclick="abrirRecuperacion()" style="color: #2e7d32; font-size: 13px; text-decoration: none; font-weight: 500;">¿Olvidaste tu contraseña?</a>
+        </div>
+        <button type="submit" class="btn">Ingresar</button>
+      </form>
+      <div class="extra">
+        ¿No tienes cuenta? <a href="#" onclick="abrirRegistro()">Regístrate</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="registroModal" style="display:none;">
+  <div class="modal">
+    <div class="modal-image"></div>
+    <div class="modal-content">
+      <span class="close" onclick="cerrarRegistro()">✖</span>
+      <div class="title">Crear una cuenta</div>
+      <form id="formRegistro">
+        <div class="input-group">
+          <label>Nombre</label>
+          <input type="text" id="nombre" required>
+        </div>
+        <div class="input-group">
+          <label>Correo</label>
+          <input type="email" id="correoReg" required>
+        </div>
+        <div class="input-group">
+          <label>Contraseña</label>
+          <div class="password-wrapper">
+            <input type="password" id="passwordReg" required>
+            <button type="button" id="toggleRegPassword" class="toggle-password" aria-label="Mostrar contraseña">
+              <svg id="eyeIconReg" viewBox="0 0 24 24">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+          <ul class="password-rules" id="passwordRules">
+            <li id="rule-length">Mínimo 8 caracteres</li>
+            <li id="rule-uppercase">Al menos 1 mayúscula</li>
+            <li id="rule-number">Al menos 1 número</li>
+            <li id="rule-special">Al menos 1 carácter especial</li>
+          </ul>
+        </div>
+        <div class="input-group">
+          <label>Saldo (mensual)</label>
+          <input type="number" id="saldo" required>
+        </div>
+        <div class="input-group checkbox-group">
+          <input type="checkbox" id="terminos" required>
+          <label for="terminos">Acepto los <a href="privacidad.html" target="_blank">términos y condiciones</a></label>
+        </div>
+        <button type="submit" class="btn">Registrarme</button>
+      </form>
+      <div class="extra">
+        ¿Ya tienes cuenta? <a href="#" onclick="abrirLogin()">Inicia sesión</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="recuperacionModal" style="display:none;">
+  <div class="modal">
+    <div class="modal-image"></div>
+    <div class="modal-content">
+      <span class="close" onclick="cerrarRecuperacion()">✖</span>
+      <div class="title">Recuperar cuenta</div>
+      <p style="color: #666; font-size: 13.5px; margin-bottom: 20px; text-align: center; line-height: 1.4;">Ingresa tu correo electrónico para generar el token de restablecimiento.</p>
+      <form id="formRecuperacion">
+        <div class="input-group">
+          <label>Correo Electrónico</label>
+          <input type="email" id="correoRecuperar" required>
+        </div>
+        <button type="submit" class="btn">Solicitar Enlace</button>
+      </form>
+      <div class="extra">
+        <a href="#" onclick="abrirLogin()">Volver a Iniciar Sesión</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="navbar">
+  <div class="logo">
+    <img src="imagenes/logo.png" alt="logo">
+    <span>ConSiente</span>
+  </div>
+
+  <button class="menu-toggle" id="mobileMenuBtn" aria-label="Abrir menú">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+
+  <div class="menu" id="navMenu">
+    <a href="#">Más sobre nosotros</a>
+    <a href="privacidad.html" target="_blank">Términos y condiciones</a>
+    <a class="btn-login" onclick="abrirLogin()">Iniciar sesión</a>
+    <a class="btn-login" onclick="abrirRegistro()">Registrarse</a>
+  </div>
+</div>
+
+<div class="center">
+  <div class="center-bg"></div>
+  <h1>ConSiente</h1>
+  <p class="hero-desc">Tu espacio de bienestar y control emocional</p>
+  <button class="btn-main" onclick="abrirLogin()">Iniciar experiencia</button>
+</div>
+
+<section class="ods-section">
+  <div class="ods-row left">
+    <div class="ods-image-container">
+      <img src="imagenes/ods12.png" alt="ODS 12">
+    </div>
+    <div class="ods-text">
+      <h2>ODS 12: Producción y consumo responsables</h2>
+      <p>
+        Esta página contribuye a ODS 12 ayudándote a tomar control de tus gastos,
+        promoviendo decisiones responsables y evitando el consumo innecesario.
+        Así fomentamos un consumo más consciente y sostenible.
+      </p>
+    </div>
+  </div>
+
+  <div class="ods-row right">
+    <div class="ods-image-container">
+      <img src="imagenes/ahorro.png" alt="Ahorro Consciente">
+    </div>
+    <div class="ods-text">
+      <h2>Cómo ayudamos</h2>
+      <p>
+        Con estadísticas claras y alertas de gastos, puedes identificar hábitos
+        de consumo innecesarios, optimizar tu presupuesto y tomar decisiones
+        más responsables para cuidar el planeta y tus recursos.
+      </p>
+    </div>
+  </div>
+</section>
+
+<script>
+// Lógica Menú Hamburguesa móvil
+const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+const navMenu = document.getElementById("navMenu");
+
+mobileMenuBtn.addEventListener("click", () => {
+  navMenu.classList.toggle("active");
+});
+
+document.querySelectorAll(".menu a").forEach(link => {
+  link.addEventListener("click", () => navMenu.classList.remove("active"));
+});
+
+function abrirLogin(){
+  document.getElementById("loginModal").style.display="flex";
+  document.getElementById("registroModal").style.display="none";
+  document.getElementById("recuperacionModal").style.display="none";
+}
+function cerrarLogin(){ document.getElementById("loginModal").style.display="none"; }
+
+function abrirRegistro(){
+  document.getElementById("registroModal").style.display="flex";
+  document.getElementById("loginModal").style.display="none";
+  document.getElementById("recuperacionModal").style.display="none";
+}
+function cerrarRegistro(){ document.getElementById("registroModal").style.display="none"; }
+
+function abrirRecuperacion() {
+  document.getElementById("recuperacionModal").style.display = "flex";
+  document.getElementById("loginModal").style.display = "none";
+  document.getElementById("registroModal").style.display = "none";
+}
+function cerrarRecuperacion() { document.getElementById("recuperacionModal").style.display = "none"; }
+
+const passwordLoginInput = document.getElementById("password");
+const toggleLoginPasswordBtn = document.getElementById("toggleLoginPassword");
+const eyeIconLogin = document.getElementById("eyeIconLogin");
+
+const passwordRegInput = document.getElementById("passwordReg");
+const toggleRegPasswordBtn = document.getElementById("toggleRegPassword");
+const eyeIconReg = document.getElementById("eyeIconReg");
+
+const ruleLength = document.getElementById("rule-length");
+const ruleUppercase = document.getElementById("rule-uppercase");
+const ruleNumber = document.getElementById("rule-number");
+const ruleSpecial = document.getElementById("rule-special");
+
+const regexUppercase = /[A-Z]/;
+const regexNumber = /[0-9]/;
+const regexSpecial = /[!@#$%^&*(),.?":{}|<>_+-]/;
+
+const eyeOpenPath = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>`;
+const eyeClosedPath = `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>`;
+
+toggleLoginPasswordBtn.addEventListener("click", function () {
+  if (passwordLoginInput.type === "password") {
+    passwordLoginInput.type = "text";
+    eyeIconLogin.innerHTML = eyeClosedPath;
+  } else {
+    passwordLoginInput.type = "password";
+    eyeIconLogin.innerHTML = eyeOpenPath;
+  }
+});
+
+toggleRegPasswordBtn.addEventListener("click", function () {
+  if (passwordRegInput.type === "password") {
+    passwordRegInput.type = "text";
+    eyeIconReg.innerHTML = eyeClosedPath;
+  } else {
+    passwordRegInput.type = "password";
+    eyeIconReg.innerHTML = eyeOpenPath;
+  }
+});
+
+passwordRegInput.addEventListener("input", function() {
+  const val = passwordRegInput.value;
+  if (val.length >= 8) ruleLength.classList.add("valid");
+  else ruleLength.classList.remove("valid");
+  if (regexUppercase.test(val)) ruleUppercase.classList.add("valid");
+  else ruleUppercase.classList.remove("valid");
+  if (regexNumber.test(val)) ruleNumber.classList.add("valid");
+  else ruleNumber.classList.remove("valid");
+  if (regexSpecial.test(val)) ruleSpecial.classList.add("valid");
+  else ruleSpecial.classList.remove("valid");
+});
+
+document.getElementById("formLogin").addEventListener("submit", async function(e){
+  e.preventDefault();
+  const correo = document.getElementById("correo").value;
+  const password = passwordLoginInput.value;
+  
+  try {
+    const response = await fetch("http://localhost:3000/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ correo, password })
+    });
+    
+    const data = await response.json();
+    alert(data.message);
+    
+    if (response.status === 200) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("nombreUsuario", data.nombre);
+        localStorage.setItem("correoUsuario", data.correo);
+        localStorage.setItem("saldoUsuario", data.saldo);
+        window.location.href = "menu.html";
+    }
+  } catch (error) {
+    console.error("Error detallado en Login:", error);
+    alert("Error de comunicación con el backend.");
+  }
+});
+
+document.getElementById("formRegistro").addEventListener("submit", async function(e){
+  e.preventDefault();
+  const nombre = document.getElementById("nombre").value;
+  const correo = document.getElementById("correoReg").value;
+  const password = passwordRegInput.value;
+  const saldo = document.getElementById("saldo").value;
+
+  const isValidPassword = password.length >= 8 && 
+                          regexUppercase.test(password) && 
+                          regexNumber.test(password) && 
+                          regexSpecial.test(password);
+
+  if (!isValidPassword) {
+    alert("La contraseña no cumple con todos los requisitos de seguridad.");
+    return; 
+  }
+
+  try {
+    const response = await fetch("http://localhost:3000/registro", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nombre, correo, password, saldo })
+    });
+    
+    const data = await response.json();
+    alert(data.message);
+    
+    if (response.status === 200) {
+      cerrarRegistro();
+      abrirLogin();
+      document.getElementById("formRegistro").reset(); 
+      document.querySelectorAll('.password-rules li').forEach(li => li.classList.remove("valid"));
+      passwordRegInput.setAttribute("type", "password");
+      eyeIconReg.innerHTML = eyeOpenPath;
+    }
+  } catch (error) {
+    console.error("Error detallado en Registro:", error);
+    alert("Error de comunicación");
+  }
+});
+
+document.getElementById("formRecuperacion").addEventListener("submit", async function(e) {
+  e.preventDefault();
+  const correo = document.getElementById("correoRecuperar").value;
+
+  try {
+    const response = await fetch("http://localhost:3000/api/solicitar-recuperacion", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ correo })
+    });
+    const data = await response.json();
+    alert(data.message);
+    if(response.ok) {
+      cerrarRecuperacion();
+    }
+  } catch(error) {
+    alert("Error al procesar la solicitud.");
+  }
+});
+
+const odsRows = document.querySelectorAll('.ods-row');
+function checkVisible() {
+  const triggerBottom = window.innerHeight * 0.85;
+  odsRows.forEach(row => {
+    const rowTop = row.getBoundingClientRect().top;
+    if (rowTop < triggerBottom) {
+      row.classList.add('visible');
+    }
+  });
+}
+window.addEventListener('scroll', checkVisible);
+window.addEventListener('load', checkVisible);
+</script>
+
+</body>
+</html>

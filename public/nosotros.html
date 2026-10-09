@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Sobre ConSiente</title>
+
+<style>
+    :root {
+        --bg-dark: #27312a;
+        --accent-green: #81c784; 
+        --nav-black: #111111;
+        --text-light: #e0e0e0;
+        --text-muted: #bdbdbd;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Segoe UI", sans-serif; }
+    
+    body { background: var(--bg-dark); color: white; min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
+
+    /* ANIMACIÓN DE APARICIÓN */
+    @keyframes aparecer {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .animar { opacity: 0; animation: aparecer 0.8s ease-out forwards; }
+    .delay-1 { animation-delay: 0.2s; }
+    .delay-2 { animation-delay: 0.4s; }
+
+    /* NAVBAR */
+    .navbar {
+        position: fixed; top: 0; width: 100%; height: 65px;
+        background: var(--nav-black); display: flex; justify-content: space-between;
+        align-items: center; padding: 0 50px; z-index: 1000;
+        border-bottom: 2px solid var(--accent-green);
+    }
+    
+    .titulo { font-size: 20px; font-weight: bold; color: white; display: flex; align-items: center; }
+    
+    .menu-container { display: flex; gap: 40px; align-items: center; height: 100%; }
+    
+    .menu { display: flex; gap: 30px; align-items: center; list-style: none; }
+    .menu a { text-decoration: none; color: #ccc; font-size: 15px; transition: 0.3s; }
+    .menu a:hover { color: var(--accent-green); font-weight: bold; }
+
+    /* USUARIO */
+    .user-menu { display: flex; align-items: center; height: 100%; }
+    .user-icon {
+        width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
+        border: 2px solid var(--accent-green); object-fit: cover;
+    }
+    .dropdown {
+        position: absolute; right: 50px; top: 65px; background: #000;
+        border-radius: 0 0 10px 10px; display: none; flex-direction: column;
+        width: 150px; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+    .dropdown a { padding: 12px 15px; text-decoration: none; color: white; font-size: 14px; }
+    .dropdown a:hover { background: var(--accent-green); color: #000; }
+    .show { display: flex; }
+
+    /* HERO */
+    .hero {
+        padding: 120px 50px 60px;
+        display: flex; align-items: center; justify-content: space-between;
+        max-width: 1100px; margin: 0 auto; gap: 50px; flex: 1;
+    }
+    .hero-text { flex: 1; }
+    .hero-text h1 { font-size: 55px; color: var(--accent-green); margin-bottom: 20px; }
+    .hero-text p { font-size: 16px; color: var(--text-light); line-height: 1.7; margin-bottom: 30px; }
+    
+    .info-grid { display: flex; gap: 40px; }
+    .card h2 { color: var(--accent-green); margin-bottom: 10px; font-size: 20px; }
+    .card p { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+
+    .hero-img { flex: 0.4; text-align: right; }
+    .hero-img img { width: 300px; border: 2px solid var(--accent-green); border-radius: 20px; }
+
+    /* FOOTER OSCURO */
+    .footer-dark {
+        background: var(--nav-black);
+        padding: 40px 50px;
+        text-align: center;
+        border-top: 2px solid var(--accent-green);
+        color: var(--text-muted);
+        font-size: 14px;
+        margin-top: 40px;
+    }
+</style>
+</head>
+<body>
+
+<div class="navbar">
+    <div class="titulo">ConSiente</div>
+    <div class="menu-container">
+        <ul class="menu">
+            <li><a href="menu.html">Home</a></li>
+            <li><a href="nosotros.html">Sobre nosotros</a></li>
+            <li><a href="ODS.html">ODS</a></li>
+        </ul>
+        <div class="user-menu">
+            <img src="imagenes/usuario.png" class="user-icon" id="userBtn" alt="Usuario">
+            <div class="dropdown" id="dropdownMenu">
+                <a href="config.html">Configuración</a>
+                <a href="index.html" onclick="cerrarSesion()">Cerrar sesión</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="hero animar">
+    <div class="hero-text animar delay-1">
+        <h1>ConSiente</h1>
+        <p><b>ConSiente</b> es una aplicación enfocada en el consumo responsable y la educación financiera. Permite registrar gastos diarios, visualizar en qué se utiliza el dinero y detectar hábitos de consumo. A través de estadísticas y recomendaciones, ayuda a mejorar la administración del dinero.</p>
+        
+        <div class="info-grid">
+            <div class="card">
+                <h2>Misión</h2>
+                <p>Promover hábitos financieros responsables mediante una plataforma digital que permita registrar y analizar gastos para tomar decisiones económicas más conscientes.</p>
+            </div>
+            <div class="card">
+                <h2>Visión</h2>
+                <p>Ser una herramienta referente en educación financiera que ayude a las personas a mejorar su relación con el dinero y adoptar prácticas de consumo responsable.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="hero-img animar delay-2">
+        <img src="imagenes/cerdo.png" alt="ConSiente">
+    </div>
+</div>
+
+<footer class="footer-dark">
+    &copy; 2026 ConSiente - Compromiso con el consumo responsable y la educación financiera.
+</footer>
+
+<script>
+    const btn = document.getElementById("userBtn");
+    const menu = document.getElementById("dropdownMenu");
+
+    btn.onclick = () => menu.classList.toggle("show");
+
+    window.onclick = (e) => {
+        if (!e.target.matches('#userBtn')) {
+            menu.classList.remove("show");
+        }
+    };
+
+    function cerrarSesion(){
+        sessionStorage.removeItem("sesionActiva");
+        window.location.href="index.html";
+    }
+</script>
+
+</body>
+</html>

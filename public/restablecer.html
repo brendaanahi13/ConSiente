@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Restablecer Contraseña - ConSiente</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; font-family:"Segoe UI",sans-serif; }
+  body {
+    height: 100vh;
+    background: #27312a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+  }
+  .card-restablecer {
+    background: #111111;
+    border-radius: 20px;
+    padding: 40px;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    border: 1px solid rgba(129, 199, 132, 0.2);
+    text-align: center;
+  }
+  h2 { color: #81c784; margin-bottom: 20px; font-size: 24px; }
+  p { font-size: 14px; color: #ccc; margin-bottom: 25px; line-height: 1.5; }
+  .input-group { margin-bottom: 20px; text-align: left; }
+  label { display: block; font-size: 14px; color: #81c784; margin-bottom: 5px; }
+  
+  /* Contenedor relativo para posicionar el ojo */
+  .password-wrapper {
+    position: relative;
+    width: 100%;
+  }
+  input { 
+    width: 100%; 
+    padding: 12px; 
+    padding-right: 45px; /* Espacio para que el texto no tape el icono */
+    border-radius: 10px; 
+    border: 1px solid #333; 
+    background: #1b1b1b; 
+    color: white; 
+  }
+  
+  /* Botón contenedor del SVG */
+  .toggle-password {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    opacity: 0.6;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  .toggle-password:hover {
+    opacity: 1;
+  }
+  .toggle-password:active {
+    transform: translateY(-50%) scale(0.9); /* Efecto sutil al hacer clic */
+  }
+  /* Estilo para los trazos del SVG */
+  .toggle-password svg {
+    width: 22px;
+    height: 22px;
+    stroke: #81c784; /* Color verde de tu diseño */
+    stroke-width: 2;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .password-rules { list-style: none; margin-top: 8px; font-size: 13px; padding-left: 5px; }
+  .password-rules li { color: #999999; margin-bottom: 4px; }
+  .password-rules li.valid { color: #43a047; }
+  .password-rules li::before { content: "\2022  "; font-weight: bold; }
+  .password-rules li.valid::before { content: "\2713  "; font-weight: bold; }
+
+  .btn { width: 100%; padding: 14px; background: #2e7d32; border: none; border-radius: 12px; color: white; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.3s; margin-top: 15px; }
+  .btn:hover { background: #388e3c; }
+  .back-link { display: inline-block; margin-top: 20px; color: #ccc; text-decoration: none; font-size: 14px; }
+  .back-link:hover { color: white; }
+</style>
+</head>
+<body>
+
+<div class="card-restablecer">
+  <h2>Nueva Contraseña</h2>
+  <p>Crea una nueva contraseña de seguridad para tu perfil de ConSiente.</p>
+  
+  <form id="formRestablecer">
+    <div class="input-group">
+      <label>Nueva Contraseña</label>
+      <div class="password-wrapper">
+        <input type="password" id="nuevaPassword" required placeholder="••••••••">
+        
+        <button type="button" id="togglePassword" class="toggle-password" aria-label="Mostrar contraseña">
+          <svg id="eyeIcon" viewBox="0 0 24 24">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        </button>
+
+      </div>
+      <ul class="password-rules" id="passwordRules">
+        <li id="rule-length">Mínimo 8 caracteres</li>
+        <li id="rule-uppercase">Al menos 1 mayúscula</li>
+        <li id="rule-number">Al menos 1 número</li>
+        <li id="rule-special">Al menos 1 carácter especial</li>
+      </ul>
+    </div>
+    <button type="submit" class="btn">Actualizar Contraseña</button>
+  </form>
+  
+  <a href="index.html" class="back-link">Volver al inicio</a>
+</div>
+
+<script>
+  // Obtener el token de la URL automáticamente
+  const urlParams = new URLSearchParams(window.location.search);
+  const token = urlParams.get('token');
+
+  if (!token) {
+    alert("❌ Token ausente o inválido. Solicita un nuevo enlace.");
+    window.location.href = "index.html";
+  }
+
+  const passInput = document.getElementById("nuevaPassword");
+  const togglePasswordBtn = document.getElementById("togglePassword");
+  const eyeIcon = document.getElementById("eyeIcon");
+  
+  const ruleLength = document.getElementById("rule-length");
+  const ruleUppercase = document.getElementById("rule-uppercase");
+  const ruleNumber = document.getElementById("rule-number");
+  const ruleSpecial = document.getElementById("rule-special");
+
+  const regexUppercase = /[A-Z]/;
+  const regexNumber = /[0-9]/;
+  const regexSpecial = /[!@#$%^&*(),.?":{}|<>_+-]/;
+
+  // Paths de los iconos SVG puros (Ojo abierto y Ojo cerrado)
+  const eyeOpenPath = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>`;
+  const eyeClosedPath = `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>`;
+
+  // Lógica para alternar la visualización y cambiar el path interno del SVG
+  togglePasswordBtn.addEventListener("click", function() {
+    if (passInput.type === "password") {
+      passInput.type = "text";
+      eyeIcon.innerHTML = eyeClosedPath;
+      togglePasswordBtn.setAttribute("aria-label", "Ocultar contraseña");
+    } else {
+      passInput.type = "password";
+      eyeIcon.innerHTML = eyeOpenPath;
+      togglePasswordBtn.setAttribute("aria-label", "Mostrar contraseña");
+    }
+  });
+
+  passInput.addEventListener("input", function() {
+    const val = passInput.value;
+    if (val.length >= 8) ruleLength.classList.add("valid"); else ruleLength.classList.remove("valid");
+    if (regexUppercase.test(val)) ruleUppercase.classList.add("valid"); else ruleUppercase.classList.remove("valid");
+    if (regexNumber.test(val)) ruleNumber.classList.add("valid"); else ruleNumber.classList.remove("valid");
+    if (regexSpecial.test(val)) ruleSpecial.classList.add("valid"); else ruleSpecial.classList.remove("valid");
+  });
+
+  document.getElementById("formRestablecer").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const password = passInput.value;
+
+    const isValid = password.length >= 8 && regexUppercase.test(password) && regexNumber.test(password) && regexSpecial.test(password);
+    if (!isValid) {
+      alert("La contraseña no cumple con todos los requisitos.");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:3000/api/restablecer-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, password })
+      });
+      const data = await response.json();
+      alert(data.message);
+      if (response.ok) {
+        window.location.href = "index.html";
+      }
+    } catch (error) {
+      alert("Error al intentar conectar con el servidor.");
+    }
+  });
+</script>
+
+</body>
+</html>

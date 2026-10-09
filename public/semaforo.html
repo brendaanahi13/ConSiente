@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConSiente</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:"Segoe UI",sans-serif; }
+        
+        body { 
+            background: radial-gradient(circle at 50% 50%, #27312a 0%, #111412 100%); 
+            min-height: 100vh; 
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* NAVBAR */
+        .navbar { 
+            position:fixed; 
+            top:0; 
+            left: 0;
+            width:100%; 
+            height:65px; 
+            background:#0d0d0d; 
+            display:flex; 
+            justify-content:space-between; 
+            align-items:center; 
+            padding:0 25px; 
+            z-index:1000; 
+            border-bottom: 1px solid rgba(129, 199, 132, 0.25); 
+        }
+        .logo-nombre { display:flex; align-items:center; gap:10px; }
+        .titulo { font-size:20px; font-weight:bold; color:#ffffff; letter-spacing: 0.5px; }
+        .logo { width:30px; }
+        .menu { display:flex; align-items:center; gap:25px; }
+        .menu a { text-decoration:none; color:#e0e0e0; font-size: 14px; transition: 0.3s ease; }
+        .menu a:hover { color: #81c784; }
+
+        /* DROPDOWN */
+        .user-menu { position: relative; display: flex; align-items: center; }
+        .user-icon { width: 38px; height: 38px; border-radius: 50%; cursor: pointer; border: 1.5px solid rgba(129, 199, 132, 0.5); transition: 0.3s ease; }
+        .user-icon:hover { border-color: #81c784; box-shadow: 0 0 10px rgba(129, 199, 132, 0.4); }
+        .dropdown { position: absolute; right: 0; top: 50px; background: rgba(20, 20, 20, 0.98); backdrop-filter: blur(10px); border-radius: 12px; border: 1px solid rgba(129, 199, 132, 0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.6); display: none; flex-direction: column; min-width: 160px; overflow: hidden; z-index: 1100; }
+        .dropdown a { padding: 12px 18px; text-decoration: none; color: #ffffff; font-size: 14px; transition: 0.2s ease; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .dropdown a:last-child { border-bottom: none; }
+        .dropdown a:hover { background: rgba(46, 125, 50, 0.3); color: #81c784; }
+        .show { display: flex; }
+
+        /* LAYOUT GENERAL */
+        .main-layout { display: flex; margin-top: 65px; min-height: calc(100vh - 65px); width: 100%; }
+
+        /* SIDEBAR */
+        .sidebar { width: 280px; min-width: 280px; background:#121212; border-right: 1px solid rgba(129, 199, 132, 0.15); padding: 25px 15px; display: flex; flex-direction: column; justify-content: space-between; }
+        .sidebar-menu { display: flex; flex-direction: column; }
+        .sidebar button { width:100%; padding:16px; margin-bottom:15px; border:none; border-radius:12px; background:#1b1b1b; color:#ffffff; font-size:15px; cursor:pointer; text-align:left; border-bottom:1px solid rgba(130,199,132,0.2); transition: 0.3s ease; }
+        .sidebar button:hover, .sidebar button.active { background:#1c2d20; color: #81c784; border-bottom:1px solid rgba(130,199,132,0.5); padding-left: 22px; }
+        .footer-privacidad { padding-top: 15px; text-align: center; }
+        .footer-privacidad a { color: rgba(255, 255, 255, 0.5); text-decoration: none; font-size: 13px; font-weight: 500; transition: 0.3s ease; }
+        .footer-privacidad a:hover { color: #81c784; }
+
+        /* SCROLLABLE VIEWPORT CONTAINER */
+        .scrollable-content { flex: 1; height: calc(100vh - 65px); overflow-y: auto; padding: 40px; display: flex; flex-direction: column; gap: 40px; }
+        
+        /* FILAS DE CONTENIDO */
+        .content-row { display: flex; gap: 25px; max-width: 1300px; width: 100%; margin: 0 auto; align-items: flex-start; }
+        
+        .box { background: rgba(22, 22, 22, 0.85); backdrop-filter: blur(10px); border-radius: 20px; padding: 30px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08); }
+        .box-formulario { flex: 1.2; width: 100%; }
+        .box-grafica-principal { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle at top, rgba(46, 125, 50, 0.12) 0%, rgba(22, 22, 22, 0.85) 70%); }
+        
+        /* Cajas de la sección inferior (Tendencias) */
+        .box-tendencia { flex: 1; display: flex; flex-direction: column; align-items: center; min-height: 380px; }
+
+        h2, h3 { color: #81c784; font-weight: 600; letter-spacing: 0.3px; }
+        h2 { margin-bottom: 5px; }
+        .subtitulo { color: #aaa; font-size: 14px; margin-bottom: 25px; }
+        h3 { margin-bottom: 20px; font-size: 16px; text-align: center; width: 100%; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px;}
+
+        /* CARDS INDICADORES */
+        .grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; width: 100%; }
+        .card-eco { background: #181c19; border: 1px solid rgba(255, 255, 255, 0.05); border-left: 4px solid #81c784; border-radius: 12px; padding: 20px; transition: transform 0.3s ease; }
+        .card-eco:hover { transform: translateY(-3px); border-left-color: #a2e0a6; }
+        .card-header { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; text-transform: uppercase; color: #81c784; margin-bottom: 8px; }
+        .card-value { font-size: 22px; font-weight: bold; color: #ffffff; margin-bottom: 8px; }
+        .card-value span { font-size: 13px; color: #888; font-weight: normal; }
+        .card-desc { font-size: 12.5px; color: #ccc; line-height: 1.4; }
+
+        @media (max-width: 900px) {
+            .scrollable-content { padding: 20px; }
+            .content-row { flex-direction: column; }
+            .sidebar { width: 100%; min-width: 100%; height: auto; border-right: none; border-bottom: 1px solid rgba(129, 199, 132, 0.15); }
+            .box { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="logo-nombre">
+            <span class="titulo">ConSiente</span>
+            <img src="imagenes/logo.png" class="logo" alt="Logo">
+        </div>
+        <div class="menu">
+            <a href="menu.html">Home</a>
+            <a href="nosotros.html">Sobre nosotros</a>
+            <a href="ODS.html">ODS</a>
+            <div class="user-menu">
+                <img src="imagenes/usuario.png" class="user-icon" id="userBtn" alt="Usuario">
+                <div class="dropdown" id="dropdownMenu">
+                    <a href="config.html">Configuración</a>
+                    <a href="index.html" onclick="cerrarSesion()">Cerrar sesión</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-layout">
+        
+        <div class="sidebar">
+            <div class="sidebar-menu">
+                <button onclick="window.location.href='menu.html'">📊 Mis Estadísticas</button>
+                <button onclick="window.location.href='consejos.html'">💡 Consejos de Ahorro</button>
+                <button onclick="window.location.href='agregar.html'">➕ Agregar gasto</button>
+                <button onclick="window.location.href='historial.html'">📅 Historial</button>
+                <button onclick="window.location.href='semaforo.html'" class="active">🚦 Semáforo Financiero</button>
+            </div>
+            <div class="footer-privacidad">
+                <a href="privacidadentro.html">Políticas de Privacidad</a>
+            </div>
+        </div>
+
+        <div class="scrollable-content">
+            
+            <div class="content-row">
+                <div class="box box-formulario">
+                    <h2>🚦 Semáforo Financiero</h2>
+                    <div class="subtitulo">Información del entorno en tiempo real para ayudarte a decidir si avanzar o frenar tus gastos.</div>
+
+                    <div class="grid-cards">
+                        <div class="card-eco">
+                            <div class="card-header">💵 El Dólar</div>
+                            <div class="card-value">$<span id="txt-dolar">...</span> <span>MXN</span></div>
+                            <div class="card-desc">Costo de la divisa internacional para presupuestos de tecnología o insumos.</div>
+                        </div>
+                        <div class="card-eco">
+                            <div class="card-header">⛽ Gasolina (Magna)</div>
+                            <div class="card-value">$23.69 <span>/ L</span></div>
+                            <div class="card-desc">Promedio nacional estimado del combustible básico.</div>
+                        </div>
+                        <div class="card-eco">
+                            <div class="card-header">📈 Inflación Anual</div>
+                            <div class="card-value">3.94<span>%</span></div>
+                            <div class="card-desc">Tasa de aumento general de precios del mercado de consumo masivo.</div>
+                        </div>
+                        <div class="card-eco">
+                            <div class="card-header">💼 Salario Mínimo</div>
+                            <div class="card-value">$315.04 <span>/ Día</span></div>
+                            <div class="card-desc">Indicador laboral unificado de la zona económica general.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="box box-grafica-principal">
+                    <h3>💰 Tu Disponibilidad</h3>
+                    <div style="width: 70%; position: relative;">
+                        <canvas id="graficaPresupuesto"></canvas>
+                    </div>
+                    <div id="txt-balance-leyenda" style="margin-top: 15px; font-size: 13px; color: #aaa; text-align: center; line-height: 1.4;"></div>
+                </div>
+            </div>
+
+            <div class="content-row">
+                
+                <div class="box box-tendencia">
+                    <h3>📈 Tendencia: Dólar vs. Tus Gastos Diarios</h3>
+                    <div style="width: 100%; height: 280px; position: relative;">
+                        <canvas id="graficaDolarGastos"></canvas>
+                    </div>
+                </div>
+
+                <div class="box box-tendencia">
+                    <h3>📊 Comparativa: Gastos Diarios vs. Salario Mínimo</h3>
+                    <div style="width: 100%; height: 280px; position: relative;">
+                        <canvas id="graficaGastosSalario"></canvas>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const btn = document.getElementById("userBtn");
+        const menu = document.getElementById("dropdownMenu");
+
+        btn.onclick = (e) => { e.stopPropagation(); menu.classList.toggle("show"); };
+        window.onclick = (e) => { if (!e.target.matches('#userBtn')) { menu.classList.remove("show"); } };
+
+        function cerrarSesion(){
+            sessionStorage.removeItem("sesionActiva");
+            localStorage.removeItem("token");
+            window.location.href = "index.html";
+        }
+
+        // Instancias de Gráficas Globales
+        let chartPieDisponibilidad;
+        let chartLineDolarGastos;
+        let chartBarGastosSalario;
+
+        async function cargarTodoElSemaforo() {
+            try {
+                const token = localStorage.getItem("token");
+                let valorDolarActual = 18.04;
+                
+                // 1. Obtener valor actual del dólar
+                try {
+                    const resEco = await fetch("http://localhost:3000/api/semaforo-economico", { headers: { "Authorization": `Bearer ${token}` } });
+                    const datosEco = await resEco.json();
+                    if(datosEco.dolar) valorDolarActual = parseFloat(datosEco.dolar);
+                    document.getElementById('txt-dolar').innerText = valorDolarActual.toFixed(2);
+                } catch(err) {
+                    document.getElementById('txt-dolar').innerText = "18.04";
+                }
+
+                // 2. Obtener lista completa de tus gastos
+                const resGastos = await fetch("http://localhost:3000/api/lista-gastos", { headers: { "Authorization": `Bearer ${token}` } });
+                const todosLosGastos = await resGastos.json();
+                
+                const hoy = new Date();
+                const mesActual = hoy.getMonth();
+                const anioActual = hoy.getFullYear();
+
+                // Estructura para mapear gastos por día del mes actual (1 al 30/31)
+                const diasDelMes = new Date(anioActual, mesActual + 1, 0).getDate();
+                const labelsDias = Array.from({length: diasDelMes}, (_, i) => `Día ${i + 1}`);
+                const gastosPorDia = Array(diasDelMes).fill(0);
+
+                let totalGastadoMes = 0;
+
+                todosLosGastos.forEach(item => {
+                    const fechaGasto = new Date(item.fecha);
+                    if (fechaGasto.getMonth() === mesActual && fechaGasto.getFullYear() === anioActual) {
+                        const monto = parseFloat(item.monto || item.cantidad || item.total || 0);
+                        totalGastadoMes += monto;
+                        
+                        const diaIdx = fechaGasto.getDate() - 1;
+                        if(diaIdx >= 0 && diaIdx < diasDelMes) {
+                            gastosPorDia[diaIdx] += monto;
+                        }
+                    }
+                });
+                
+                const saldoTotal = parseFloat(localStorage.getItem("saldoUsuario")) || 0;
+                const restante = Math.max(0, saldoTotal - totalGastadoMes);
+
+                document.getElementById('txt-balance-leyenda').innerHTML = `
+                    Disponible: <span style="color: #81c784; font-weight: bold;">$${restante.toFixed(2)}</span><br>
+                    <span style="font-size: 11px; color: #666;">Saldo Base: $${saldoTotal.toFixed(2)} | Gastado: $${totalGastadoMes.toFixed(2)}</span>
+                `;
+
+                // --- 📊 GRÁFICA 1: DISPONIBILIDAD (PIE) ---
+                if (chartPieDisponibilidad) chartPieDisponibilidad.destroy();
+                chartPieDisponibilidad = new Chart(document.getElementById('graficaPresupuesto').getContext('2d'), {
+                    type: 'pie',
+                    data: {
+                        labels: ['Gastado este mes', 'Disponible'],
+                        datasets: [{
+                            data: [totalGastadoMes, restante],
+                            backgroundColor: ['#ef5350', '#2e7d32'],
+                            borderWidth: 2,
+                            borderColor: '#161616'
+                        }]
+                    },
+                    options: { 
+                        responsive: true, 
+                        plugins: { legend: { position: 'bottom', labels: { color: '#ffffff', font: { size: 11 } } } } 
+                    }
+                });
+
+
+                // Generador de simulación de variaciones diarias del dólar (para que fluctúe en la gráfica histórica)
+                const tendenciaDolarSimulado = gastosPorDia.map((_, index) => {
+                    return valorDolarActual + Math.sin(index) * 0.3 - (index * 0.01);
+                });
+
+                // --- 📈 GRÁFICA 2 LADO IZQUIERDO: TENDENCIA DÓLAR VS GASTOS (LÍNEAS MIXTAS) ---
+                if (chartLineDolarGastos) chartLineDolarGastos.destroy();
+                chartLineDolarGastos = new Chart(document.getElementById('graficaDolarGastos').getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: labelsDias,
+                        datasets: [
+                            {
+                                label: 'Precio Dólar ($)',
+                                data: tendenciaDolarSimulado,
+                                borderColor: '#ffb74d',
+                                backgroundColor: 'transparent',
+                                yAxisID: 'yDolar',
+                                borderWidth: 2,
+                                tension: 0.3
+                            },
+                            {
+                                label: 'Tus Gastos ($)',
+                                data: gastosPorDia,
+                                borderColor: '#81c784',
+                                backgroundColor: 'rgba(129, 199, 132, 0.1)',
+                                fill: true,
+                                yAxisID: 'yGastos',
+                                borderWidth: 2,
+                                tension: 0.2
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { labels: { color: '#ffffff', font: { size: 11 } } } },
+                        scales: {
+                            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#aaa', font: { size: 10 } } },
+                            yDolar: { type: 'linear', position: 'left', title: { display: true, text: 'Dólar (MXN)', color: '#ffb74d' }, ticks: { color: '#ffb74d' }, grid: { display: false } },
+                            yGastos: { type: 'linear', position: 'right', title: { display: true, text: 'Tus Gastos ($)', color: '#81c784' }, ticks: { color: '#81c784' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                        }
+                    }
+                });
+
+
+                // --- 📊 GRÁFICA 3 LADO DERECHO: GASTOS DIARIOS VS SALARIO MÍNIMO (BARRAS + LÍNEA FIJA) ---
+                const salarioMinimoDiario = 315.04;
+                const lineaSalarioMinimo = Array(diasDelMes).fill(salarioMinimoDiario);
+
+                if (chartBarGastosSalario) chartBarGastosSalario.destroy();
+                chartBarGastosSalario = new Chart(document.getElementById('graficaGastosSalario').getContext('2d'), {
+                    data: {
+                        labels: labelsDias,
+                        datasets: [
+                            {
+                                type: 'bar',
+                                label: 'Tus Gastos del Día',
+                                data: gastosPorDia,
+                                backgroundColor: gastosPorDia.map(v => v > salarioMinimoDiario ? '#ef5350' : '#4caf50'),
+                                borderRadius: 4
+                            },
+                            {
+                                type: 'line',
+                                label: 'Salario Mínimo ($315.04)',
+                                data: lineaSalarioMinimo,
+                                borderColor: '#e57373',
+                                borderDash: [6, 6],
+                                fill: false,
+                                borderWidth: 2,
+                                pointRadius: 0
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { labels: { color: '#ffffff', font: { size: 11 } } } },
+                        scales: {
+                            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#aaa', font: { size: 10 } } },
+                            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#ffffff' }, title: { display: true, text: 'Monto en Pesos ($)', color: '#ffffff' } }
+                        }
+                    }
+                });
+
+            } catch(e) { console.error("Error cargando componentes del Semáforo:", e); }
+        }
+
+        // Ejecutar carga integral en el inicio
+        cargarTodoElSemaforo();
+    </script>
+</body>
+</html>

@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ConSiente</title>
+
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family:"Segoe UI",sans-serif; }
+    
+    /* Fondo con luz difuminada central */
+    body { 
+        background: radial-gradient(circle at 50% 50%, #27312a 0%, #111412 100%); 
+        min-height: 100vh; 
+        color: #ffffff;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* NAVBAR */
+    .navbar { 
+        position:fixed; 
+        top:0; 
+        left: 0;
+        width:100%; 
+        height:65px; 
+        background:#0d0d0d; 
+        display:flex; 
+        justify-content:space-between; 
+        align-items:center; 
+        padding:0 25px; 
+        z-index:1000; 
+        border-bottom: 1px solid rgba(129, 199, 132, 0.25); 
+    }
+    .logo-nombre { display:flex; align-items:center; gap:10px; }
+    .titulo { font-size:20px; font-weight:bold; color:#ffffff; letter-spacing: 0.5px; }
+    .logo { width:30px; }
+    .menu { display:flex; align-items:center; gap:25px; }
+    .menu a { text-decoration:none; color:#e0e0e0; font-size: 14px; transition: 0.3s ease; }
+    .menu a:hover { color: #81c784; }
+
+    /* MENÚ DE USUARIO DESLIZABLE / DROPDOWN */
+    .user-menu {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+    .user-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        cursor: pointer;
+        border: 1.5px solid rgba(129, 199, 132, 0.5);
+        transition: 0.3s ease;
+    }
+    .user-icon:hover {
+        border-color: #81c784;
+        box-shadow: 0 0 10px rgba(129, 199, 132, 0.4);
+    }
+    .dropdown {
+        position: absolute;
+        right: 0;
+        top: 50px;
+        background: rgba(20, 20, 20, 0.98);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        border: 1px solid rgba(129, 199, 132, 0.2);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+        display: none;
+        flex-direction: column;
+        min-width: 160px;
+        overflow: hidden;
+        z-index: 1100;
+    }
+    .dropdown a {
+        padding: 12px 18px;
+        text-decoration: none;
+        color: #ffffff;
+        font-size: 14px;
+        transition: 0.2s ease;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .dropdown a:last-child { border-bottom: none; }
+    .dropdown a:hover {
+        background: rgba(46, 125, 50, 0.3);
+        color: #81c784;
+    }
+    .show { display: flex; }
+
+    /* CONTENEDOR ESTRUCTURAL (SIDEBAR + MAIN) */
+    .main-layout {
+        display: flex;
+        margin-top: 65px; 
+        min-height: calc(100vh - 65px);
+        width: 100%;
+    }
+
+    /* SIDEBAR ESCRITORIO */
+    .sidebar { 
+        width: 280px; 
+        min-width: 280px;
+        height: calc(100vh - 65px);
+        position: sticky;
+        top: 65px;
+        background:#121212; 
+        border-right: 1px solid rgba(129, 199, 132, 0.15); 
+        padding: 25px 15px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between; 
+        z-index: 90;
+    }
+    .sidebar-menu {
+        display: flex;
+        flex-direction: column;
+    }
+    .sidebar button { 
+        width:100%; 
+        padding:16px; 
+        margin-bottom:15px; 
+        border:none; 
+        border-radius:12px; 
+        background:#1b1b1b; 
+        color:#ffffff;
+        font-size:15px; 
+        cursor:pointer; 
+        text-align:left; 
+        border-bottom:1px solid rgba(130,199,132,0.2); 
+        transition: 0.3s ease;
+    }
+    .sidebar button:hover { 
+        background:#1c2d20; 
+        color: #81c784;
+        border-bottom:1px solid rgba(130,199,132,0.5); 
+        padding-left: 22px;
+    }
+
+    /* Política de privacidad */
+    .footer-privacidad { padding-top: 15px; text-align: center; }
+    .footer-privacidad a { color: rgba(255, 255, 255, 0.5); text-decoration: none; font-size: 13px; font-weight: 500; transition: 0.3s ease; }
+    .footer-privacidad a:hover { color: #81c784; }
+
+    /* CONTENEDOR PRINCIPAL */
+    .container { 
+        flex: 1;
+        padding: 40px; 
+        display: flex; 
+        flex-direction: column;
+        gap: 25px; 
+        max-width: 1200px;
+        margin: 0 auto; 
+        width: 100%;
+    }
+
+    /* SECCIÓN DE TARJETAS (PRIMER APARTADO) */
+    .card-dashboard {
+        background: rgba(22, 22, 22, 0.85);
+        backdrop-filter: blur(10px);
+        border-radius: 20px; 
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+        padding: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 30px;
+        width: 100%;
+    }
+
+    .card-dashboard .info {
+        flex: 1;
+    }
+
+    .card-dashboard h2 {
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 26px;
+        margin-bottom: 5px;
+    }
+
+    /* Caja de Balance */
+    .balance-box {
+        background: #1b1b1b; 
+        padding: 20px 25px; 
+        border-radius: 12px; 
+        margin-top: 15px; 
+        border-bottom: 1px solid rgba(130,199,132,0.2); 
+        display: inline-block;
+        min-width: 260px;
+    }
+
+    .balance-box p {
+        font-size: 12px; 
+        color: #a0a0a0; 
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 5px;
+    }
+
+    .balance-box h1 {
+        color: #81c784; 
+        font-size: 34px; 
+        font-weight: bold;
+    }
+
+    .subtitulo {
+        color: #a0a0a0;
+        font-size: 13px;
+        margin-top: 15px;
+    }
+
+    /* Contenedores de Gráficas Internos */
+    .bar-chart-box {
+        background: #1b1b1b;
+        border-radius: 12px;
+        padding: 20px;
+        width: 340px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .bar-chart-box h3 {
+        margin-bottom: 15px;
+        font-size: 16px;
+        color: #81c784;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        padding-bottom: 8px;
+    }
+
+    .chart-donut-box {
+        background: #1b1b1b;
+        border-radius: 12px;
+        padding: 20px;
+        width: 260px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    /* Distribución Doble Inferior */
+    .grid-doble {
+        display: grid;
+        grid-template-columns: 1fr 1fr; 
+        gap: 25px;
+        width: 100%;
+    }
+
+    .col-box {
+        background: rgba(22, 22, 22, 0.85);
+        backdrop-filter: blur(10px);
+        border-radius: 20px; 
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+        padding: 25px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .col-box h3 {
+        margin-bottom: 15px;
+        color: #81c784;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .chart-monthly-box {
+        background: #1b1b1b;
+        border-radius: 12px;
+        padding: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        width: 100%;
+    }
+
+    .chart-bar-wrapper {
+        position: relative; 
+        width: 100%; 
+        height: 240px;
+    }
+
+    /* Barras de porcentaje de categorías */
+    .bar-item {
+        margin-bottom: 14px;
+    }
+    .bar-item:last-child {
+        margin-bottom: 0;
+    }
+    .bar {
+        width: 100%;
+        height: 10px;
+        background: #0d0d0d; 
+        border-radius: 6px;
+        margin-top: 6px;
+        overflow: hidden;
+    }
+    .bar div {
+        height: 100%;
+        background: #4caf50;
+        border-radius: 6px;
+    }
+
+    /* Calendario Miniatura */
+    .cal-estatico-box {
+        background: #1b1b1b;
+        border-radius: 12px;
+        padding: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        cursor: pointer;
+        transition: 0.3s ease;
+    }
+    .cal-estatico-box:hover {
+        border-color: rgba(129, 199, 132, 0.4);
+        background: #1c2d20;
+    }
+    .cal-mes-titulo {
+        text-align: center;
+        font-weight: bold;
+        text-transform: capitalize;
+        margin-bottom: 12px;
+        font-size: 14px;
+        color: #ffffff;
+    }
+    .cal-grid-estatico {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 6px;
+    }
+    .cal-dia-lbl {
+        font-size: 11px;
+        color: #81c784;
+        text-align: center;
+        font-weight: bold;
+    }
+    .cal-celda-dia {
+        background: #0d0d0d;
+        border-radius: 6px;
+        padding: 8px 0;
+        text-align: center;
+        font-size: 12px;
+        color: #ffffff;
+    }
+    .cal-celda-dia.hoy {
+        background: #4caf50;
+        color: #ffffff;
+        font-weight: bold;
+    }
+    .cal-celda-dia.has-gasto {
+        box-shadow: inset 0 0 0 1px #81c784;
+        background: rgba(76, 175, 80, 0.1);
+    }
+
+    /* RESPONSIVIDAD Y OPTIMIZACIÓN MÓVIL TOTAL */
+    @media (max-width: 1150px) {
+        .card-dashboard { flex-direction: column; align-items: stretch; gap: 20px; }
+        .bar-chart-box, .chart-donut-box { width: 100%; }
+        .grid-doble { grid-template-columns: 1fr; }
+    }
+    
+    @media (max-width: 900px) {
+        .main-layout { flex-direction: column; margin-top: 65px; min-height: auto; }
+        
+        .container { 
+            padding: 20px 15px 100px 15px; 
+            width: 100%; 
+        }
+
+        /* Primer apartado estirado al 100% de manera legible */
+        .card-dashboard {
+            flex-direction: column;
+            align-items: stretch;
+            padding: 22px;
+            gap: 20px;
+        }
+        .balance-box {
+            display: block;
+            width: 100%;
+            min-width: unset;
+        }
+        
+        /* BARRA DE NAVEGACIÓN INFERIOR TOTALMENTE PROPORCIONAL */
+        .sidebar { 
+            position: fixed;
+            bottom: 0;
+            top: auto;
+            left: 0;
+            width: 100%; 
+            min-width: 100%; 
+            height: 72px; 
+            background: rgba(14, 14, 14, 0.97); 
+            backdrop-filter: blur(15px);
+            border-right: none; 
+            border-top: 1px solid rgba(129, 199, 132, 0.3); 
+            padding: 0;
+            flex-direction: row;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .sidebar-menu {
+            flex-direction: row;
+            width: 100%;
+            height: 100%;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .sidebar button { 
+            width: auto; 
+            flex: 1;
+            height: 100%;
+            padding: 10px 2px; 
+            margin-bottom: 0; 
+            border: none; 
+            border-radius: 0;
+            background: transparent; 
+            font-size: 12px; 
+            font-weight: 500;
+            text-align: center; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            white-space: nowrap;
+            color: #cccccc;
+        }
+
+        .sidebar button span {
+            font-size: 20px; 
+        }
+
+        .sidebar button:hover { 
+            background: rgba(255, 255, 255, 0.03); 
+            color: #81c784;
+            padding-left: 2px; 
+        }
+
+        .footer-privacidad { display: none; }
+    }
+
+    @media (max-width: 600px) {
+        .navbar { padding: 0 15px; }
+        .menu { gap: 12px; }
+        .menu a { font-size: 13px; }
+        .titulo { font-size: 18px; }
+        .sidebar button { font-size: 10.5px; } 
+        .sidebar button span { font-size: 18px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="navbar">
+      <div class="logo-nombre">
+          <span class="titulo">ConSiente</span>
+          <img src="imagenes/logo.png" class="logo" alt="Logo">
+      </div>
+      <div class="menu">
+          <a href="menu.html">Home</a>
+          <a href="nosotros.html">Sobre nosotros</a>
+          <a href="ODS.html">ODS</a>
+          
+          <div class="user-menu">
+              <img src="imagenes/usuario.png" class="user-icon" id="userBtn" alt="Usuario">
+              <div class="dropdown" id="dropdownMenu">
+                  <a href="config.html">Configuración</a>
+                  <a href="index.html" onclick="cerrarSesion()">Cerrar sesión</a>
+              </div>
+          </div>
+      </div>
+  </div>
+
+  <div class="main-layout">
+      
+      <div class="sidebar">
+          <div class="sidebar-menu">
+              <button onclick="window.location.href='menu.html'"><span>📊</span> Estadísticas</button>
+              <button onclick="window.location.href='consejos.html'"><span>💡</span> Consejos</button>
+              <button onclick="window.location.href='agregar.html'"><span>➕</span> Agregar</button>
+              <button onclick="window.location.href='historial.html'"><span>📅</span> Historial</button>
+              <button onclick="window.location.href='semaforo.html'"><span>🚦</span> Semáforo</button>
+          </div>
+          <div class="footer-privacidad">
+              <a href="privacidadentro.html">Políticas de Privacidad</a>
+          </div>
+      </div>
+
+      <div class="container">
+          
+          <div class="card-dashboard">
+              <div class="info">
+                  <h2>Hola, <span id="nombreUsuario" style="color: #81c784;">Cargando...</span></h2>
+                  
+                  <div class="balance-box">
+                      <p>Saldo Disponible (Mes Actual)</p>
+                      <h1 id="saldoDisponible">$ 0.00</h1>
+                  </div>
+                  <p class="subtitulo">Resumen analítico de tus movimientos mensuales.</p>
+              </div>
+
+              <div class="bar-chart-box" id="contenedorBarras">
+                  <h3>¿En qué gasto más?</h3>
+              </div>
+
+              <div class="chart-donut-box">
+                  <canvas id="graficaGastos" width="180" height="180"></canvas>
+              </div>
+          </div>
+
+          <div class="grid-doble">
+              
+              <div class="col-box">
+                  <h3 style="text-align: center;">Tendencia de Gastos (Últimos 4 Meses)</h3>
+                  <div class="chart-monthly-box">
+                      <div class="chart-bar-wrapper">
+                          <canvas id="graficaBarrasMensual"></canvas>
+                      </div>
+                  </div>
+              </div>
+
+              <div class="col-box">
+                  <h3>Resumen del Mes</h3>
+                  <div class="cal-estatico-box" onclick="window.location.href='historial.html'" title="Haz clic para abrir el Historial Completo">
+                      <div class="cal-mes-titulo" id="calEstaticoMes"></div>
+                      <div class="cal-grid-estatico" id="calGridEstatico"></div>
+                  </div>
+              </div>
+
+          </div>
+
+      </div>
+  </div>
+
+  <script>
+      const btn = document.getElementById("userBtn");
+      const menu = document.getElementById("dropdownMenu");
+
+      btn.onclick = (e) => {
+          e.stopPropagation();
+          menu.classList.toggle("show");
+      };
+
+      window.onclick = (e) => {
+          if (!e.target.matches('#userBtn')) {
+              menu.classList.remove("show");
+          }
+      };
+
+      function cerrarSesion(){
+          sessionStorage.removeItem("sesionActiva");
+          localStorage.removeItem("token");
+          window.location.href = "index.html";
+      }
+
+      document.addEventListener("DOMContentLoaded", async () => {
+          const token = localStorage.getItem("token");
+          if (!token) return window.location.href = "index.html"; 
+
+          try {
+              const resPerfil = await fetch("http://localhost:3000/api/perfil", {
+                  headers: { "Authorization": `Bearer ${token}` }
+              });
+              
+              let saldoInicial = 0;
+              if (resPerfil.ok) {
+                  const infoUsuario = await resPerfil.json();
+                  document.getElementById("nombreUsuario").innerText = infoUsuario.nombre;
+                  saldoInicial = Number(infoUsuario.saldo) || 0;
+              } else {
+                  return window.location.href = "index.html";
+              }
+
+              const response = await fetch("http://localhost:3000/api/resumen-gastos", {
+                  headers: { "Authorization": `Bearer ${token}` }
+              });
+              const datos = await response.json();
+
+              const etiquetas = datos.map(gasto => gasto.tipo);
+              const totales = datos.map(gasto => gasto.total);
+
+              const ctx = document.getElementById('graficaGastos').getContext('2d');
+              new Chart(ctx, {
+                  type: 'doughnut',
+                  data: {
+                      labels: etiquetas,
+                      datasets: [{
+                          data: totales,
+                          backgroundColor: ['#4caf50', '#81c784', '#2e7d32', '#1b5e20', '#a5d6a7'],
+                          borderWidth: 2,
+                          borderColor: '#1b1b1b'
+                      }]
+                  },
+                  options: {
+                      plugins: {
+                          legend: { 
+                              position: 'bottom', 
+                              labels: { color: 'white', font: { family: "'Segoe UI', sans-serif", size: 10 } } 
+                          }
+                      }
+                  }
+              });
+
+              const contenedorBarras = document.getElementById('contenedorBarras');
+              const totalGastosDonut = datos.reduce((suma, gasto) => suma + Number(gasto.total), 0);
+
+              const emojis = {
+                  "Necesario": "🏠", "Antojos": "🍔", "Ocio": "🎡", "Streaming": "🎮", "Compras": "👜"
+              };
+
+              datos.forEach(gasto => {
+                  const porcentaje = totalGastosDonut > 0 ? Math.round((Number(gasto.total) / totalGastosDonut) * 100) : 0;
+                  const emoji = emojis[gasto.tipo] || "💸";
+
+                  const divBarra = document.createElement('div');
+                  divBarra.className = 'bar-item';
+                  divBarra.innerHTML = `
+                      <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 13px;">
+                          <span>${emoji} ${gasto.tipo}</span>
+                          <span style="color: #81c784; font-weight: bold;">${porcentaje}%</span>
+                      </div>
+                      <div class="bar"><div style="width:${porcentaje}%; background: #4caf50;"></div></div>
+                  `;
+                  contenedorBarras.appendChild(divBarra);
+              });
+
+              const resHistorial = await fetch("http://localhost:3000/api/lista-gastos", {
+                  headers: { "Authorization": `Bearer ${token}` }
+              });
+              const todosLosGastos = await resHistorial.json();
+
+              const hoy = new Date();
+              const totalGastosMesActual = todosLosGastos.reduce((suma, g) => {
+                  const f = new Date(g.fecha);
+                  if (f.getMonth() === hoy.getMonth() && f.getFullYear() === hoy.getFullYear()) {
+                      return suma + Number(g.monto || g.cantidad || 0);
+                  }
+                  return suma;
+              }, 0);
+
+              const saldoRestante = saldoInicial - totalGastosMesActual;
+              document.getElementById("saldoDisponible").innerText = `$ ${saldoRestante.toFixed(2)}`;
+              
+              if(saldoRestante < 0) {
+                  document.getElementById("saldoDisponible").style.color = "#ef5350"; 
+              }
+
+              generarCalendarioEstatico(todosLosGastos);
+              generarGraficaBarrasMensual(todosLosGastos, saldoInicial);
+
+          } catch (error) {
+              console.log("Error cargando los datos", error);
+          }
+      });
+
+      function generarCalendarioEstatico(gastos) {
+          const grid = document.getElementById("calGridEstatico");
+          const hoy = new Date();
+          const mes = hoy.getMonth();
+          const anio = hoy.getFullYear();
+
+          document.getElementById("calEstaticoMes").innerText = hoy.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+          grid.innerHTML = '';
+
+          ['Do','Lu','Ma','Mi','Ju','Vi','Sá'].forEach(d => {
+              grid.innerHTML += `<div class="cal-dia-lbl">${d}</div>`;
+          });
+
+          const primerDiaMes = new Date(anio, mes, 1).getDay();
+          const totalDias = new Date(anio, mes + 1, 0).getDate();
+
+          for(let i = 0; i < primerDiaMes; i++) {
+              grid.appendChild(document.createElement('div'));
+          }
+
+          for(let d = 1; d <= totalDias; d++) {
+              const tieneGasto = gastos.some(g => {
+                  const f = new Date(g.fecha);
+                  return f.getDate() === d && f.getMonth() === mes && f.getFullYear() === anio;
+              });
+
+              const esHoy = (d === hoy.getDate());
+              const div = document.createElement('div');
+              div.className = `cal-celda-dia ${esHoy ? 'hoy' : ''} ${tieneGasto ? 'has-gasto' : ''}`;
+              div.innerText = d;
+
+              grid.appendChild(div);
+          }
+      }
+
+      function generarGraficaBarrasMensual(gastos, saldoMensualConstante) {
+          const hoy = new Date();
+          const nombresMeses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+          
+          let labelsMeses = [];
+          let datasetsGastos = [0, 0, 0, 0];
+          let datasetsAhorro = [0, 0, 0, 0];
+
+          for (let i = 3; i >= 0; i--) {
+              let d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
+              labelsMeses.push({
+                  mesIndex: d.getMonth(),
+                  anio: d.getFullYear(),
+                  nombre: nombresMeses[d.getMonth()]
+              });
+          }
+
+          gastos.forEach(g => {
+              const f = new Date(g.fecha);
+              const gMes = f.getMonth();
+              const gAnio = f.getFullYear();
+
+              labelsMeses.forEach((m, index) => {
+                  if (m.mesIndex === gMes && m.anio === gAnio) {
+                      datasetsGastos[index] += Number(g.monto || g.cantidad || 0);
+                  }
+              });
+          });
+
+          labelsMeses.forEach((m, index) => {
+              let restante = saldoMensualConstante - datasetsGastos[index];
+              datasetsAhorro[index] = restante > 0 ? restante : 0; 
+          });
+
+          const ctxBarras = document.getElementById('graficaBarrasMensual').getContext('2d');
+          new Chart(ctxBarras, {
+              type: 'bar',
+              data: {
+                  labels: labelsMeses.map(m => m.nombre),
+                  datasets: [
+                      {
+                          label: 'Dinero No Gastado',
+                          data: datasetsAhorro,
+                          backgroundColor: '#4caf50', 
+                          borderWidth: 0,
+                          maxBarThickness: 40 
+                      },
+                      {
+                          label: 'Gastado',
+                          data: datasetsGastos,
+                          backgroundColor: '#ef5350', 
+                          borderWidth: 0,
+                          maxBarThickness: 40 
+                      }
+                  ]
+              },
+              options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  scales: {
+                      x: {
+                          stacked: true, 
+                          grid: { display: false },
+                          ticks: { color: 'white' }
+                      },
+                      y: {
+                          stacked: true,
+                          grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                          ticks: { color: 'white', callback: value => '$' + value }
+                      }
+                  },
+                  plugins: {
+                      legend: {
+                          position: 'top',
+                          labels: { color: 'white', font: { family: "'Segoe UI', sans-serif" } }
+                      }
+                  }
+              }
+          });
+      }
+  </script>
+</body>
+</html>

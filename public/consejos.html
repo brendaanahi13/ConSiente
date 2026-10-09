@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConSiente - Consejos de Ahorro</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:"Segoe UI",sans-serif; }
+        
+        /* Fondo con una luz difuminada central muy ligera */
+        body { 
+            background: radial-gradient(circle at 50% 50%, #27312a 0%, #111412 100%); 
+            min-height: 100vh; 
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* NAVBAR */
+        .navbar { 
+            position:fixed; 
+            top:0; 
+            left: 0;
+            width:100%; 
+            height:65px; 
+            background:#0d0d0d; 
+            display:flex; 
+            justify-content:space-between; 
+            align-items:center; 
+            padding:0 25px; 
+            z-index:1000; 
+            border-bottom: 1px solid rgba(129, 199, 132, 0.25); 
+        }
+        .logo-nombre { display:flex; align-items:center; gap:10px; }
+        .titulo { font-size:20px; font-weight:bold; color:#ffffff; letter-spacing: 0.5px; }
+        .logo { width:30px; }
+        .menu { display:flex; align-items:center; gap:25px; }
+        .menu a { text-decoration:none; color:#e0e0e0; font-size: 14px; transition: 0.3s ease; }
+        .menu a:hover { color: #81c784; }
+
+        /* MENÚ DE USUARIO DESLIZABLE / DROPDOWN */
+        .user-menu {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .user-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 1.5px solid rgba(129, 199, 132, 0.5);
+            transition: 0.3s ease;
+        }
+        .user-icon:hover {
+            border-color: #81c784;
+            box-shadow: 0 0 10px rgba(129, 199, 132, 0.4);
+        }
+        .dropdown {
+            position: absolute;
+            right: 0;
+            top: 50px;
+            background: rgba(20, 20, 20, 0.98);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            border: 1px solid rgba(129, 199, 132, 0.2);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            display: none;
+            flex-direction: column;
+            min-width: 160px;
+            overflow: hidden;
+            z-index: 1100;
+        }
+        .dropdown a {
+            padding: 12px 18px;
+            text-decoration: none;
+            color: #ffffff;
+            font-size: 14px;
+            transition: 0.2s ease;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .dropdown a:last-child { border-bottom: none; }
+        .dropdown a:hover {
+            background: rgba(46, 125, 50, 0.3);
+            color: #81c784;
+        }
+        .show { display: flex; }
+
+        /* CONTENEDOR ESTRUCTURAL (SIDEBAR + MAIN) */
+        .main-layout {
+            display: flex;
+            margin-top: 65px; /* Altura de la navbar */
+            min-height: calc(100vh - 65px);
+            width: 100%;
+        }
+
+        /* SIDEBAR - Corregida la altura para que el footer no desaparezca */
+        .sidebar { 
+            width: 280px; 
+            min-width: 280px;
+            height: calc(100vh - 65px);
+            position: sticky;
+            top: 65px;
+            background:#121212; 
+            border-right: 1px solid rgba(129, 199, 132, 0.15); 
+            padding: 25px 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* Empuja el footer hacia abajo */
+        }
+        .sidebar-menu {
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar button { 
+            width:100%; 
+            padding:16px; 
+            margin-bottom:15px; 
+            border:none; 
+            border-radius:12px; 
+            background:#1b1b1b; 
+            color:#ffffff;
+            font-size:15px; 
+            cursor:pointer; 
+            text-align:left; 
+            border-bottom:1px solid rgba(130,199,132,0.2); 
+            transition: 0.3s ease;
+        }
+        .sidebar button:hover { 
+            background:#1c2d20; 
+            color: #81c784;
+            border-bottom:1px solid rgba(130,199,132,0.5); 
+            padding-left: 22px;
+        }
+
+        /* Política de privacidad */
+        .footer-privacidad { padding-top: 15px; text-align: center; }
+        .footer-privacidad a { color: rgba(255, 255, 255, 0.5); text-decoration: none; font-size: 13px; font-weight: 500; transition: 0.3s ease; }
+        .footer-privacidad a:hover { color: #81c784; }
+
+        /* CONTENEDOR PRINCIPAL */
+        .container { 
+            flex: 1;
+            padding: 40px; 
+            display: flex; 
+            flex-direction: column;
+            gap: 25px; 
+            max-width: 1200px;
+            margin: 0 auto; /* Centra el contenido en pantallas gigantes */
+            align-items: flex-start;
+        }
+        
+        h2 { color: #81c784; font-weight: 600; letter-spacing: 0.3px; margin-bottom: 20px; font-size: 28px; }
+
+        /* GRID DE VIDEOS */
+        .grid-consejos {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            width: 100%;
+            align-items: flex-start;
+        }
+
+        /* CARDS CON DISEÑO "BOX" DEL FORMULARIO */
+        .card-consejo {
+            background: rgba(22, 22, 22, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 20px; 
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        /* VIDEO WRAPPER */
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            height: 0;
+            padding-bottom: 125%;
+            background: #000;
+        }
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* CONTENIDO DE TEXTO */
+        .card-content {
+            padding: 20px;
+        }
+        .card-content h3 {
+            color: #81c784;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        .card-content p {
+            font-size: 12px;
+            color: #e0e0e0;
+            opacity: 0.8;
+            line-height: 1.4;
+        }
+
+        /* RESPONSIVIDAD PARA TABLETS Y MÓVILES */
+        @media (max-width: 1400px) {
+            .grid-consejos { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 1000px) {
+            .grid-consejos { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 900px) {
+            .main-layout { flex-direction: column; }
+            .sidebar { width: 100%; min-width: 100%; height: auto; border-right: none; border-bottom: 1px solid rgba(129, 199, 132, 0.15); }
+            .container { padding: 20px; width: 100%; }
+        }
+        @media (max-width: 600px) {
+            .grid-consejos { grid-template-columns: repeat(1, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="logo-nombre">
+            <span class="titulo">ConSiente</span>
+            <img src="imagenes/logo.png" class="logo" alt="Logo">
+        </div>
+        <div class="menu">
+            <a href="menu.html">Home</a>
+            <a href="nosotros.html">Sobre nosotros</a>
+            <a href="ODS.html">ODS</a>
+            
+            <div class="user-menu">
+                <img src="imagenes/usuario.png" class="user-icon" id="userBtn" alt="Usuario">
+                <div class="dropdown" id="dropdownMenu">
+                    <a href="config.html">Configuración</a>
+                    <a href="index.html" onclick="cerrarSesion()">Cerrar sesión</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-layout">
+        
+        <div class="sidebar">
+            <div class="sidebar-menu">
+                <button onclick="window.location.href='menu.html'">📊 Mis Estadísticas</button>
+                <button onclick="window.location.href='consejos.html'">💡 Consejos de Ahorro</button>
+                <button onclick="window.location.href='agregar.html'">➕ Agregar gasto</button>
+                <button onclick="window.location.href='historial.html'">📅 Historial</button>
+                <button onclick="window.location.href='semaforo.html'">🚦 Semáforo Financiero</button>
+            </div>
+            <div class="footer-privacidad">
+                <a href="privacidadentro.html">Políticas de Privacidad</a>
+            </div>
+        </div>
+
+        <div class="container">
+            <h2>Consejos de ahorro especiales para ti</h2>
+
+            <div class="grid-consejos">
+
+                <div class="card-consejo">
+                    <div class="video-wrapper">
+                        <iframe src="https://www.tiktok.com/embed/v2/7582220060979236118" title="EVITA COMPRAS IMPULSIVAS" allowfullscreen></iframe>
+                    </div>
+                    <div class="card-content">
+                        <h3>EVITA COMPRAS IMPULSIVAS</h3>
+                        <p>ESPERA 24 HORAS ANTES DE COMPRAR.</p>
+                    </div>
+                </div>
+
+                <div class="card-consejo">
+                    <div class="video-wrapper">
+                        <iframe src="https://www.tiktok.com/embed/v2/7316980053475069190" title="CONTROLA GASTOS PEQUEÑOS" allowfullscreen></iframe>
+                    </div>
+                    <div class="card-content">
+                        <h3>CONTROLA GASTOS PEQUEÑOS</h3>
+                        <p>LOS PEQUEÑOS GASTOS SUMAN MUCHO.</p>
+                    </div>
+                </div>
+
+                <div class="card-consejo">
+                    <div class="video-wrapper">
+                        <iframe src="https://www.tiktok.com/embed/v2/7611663571390319889" title="DEFINE UN PRESUPUESTO" allowfullscreen></iframe>
+                    </div>
+                    <div class="card-content">
+                        <h3>DEFINE UN PRESUPUESTO</h3>
+                        <p>SABER EN QUÉ GASTAS ES CLAVE.</p>
+                    </div>
+                </div>
+
+                <div class="card-consejo">
+                    <div class="video-wrapper">
+                        <iframe src="https://www.tiktok.com/embed/v2/7345278220037672198" title="AHORRA UN PORCENTAJE FIJO" allowfullscreen></iframe>
+                    </div>
+                    <div class="card-content">
+                        <h3>AHORRA UN PORCENTAJE FIJO</h3>
+                        <p>APARTA AL MENOS EL 10% DE TU DINERO</p>
+                    </div>
+                </div>
+
+                <div class="card-consejo">
+                    <div class="video-wrapper">
+                        <iframe src="https://www.tiktok.com/embed/v2/7568290895641021707" title="EVITA DEUDAS" allowfullscreen></iframe>
+                    </div>
+                    <div class="card-content">
+                        <h3>EVITA DEUDAS</h3>
+                        <p>NO COMPRES LO QUE NO PUEDES PAGAR.</p>
+                    </div>
+                </div>
+
+                <div class="card-consejo">
+                    <div class="video-wrapper">
+                        <iframe src="https://www.tiktok.com/embed/v2/7130768093072116998" title="REGISTRA TUS GASTOS" allowfullscreen></iframe>
+                    </div>
+                    <div class="card-content">
+                        <h3>REGISTRA TUS GASTOS</h3>
+                        <p>LLEVA CONTROL DIARIO.</p>
+                    </div>
+                </div>
+
+                <div class="card-consejo">
+                    <div class="video-wrapper">
+                        <iframe src="https://www.tiktok.com/embed/v2/7584242902721711416" title="COMPARA PRECIOS" allowfullscreen></iframe>
+                    </div>
+                    <div class="card-content">
+                        <h3>COMPARA PRECIOS</h3>
+                        <p>BUSCA LA MEJOR OPCIÓN.</p>
+                    </div>
+                </div>
+
+                <div class="card-consejo">
+                    <div class="video-wrapper">
+                        <iframe src="https://www.tiktok.com/embed/v2/7284070039525920005" title="REDUCE GASTOS" allowfullscreen></iframe>
+                    </div>
+                    <div class="card-content">
+                        <h3>REDUCE GASTOS</h3>
+                        <p>ELIMINA LO INNECESARIO.</p>
+                    </div>
+                </div>
+
+                <div class="card-consejo">
+                    <div class="video-wrapper">
+                        <iframe src="https://www.tiktok.com/embed/v2/7559242183912459551" title="COCINA EN CASA" allowfullscreen></iframe>
+                    </div>
+                    <div class="card-content">
+                        <h3>COCINA EN CASA</h3>
+                        <p>AHORRAS MÁS DE LO QUE CREES.</p>
+                    </div>
+                </div>
+
+                <div class="card-consejo">
+                    <div class="video-wrapper">
+                        <iframe src="https://www.tiktok.com/embed/v2/7544758320754593042" title="TRANSPORTE EFICIENTE" allowfullscreen></iframe>
+                    </div>
+                    <div class="card-content">
+                        <h3>TRANSPORTE EFICIENTE</h3>
+                        <p>USA OPCIONES MÁS ECONÓMICAS.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const btn = document.getElementById("userBtn");
+        const menu = document.getElementById("dropdownMenu");
+
+        btn.onclick = (e) => {
+            e.stopPropagation();
+            menu.classList.toggle("show");
+        };
+
+        window.onclick = (e) => {
+            if (!e.target.matches('#userBtn')) {
+                menu.classList.remove("show");
+            }
+        };
+
+        function cerrarSesion(){
+            sessionStorage.removeItem("sesionActiva");
+            localStorage.removeItem("token");
+            window.location.href = "index.html";
+        }
+    </script>
+</body>
+</html>

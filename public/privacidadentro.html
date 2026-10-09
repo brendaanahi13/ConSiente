@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Términos ConSiente</title>
+
+<style>
+    :root {
+        --bg-dark: #27312a;
+        --accent-green: #81c784; 
+        --nav-black: #111111;
+        --text-light: #e0e0e0;
+        --text-muted: #bdbdbd;
+        --card-bg: #1e2520; /* Fondo ligeramente más oscuro para las secciones */
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Segoe UI", sans-serif; }
+    
+    body { background: var(--bg-dark); color: white; min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
+
+    /* ANIMACIÓN DE APARICIÓN */
+    @keyframes aparecer {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .animar { opacity: 0; animation: aparecer 0.8s ease-out forwards; }
+    .delay-1 { animation-delay: 0.2s; }
+    .delay-2 { animation-delay: 0.4s; }
+
+    /* NAVBAR */
+    .navbar {
+        position: fixed; top: 0; width: 100%; height: 65px;
+        background: var(--nav-black); display: flex; justify-content: space-between;
+        align-items: center; padding: 0 50px; z-index: 1000;
+        border-bottom: 2px solid var(--accent-green);
+    }
+    
+    .titulo { font-size: 20px; font-weight: bold; color: white; display: flex; align-items: center; }
+    
+    .menu-container { display: flex; gap: 40px; align-items: center; height: 100%; }
+    
+    .menu { display: flex; gap: 30px; align-items: center; list-style: none; }
+    .menu a { text-decoration: none; color: #ccc; font-size: 15px; transition: 0.3s; }
+    .menu a:hover { color: var(--accent-green); font-weight: bold; }
+
+    /* USUARIO */
+    .user-menu { display: flex; align-items: center; height: 100%; }
+    .user-icon {
+        width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
+        border: 2px solid var(--accent-green); object-fit: cover;
+    }
+    .dropdown {
+        position: absolute; right: 50px; top: 65px; background: #000;
+        border-radius: 0 0 10px 10px; display: none; flex-direction: column;
+        width: 150px; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+    .dropdown a { padding: 12px 15px; text-decoration: none; color: white; font-size: 14px; }
+    .dropdown a:hover { background: var(--accent-green); color: #000; }
+    .show { display: flex; }
+
+    /* CONTENIDO PRINCIPAL (DOCUMENTACIÓN) */
+    .doc-layout {
+        padding: 120px 50px 60px;
+        max-width: 900px; 
+        margin: 0 auto; 
+        flex: 1;
+        width: 100%;
+    }
+
+    .doc-header h1 { font-size: 42px; color: var(--accent-green); margin-bottom: 10px; }
+    .doc-header .subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 40px; }
+    .doc-header p { font-size: 16px; color: var(--text-light); line-height: 1.7; margin-bottom: 30px; }
+
+    /* SECCIONES LEGALES */
+    .legal-section {
+        background: var(--card-bg);
+        border-left: 4px solid var(--accent-green);
+        padding: 30px;
+        border-radius: 0 12px 12px 0;
+        margin-bottom: 35px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    .legal-section h2 { color: var(--accent-green); font-size: 22px; margin-bottom: 15px; font-weight: 600; }
+    .legal-section h3 { color: white; font-size: 16px; margin-top: 20px; margin-bottom: 10px; font-weight: 600; }
+    .legal-section p { font-size: 15px; color: var(--text-light); line-height: 1.6; margin-bottom: 15px; }
+
+    /* LISTAS ESTILIZADAS EN MODO OSCURO */
+    .legal-list { list-style: none; margin-top: 10px; }
+    .legal-list li { 
+        font-size: 14px; 
+        color: var(--text-muted); 
+        line-height: 1.6; 
+        margin-bottom: 12px; 
+        padding-left: 20px; 
+        position: relative; 
+    }
+    .legal-list li::before {
+        content: "•";
+        color: var(--accent-green);
+        font-weight: bold;
+        position: absolute;
+        left: 0;
+        font-size: 18px;
+        top: -2px;
+    }
+    .legal-list strong { color: white; font-weight: 600; }
+
+    /* BOTÓN VOLVER */
+    .action-container { text-align: center; margin-top: 50px; }
+    .btn-back {
+        display: inline-block;
+        padding: 12px 35px;
+        background: transparent;
+        border: 2px solid var(--accent-green);
+        color: var(--accent-green);
+        text-decoration: none;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: bold;
+        transition: 0.3s ease;
+    }
+    .btn-back:hover {
+        background: var(--accent-green);
+        color: #000;
+        box-shadow: 0 0 15px rgba(129, 199, 132, 0.4);
+    }
+
+    /* FOOTER OSCURO */
+    .footer-dark {
+        background: var(--nav-black);
+        padding: 40px 50px;
+        text-align: center;
+        border-top: 2px solid var(--accent-green);
+        color: var(--text-muted);
+        font-size: 14px;
+        margin-top: 40px;
+    }
+
+    /* RESPONSIVE */
+    @media(max-width: 768px) {
+        .navbar { padding: 0 20px; }
+        .doc-layout { padding: 100px 20px 40px; }
+        .doc-header h1 { font-size: 32px; }
+        .legal-section { padding: 20px; }
+    }
+</style>
+</head>
+<body>
+
+<div class="navbar">
+    <div class="titulo">ConSiente</div>
+    <div class="menu-container">
+        <ul class="menu">
+            <li><a href="menu.html">Home</a></li>
+            <li><a href="nosotros.html">Sobre nosotros</a></li>
+            <li><a href="ODS.html">ODS</a></li>
+        </ul>
+        <div class="user-menu">
+            <img src="imagenes/usuario.png" class="user-icon" id="userBtn" alt="Usuario">
+            <div class="dropdown" id="dropdownMenu">
+                <a href="config.html">Configuración</a>
+                <a href="index.html" onclick="cerrarSesion()">Cerrar sesión</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="doc-layout animar">
+    
+    <!-- ENCABEZADO -->
+    <div class="doc-header animar delay-1">
+        <h1>Términos, Condiciones y Privacidad</h1>
+        <div class="subtitle">Última actualización: 03 Junio de 2026 | Documentación Legal ConSiente</div>
+        <p>El presente documento constituye el acuerdo legal vinculante que regula el acceso y uso de este Sitio Web. Al navegar, registrarse o interactuar en nuestra plataforma, el usuario declara haber leído, comprendido y aceptado en su totalidad las cláusulas aquí expuestas.</p>
+    </div>
+
+    <!-- SECCIONES DE CONTENIDO -->
+    <div class="animar delay-2">
+        
+        <!-- SECCIÓN 1 -->
+        <div class="legal-section">
+            <h2>1. Términos y Condiciones de Uso</h2>
+            <p><strong>Estatus del usuario:</strong> El acceso al Sitio Web le atribuye la condición de usuario, obligándose a realizar un uso correcto, lícito y dligente del ecosistema tecnológico, respondiendo ante cualquier daño directo o indirecto derivado del incumplimiento de estas normas.</p>
+            <ul class="legal-list">
+                <li><strong>Restricciones de uso:</strong> Queda estrictamente prohibida la ingeniería inversa, la extracción automatizada de datos (web scraping) o cualquier actividad orientada a vulnerar la estabilidad de los servidores.</li>
+                <li><strong>Propiedad Intelectual:</strong> Todos los contenidos, logotipos, arquitecturas informáticas y diseños gráficos son propiedad exclusiva de la organización o de sus licenciantes, estando protegidos por las leyes internacionales de derechos de autor.</li>
+                <li><strong>Cláusula de Exención de Responsabilidad:</strong> La plataforma se proporciona "tal cual", sin garantías explícitas o implícitas sobre la disponibilidad ininterrumpida del servicio o la total ausencia de errores técnicos puntuales.</li>
+            </ul>
+        </div>
+
+        <!-- SECCIÓN 2 -->
+        <div class="legal-section">
+            <h2>2. Consentimiento Expreso</h2>
+            <p><strong>Manifestación de voluntad:</strong> A través de las interacciones en el portal, los usuarios otorgan su consentimiento inequívoco respecto a las políticas institucionales vigentes.</p>
+            <ul class="legal-list">
+                <li><strong>Aceptación de directrices:</strong> Consentimiento formal e íntegro sobre las normativas operativas establecidas en este texto.</li>
+                <li><strong>Tratamiento de información:</strong> Autorización explícita para los procesos automatizados de recopilación, análisis interno y conservación de los datos especificados a continuación.</li>
+            </ul>
+        </div>
+
+        <!-- SECCIÓN 3 -->
+        <div class="legal-section">
+            <h2>3. Política de Privacidad y Recopilación de Datos</h2>
+            <p><strong>Principio de minimización:</strong> Nos comprometemos a recolectar únicamente aquellos registros indispensables para garantizar una experiencia óptima y el correcto despliegue técnico de las funcionalidades solicitadas.</p>
+
+            <h3>A. Datos recopilados de forma automática</h3>
+            <p>Nuestra infraestructura recopila registros técnicos de auditoría de manera estandarizada al registrar actividad en el Sitio:</p>
+            <ul class="legal-list">
+                <li><strong>Dirección IP:</strong> Almacenada con fines estrictos de geolocalización básica, diagnóstico de servidores y mitigación de ciberataques.</li>
+                <li><strong>Detalles de hardware y software:</strong> Información técnica sobre el tipo de navegador, sistema operativo y resolución de pantalla para asegurar la adaptabilidad del entorno.</li>
+                <li><strong>Contenido visualizado:</strong> Métricas de navegación interna para la optimización continua del rendimiento de la interfaz.</li>
+            </ul>
+
+            <h3>B. Datos recopilados de forma no automática</h3>
+            <p>Datos proporcionados de manera voluntaria e informada a través de las acciones del usuario dentro de la plataforma:</p>
+            <ul class="legal-list">
+                <li><strong>Identificación personal:</strong> Nombre completo y salario mensual para la correcta personalización del perfil.</li>
+                <li><strong>Canales de comunicación:</strong> Dirección de correo electrónico utilizada como credencial de acceso unificada y canal formal de notificaciones.</li>
+                <li><strong>Información de pago:</strong> Datos transaccionales cifrados gestionados bajo estrictas normativas bancarias de seguridad.</li>
+            </ul>
+        </div>
+
+        <!-- SECCIÓN 4 -->
+        <div class="legal-section">
+            <h2>4. Finalidad y Transferencia de Información</h2>
+            <p><strong>Uso legítimo:</strong> Los datos personales obtenidos serán tratados exclusivamente para proveer los servicios del portal, mejorar la seguridad del sistema y personalizar los informes internos de cada usuario.</p>
+            
+            <h3>A. Acceso por parte de empleados</h3>
+            <p><strong>Principio del menor privilegio:</strong> El acceso a la información confidencial está estrictamente restringido a aquellos empleados autorizados cuya función operativa sea crítica para la entrega y mantenimiento del servicio bajo contratos de confidencialidad.</p>
+
+            <h3>B. Divulgaciones legales a terceros</h3>
+            <p><strong>Garantía de no comercialización:</strong> Bajo ninguna circunstancia se venderá, alquilará o distribuirá la información a terceras empresas, salvo en los siguientes escenarios excepcionales:</p>
+            <ul class="legal-list">
+                <li><strong>Requerimientos legales:</strong> Mandato expreso emitido por una autoridad judicial competente.</li>
+                <li><strong>Defensa corporativa:</strong> Acciones necesarias para auditar, probar o proteger los derechos legales y la seguridad de la organización.</li>
+                <li><strong>Procesos de fusión:</strong> Transferencia de activos en caso de adquisición total o parcial de la empresa por parte de potenciales compradores calificados.</li>
+            </ul>
+        </div>
+
+        <!-- SECCIÓN 5 -->
+        <div class="legal-section">
+            <h2>5. Seguridad, Retención y Derechos</h2>
+            <p><strong>Cifrado Avanzado:</strong> Implementamos capas de seguridad técnica robustas para proteger el flujo de datos. No obstante, se notifica al usuario que ningún sistema de transmisión en Internet es invulnerable al cien por ciento.</p>
+            <ul class="legal-list">
+                <li><strong>Plazos de retención:</strong> Los datos se conservarán únicamente durante el tiempo estrictamente necesario para cumplir con los fines descritos o hasta que el usuario ejerza su derecho de supresión.</li>
+                <li><strong>Protección de menores:</strong> No procesamos datos de menores de 13 años. Si detectamos un registro inválido, se procederá a su eliminación fulminante de los servidores.</li>
+                <li><strong>Derechos ARCO:</strong> Todo usuario mantiene el control legal absoluto sobre su información, pudiendo solicitar en cualquier momento el acceso, rectificación, cancelación u oposición de sus registros contactando de forma directa al responsable de privacidad.</li>
+            </ul>
+        </div>
+
+        <!-- SECCIÓN 6 -->
+        <div class="legal-section">
+            <h2>6. Modificaciones y Canales Oficiales</h2>
+            <p><strong>Actualizaciones del acuerdo:</strong> Nos reservamos el derecho de modificar este marco normativo para adaptarlo a nuevas exigencias legislativas. Las variaciones se verán reflejadas en la fecha de actualización superior, siendo responsabilidad del usuario revisar periódicamente el documento.</p>
+            <p><strong>Información de contacto:</strong> Ante cualquier duda, reclamación o aclaración sobre los presentes términos o el tratamiento de sus datos personales, puede canalizar su consulta directamente con nuestro Responsable de Privacidad mediante la sección de soporte técnico de la plataforma.</p>
+        </div>
+
+        <!-- BOTÓN DE RETORNO -->
+        <div class="action-container">
+            <a href="menu.html" class="btn-back">Regresar al Panel</a>
+        </div>
+
+    </div>
+</div>
+
+<footer class="footer-dark">
+    &copy; 2026 ConSiente - Compromiso con el consumo responsable y la educación financiera.
+</footer>
+
+<script>
+    const btn = document.getElementById("userBtn");
+    const menu = document.getElementById("dropdownMenu");
+
+    btn.onclick = () => menu.classList.toggle("show");
+
+    window.onclick = (e) => {
+        if (!e.target.matches('#userBtn')) {
+            menu.classList.remove("show");
+        }
+    };
+
+    function cerrarSesion(){
+        sessionStorage.removeItem("sesionActiva");
+        window.location.href="index.html";
+    }
+</script>
+
+</body>
+</html>

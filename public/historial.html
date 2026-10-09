@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConSiente</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:"Segoe UI",sans-serif; }
+        
+        /* Fondo con una luz difuminada central muy ligera */
+        body { 
+            background: radial-gradient(circle at 50% 50%, #27312a 0%, #111412 100%); 
+            min-height: 100vh; 
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* NAVBAR */
+        .navbar { 
+            position:fixed; 
+            top:0; 
+            left: 0;
+            width:100%; 
+            height:65px; 
+            background:#0d0d0d; 
+            display:flex; 
+            justify-content:space-between; 
+            align-items:center; 
+            padding:0 25px; 
+            z-index:1000; 
+            border-bottom: 1px solid rgba(129, 199, 132, 0.25); 
+        }
+        .logo-nombre { display:flex; align-items:center; gap:10px; }
+        .titulo { font-size:20px; font-weight:bold; color:#ffffff; letter-spacing: 0.5px; }
+        .logo { width:30px; }
+        .menu { display:flex; align-items:center; gap:25px; }
+        .menu a { text-decoration:none; color:#e0e0e0; font-size: 14px; transition: 0.3s ease; }
+        .menu a:hover { color: #81c784; }
+        
+        /* MENÚ DE USUARIO DESPLEGABLE */
+        .user-menu { position: relative; display: flex; align-items: center; }
+        .user-icon { width: 38px; height: 38px; border-radius: 50%; cursor: pointer; border: 1.5px solid rgba(129, 199, 132, 0.5); transition: 0.3s ease; }
+        .user-icon:hover { border-color: #81c784; box-shadow: 0 0 10px rgba(129, 199, 132, 0.4); }
+        
+        .dropdown-menu {
+            position: absolute;
+            top: 50px;
+            right: 0;
+            background: #161616;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            width: 180px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1010;
+            backdrop-filter: blur(10px);
+        }
+        .dropdown-menu a, .dropdown-menu button {
+            background: transparent;
+            border: none;
+            color: #e0e0e0;
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 14px;
+            text-decoration: none;
+            cursor: pointer;
+            width: 100%;
+            transition: 0.2s ease;
+        }
+        .dropdown-menu a:hover, .dropdown-menu button:hover {
+            background: rgba(129, 199, 132, 0.15);
+            color: #81c784;
+        }
+        .dropdown-menu .btn-logout {
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .dropdown-menu .btn-logout:hover {
+            background: rgba(129, 199, 132, 0.1);
+            color: #81c784;
+        }
+
+        /* CONTENEDOR ESTRUCTURAL (SIDEBAR + MAIN) */
+        .main-layout {
+            display: flex;
+            margin-top: 65px;
+            min-height: calc(100vh - 65px);
+            width: 100%;
+        }
+
+        /* SIDEBAR */
+        .sidebar { 
+            width: 280px; 
+            min-width: 280px;
+            background:#121212; 
+            border-right: 1px solid rgba(129, 199, 132, 0.15); 
+            padding: 25px 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .sidebar-menu { display: flex; flex-direction: column; }
+        .sidebar button { 
+            width:100%; padding:16px; margin-bottom:15px; border:none; border-radius:12px; background:#1b1b1b; color:#ffffff; font-size:15px; cursor:pointer; text-align:left; border-bottom:1px solid rgba(130,199,132,0.2); transition: 0.3s ease;
+        }
+        .sidebar button:hover { 
+            background:#1c2d20; color: #81c784; border-bottom:1px solid rgba(130,199,132,0.5); padding-left: 22px;
+        }
+        .sidebar button.btn-active { background:#1c2d20; color: #81c784; border-bottom:1px solid rgba(130,199,132,0.5); padding-left: 22px; }
+
+        .footer-privacidad { padding-top: 15px; text-align: center; }
+        .footer-privacidad a { color: rgba(255, 255, 255, 0.5); text-decoration: none; font-size: 13px; font-weight: 500; transition: 0.3s ease; }
+        .footer-privacidad a:hover { color: #81c784; }
+
+        /* CONTENEDOR PRINCIPAL DOS COLUMNAS */
+        .container { 
+            flex: 1;
+            padding: 40px; 
+            display: flex; 
+            gap: 25px; 
+            max-width: 1300px;
+            margin: 0 auto;
+            align-items: flex-start;
+        }
+        
+        /* Cajas de Secciones (Cards) */
+        .card-seccion { 
+            background: rgba(22, 22, 22, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 20px; 
+            padding: 30px; 
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08); 
+            flex: 1;
+        }
+        .card-tabla { flex: 1.2; overflow-x: auto; }
+
+        h2, h3 { color: #81c784; font-weight: 600; letter-spacing: 0.3px; }
+        h2 { margin-bottom: 20px; }
+
+        /* DISEÑO CALENDARIO PREMIUM */
+        .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .cal-header h2 { font-size: 20px; text-transform: capitalize; margin-bottom: 0; }
+        .cal-controles { display: flex; align-items: center; gap: 8px; }
+        .cal-controles button { background: #1a1a1a; color: white; border: 1px solid rgba(255,255,255,0.1); padding: 8px 14px; border-radius: 8px; cursor: pointer; transition: 0.3s; font-size: 14px; font-weight: 500; }
+        .cal-controles button:hover { background: #1c2d20; color: #81c784; border-color: rgba(129,199,132,0.4); }
+        #selector-fecha { background: #1a1a1a; color: white; border: 1px solid rgba(255,255,255,0.1); padding: 7px; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+        #selector-fecha:focus { outline: none; border-color: #81c784; }
+
+        .cal-grid { display:grid; grid-template-columns:repeat(7, 1fr); gap:10px; margin-top:15px; }
+        .cal-date { padding:12px 5px; text-align:center; background:#161616; border-radius:10px; cursor:pointer; border:1.5px solid transparent; font-size: 14px; transition: 0.2s ease; }
+        .cal-date:hover { background: #222; border-color: rgba(255,255,255,0.1); }
+        .cal-date.today { background: #2e7d32 !important; color: white; font-weight: bold; box-shadow: 0 4px 12px rgba(46,125,50,0.4); }
+        .cal-date.has-gasto { border-color: rgba(129, 199, 132, 0.4); background: rgba(46, 125, 50, 0.15); color: #81c784; font-weight: 500; }
+        .cal-date.selected { background: rgba(129, 199, 132, 0.25); border: 1.5px dashed #81c784; color: #ffffff; }
+
+        /* TABLA DE MOVIMIENTOS ELEGANTE */
+        table { width:100%; border-collapse:collapse; margin-top:5px; }
+        th { color:#81c784; text-align:left; padding:14px 10px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid rgba(129,199,132,0.3); }
+        td { padding:14px 10px; border-bottom:1px solid rgba(255,255,255,0.05); color: #e0e0e0; font-size: 15px; }
+        tr:hover td { background: rgba(129,199,132,0.04); color: #ffffff; }
+        
+        .btn-edit-gasto { background: transparent; color: #81c784; border: none; cursor: pointer; font-size: 14px; padding: 6px 10px; border-radius: 6px; transition: 0.2s; display: inline-flex; align-items: center; gap: 5px; background: rgba(129,199,132,0.1); }
+        .btn-edit-gasto:hover { background: #2e7d32; color: white; }
+
+        /* MODAL*/
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.445); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 2000; }
+        .modal-content { background: #161616c9; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 30px; width: 380px; color: white; box-shadow: 0 15px 40px rgba(0,0,0,0.8); position: relative; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-header h3 { color: #81c784; margin: 0; font-size: 18px; }
+        .modal-cerrar { background: transparent; border: none; color: #aaa; font-size: 26px; cursor: pointer; line-height: 1; transition: 0.2s; }
+        .modal-cerrar:hover { color: #81c784; }
+
+        .modal-group { margin-bottom: 18px; display: flex; flex-direction: column; gap: 6px; }
+        .modal-group label { font-size: 13px; color: #b0b0b0; text-transform: uppercase; letter-spacing: 0.5px; }
+        .modal-group input { background: #222; border: 1px solid rgba(255,255,255,0.15); color: white; padding: 12px; border-radius: 10px; font-size: 15px; transition: 0.3s; }
+        .modal-group input:focus { outline: none; border-color: #81c784; background: #2a2a2a; }
+        
+        .modal-acciones { display: flex; justify-content: space-between; margin-top: 25px; gap: 12px; }
+        .modal-acciones button { padding: 13px; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 14px; flex: 1; transition: 0.3s ease; }
+        .btn-guardar { background: #2e7d32; color: white; box-shadow: 0 4px 12px rgba(46,125,50,0.2); }
+        .btn-guardar:hover { background: #388e3c; }
+        .btn-eliminar { background: #951b1b; color: #ffdfda; border: 1px solid rgba(129,199,132,0.3); }
+        .btn-eliminar:hover { background: #5c1010; color: #ffffff; }
+
+        /* RESPONSIVIDAD */
+        @media (max-width: 900px) {
+            .main-layout { flex-direction: column; }
+            .sidebar { width: 100%; min-width: 100%; height: auto; border-right: none; border-bottom: 1px solid rgba(129, 199, 132, 0.15); padding: 15px; }
+            .sidebar button { margin-bottom: 8px; }
+            .container { flex-direction: column-reverse; padding: 20px; width: 100%; }
+            .card-seccion { width: 100%; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="navbar">
+        <div class="logo-nombre">
+            <span class="titulo">ConSiente</span>
+            <img src="imagenes/logo.png" class="logo" alt="Logo">
+        </div>
+        <div class="menu">
+            <a href="menu.html">Home</a>
+            <a href="nosotros.html">Sobre nosotros</a>
+            <a href="ODS.html">ODS</a>
+            
+            <div class="user-menu">
+                <img src="imagenes/usuario.png" class="user-icon" id="userBtn" alt="Usuario">
+                <div class="dropdown-menu" id="userDropdown">
+                    <a href="config.html">Configuración</a>
+                   <a href="index.html" onclick="cerrarSesion()">Cerrar sesión</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-layout">
+        
+        <div class="sidebar">
+            <div class="sidebar-menu">
+                <button onclick="window.location.href='menu.html'">📊 Mis Estadísticas</button>
+                <button onclick="window.location.href='consejos.html'">💡 Consejos de Ahorro</button>
+                <button onclick="window.location.href='agregar.html'">➕ Agregar gasto</button>
+                <button onclick="window.location.href='historial.html'">📅 Historial</button>
+                <button onclick="window.location.href='semaforo.html'">🚦 Semáforo Financiero</button>
+            </div>
+            <div class="footer-privacidad">
+                <a href="privacidadentro.html">Políticas de Privacidad</a>
+            </div>
+        </div>
+
+        <div class="container">
+            
+            <div class="card-seccion card-tabla">
+                <h2>Historial de Movimientos</h2>
+                <table>
+                    <thead>
+                        <tr><th>Tipo</th><th>Monto</th><th>Fecha</th><th>Acciones</th></tr>
+                    </thead>
+                    <tbody id="tablaGastosCuerpo"></tbody>
+                </table>
+            </div>
+            
+            <div class="card-seccion">
+                <div class="cal-header">
+                    <h2 id="calMesAnio"></h2>
+                    <div class="cal-controles">
+                        <button id="mes-anterior" title="Mes anterior">&lt;</button>
+                        <button id="btn-hoy">Hoy</button>
+                        <button id="mes-siguiente" title="Mes siguiente">&gt;</button>
+                        <input type="date" id="selector-fecha" title="Seleccionar fecha específica"/>
+                    </div>
+                </div>
+                <div class="cal-grid" id="calendarioGrid"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalEditar">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Editar Gasto</h3>
+                <button class="modal-cerrar" onclick="cerrarModal()" title="Cerrar ventana">&times;</button>
+            </div>
+
+            <input type="hidden" id="editGastoId">
+            
+            <div class="modal-group">
+                <label for="editMonto">Monto ($):</label>
+                <input type="number" id="editMonto" step="0.01" required>
+            </div>
+            
+            <div class="modal-group">
+                <label for="editCategoria">Categoría:</label>
+                <input type="text" id="editCategoria" required>
+            </div>
+            
+            <div class="modal-group">
+                <label for="editFecha">Fecha:</label>
+                <input type="date" id="editFecha" required>
+            </div>
+            
+            <div class="modal-acciones">
+                <button type="button" class="btn-guardar" onclick="guardarCambiosGasto()">Guardar</button>
+                <button type="button" class="btn-eliminar" onclick="eliminarGasto()">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let todosLosGastos = [];
+        let fechaActualVista = new Date();
+
+        // --- LÓGICA DEL MENU DESPLEGABLE DE USUARIO ---
+        const userBtn = document.getElementById("userBtn");
+        const userDropdown = document.getElementById("userDropdown");
+
+        userBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const estaAbierto = userDropdown.style.display === "flex";
+            userDropdown.style.display = estaAbierto ? "none" : "flex";
+        });
+
+        document.addEventListener("click", () => {
+            userDropdown.style.display = "none";
+        });
+
+        function cerrarSesion() {
+            localStorage.removeItem("token");
+            alert("Sesión cerrada correctamente.");
+            window.location.href = "login.html";
+        }
+
+        // --- CARGA DE DATOS API ---
+        async function cargarDatos() {
+            const token = localStorage.getItem("token");
+            try {
+                const response = await fetch("http://localhost:3000/api/lista-gastos", {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                const data = await response.json();
+                todosLosGastos = data; 
+                
+                generarCalendario();
+            } catch (e) { 
+                console.error("Error al cargar:", e);
+                generarCalendario();
+            }
+        }
+
+        function renderizarTabla(gastos) {
+            const tbody = document.getElementById("tablaGastosCuerpo");
+            tbody.innerHTML = "";
+            
+            if (gastos.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#aaa; padding: 20px;">No hay movimientos</td></tr>`;
+                return;
+            }
+            
+            gastos.forEach(g => {
+                const id = g.id || g._id; 
+                const tipo = g.categoria || "Sin tipo";
+                const monto = g.cantidad || g.monto || 0;
+                
+                const dateObj = new Date(g.fecha);
+                const fechaFormateada = new Date(dateObj.getTime() + dateObj.getTimezoneOffset() * 60000).toLocaleDateString();
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${tipo}</td>
+                        <td style="font-weight: 600; color: #fff;">$${parseFloat(monto).toFixed(2)}</td>
+                        <td>${fechaFormateada}</td>
+                        <td>
+                            <button class="btn-edit-gasto" onclick="abrirModalEditar('${id}', ${monto}, '${tipo}', '${g.fecha}')" title="Editar">Editar</button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        function generarCalendario() {
+            const grid = document.getElementById("calendarioGrid");
+            const mes = fechaActualVista.getMonth();
+            const anio = fechaActualVista.getFullYear();
+            const hoy = new Date();
+            
+            document.getElementById("calMesAnio").innerText = fechaActualVista.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+            
+            grid.innerHTML = '';
+            ['Do','Lu','Ma','Mi','Ju','Vi','Sá'].forEach(d => {
+                grid.innerHTML += `<div style="font-size:12px; color:#81c784; text-align:center; font-weight:bold; padding-bottom: 5px;">${d}</div>`;
+            });
+            
+            const primerDiaMes = new Date(anio, mes, 1).getDay();
+            const totalDias = new Date(anio, mes + 1, 0).getDate();
+            
+            for(let i = 0; i < primerDiaMes; i++) {
+                grid.appendChild(document.createElement('div'));
+            }
+            
+            for(let d = 1; d <= totalDias; d++) {
+                const filtrados = todosLosGastos.filter(g => {
+                    const f = new Date(g.fecha);
+                    return f.getDate() === d && f.getMonth() === mes && f.getFullYear() === anio;
+                });
+
+                const esHoy = (d === hoy.getDate() && mes === hoy.getMonth() && anio === hoy.getFullYear());
+                const div = document.createElement('div');
+                
+                div.className = `cal-date ${esHoy ? 'today' : ''} ${filtrados.length > 0 ? 'has-gasto' : ''}`;
+                div.innerText = d;
+
+                div.onclick = () => {
+                    document.querySelectorAll('.cal-date').forEach(el => el.classList.remove('selected'));
+                    div.classList.add('selected');
+                    renderizarTabla(filtrados);
+                };
+
+                grid.appendChild(div);
+            }
+            const gastosDelMes = todosLosGastos.filter(g => {
+                const f = new Date(g.fecha);
+                return f.getMonth() === mes && f.getFullYear() === anio;
+            });
+            renderizarTabla(gastosDelMes);
+        }
+
+        function abrirModalEditar(id, monto, categoria, fechaRaw) {
+            document.getElementById("editGastoId").value = id;
+            document.getElementById("editMonto").value = monto;
+            document.getElementById("editCategoria").value = categoria;
+            
+            const f = new Date(fechaRaw);
+            const yyyy = f.getFullYear();
+            const mm = String(f.getMonth() + 1).padStart(2, '0');
+            const dd = String(f.getDate()).padStart(2, '0');
+            document.getElementById("editFecha").value = `${yyyy}-${mm}-${dd}`;
+            
+            document.getElementById("modalEditar").style.display = "flex";
+        }
+
+        function cerrarModal() {
+            document.getElementById("modalEditar").style.display = "none";
+        }
+
+        async function guardarCambiosGasto() {
+            const id = document.getElementById("editGastoId").value;
+            const monto = document.getElementById("editMonto").value;
+            const categoria = document.getElementById("editCategoria").value;
+            const fecha = document.getElementById("editFecha").value;
+            const token = localStorage.getItem("token");
+
+            try {
+                const response = await fetch(`http://localhost:3000/api/lista-gastos/${id}`, {
+                    method: "PUT",
+                    headers: { 
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ cantidad: monto, monto: monto, categoria, fecha })
+                });
+
+                if(response.ok) {
+                    alert("Gasto actualizado con éxito.");
+                    cerrarModal();
+                    cargarDatos(); 
+                } else {
+                    alert("Hubo un error al guardar los cambios.");
+                }
+            } catch(e) { console.error("Error:", e); }
+        }
+
+        async function eliminarGasto() {
+            const id = document.getElementById("editGastoId").value;
+            const token = localStorage.getItem("token");
+
+            const confirmar = confirm("¿Deseas eliminar este gasto?");
+            if(!confirmar) return;
+
+            try {
+                const response = await fetch(`http://localhost:3000/api/lista-gastos/${id}`, {
+                    method: "DELETE",
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+
+                if(response.ok) {
+                    alert("Gasto eliminado.");
+                    cerrarModal();
+                    cargarDatos(); 
+                } else {
+                    alert("No se pudo eliminar el movimiento.");
+                }
+            } catch(e) { console.error("Error:", e); }
+        }
+
+        document.getElementById('mes-anterior').addEventListener('click', () => {
+            fechaActualVista.setMonth(fechaActualVista.getMonth() - 1);
+            generarCalendario();
+        });
+
+        document.getElementById('mes-siguiente').addEventListener('click', () => {
+            fechaActualVista.setMonth(fechaActualVista.getMonth() + 1);
+            generarCalendario();
+        });
+
+        document.getElementById('btn-hoy').addEventListener('click', () => {
+            fechaActualVista = new Date();
+            generarCalendario();
+        });
+
+        document.getElementById('selector-fecha').addEventListener('change', (e) => {
+            if(e.target.value) {
+                const nuevaFecha = new Date(e.target.value.replace(/-/g, '\/'));
+                fechaActualVista = nuevaFecha;
+                generarCalendario();
+                
+                setTimeout(() => {
+                    const dias = document.querySelectorAll('.cal-date');
+                    dias.forEach(div => {
+                        if(div.innerText == nuevaFecha.getDate()) div.click();
+                    });
+                }, 50);
+            }
+        });
+
+        document.addEventListener("DOMContentLoaded", cargarDatos);
+    </script>
+</body>
+</html>
