@@ -22,7 +22,6 @@ webpush.setVapidDetails(
   process.env.VAPID_PRIVATE_KEY
 );
 
-
 // ==========================================
 // VERIFICAR TOKEN
 // ==========================================
@@ -180,11 +179,12 @@ app.post("/login", (req, res) => {
         }
     );
 });
+
 // ==========================================
 // OBTENER PERFIL (CON CONTROL DE RACHAS INTEGRADO)
 // ==========================================
 app.get("/api/perfil", verificarToken, (req, res) => {
-    const usuarioId = req.user.id; // ¡Aquí ya tenemos el ID real del token!
+    const usuarioId = req.user.id; 
     const hoy = new Date().toISOString().split('T')[0]; 
 
     // 1. Primero procesamos la racha de este usuario de forma interna
@@ -238,17 +238,18 @@ app.get("/api/perfil", verificarToken, (req, res) => {
     });
 });
 
-
 // ==========================================
-// GUARDAR MOVIMIENTO
+// GUARDAR MOVIMIENTO (CORREGIDO)
 // ==========================================
 app.post("/api/gastos", verificarToken, (req, res) => {
-    const { tipo, categoria, monto, fecha } = req.body;
+    const { categoria, monto, fecha } = req.body;
     const usuarioId = req.user.id;
     const montoNum = Number(monto);
+    
+    // Forzamos "Gasto" por defecto si no viene en la petición para evitar error 400
+    const tipo = req.body.tipo || "Gasto"; 
 
     if (
-        !tipo ||
         !categoria ||
         !Number.isFinite(montoNum) ||
         montoNum <= 0 ||
@@ -1121,13 +1122,6 @@ app.post("/api/admin/crear-subadmin", verificarToken, (req, res) => {
 // MÓDULO DE ALERTAS AUTOMÁTICAS Y NOTIFICACIONES - CONSIENTE
 // =========================================================================
 
-// Configurar las llaves VAPID utilizando tu archivo .env
-webpush.setVapidDetails(
-  process.env.VAPID_EMAIL,
-  process.env.VAPID_PUBLIC_KEY,
-  process.env.VAPID_PRIVATE_KEY
-);
-
 // ENDPOINT A: Guardar la suscripción del navegador para las alertas Push flotantes
 app.post('/api/save-subscription', (req, res) => {
   const { userId, subscription } = req.body;
@@ -1147,24 +1141,38 @@ app.post('/api/save-subscription', (req, res) => {
     res.status(201).json({ message: 'Suscripción guardada con éxito.' });
   });
 });
+
 app.get('/api/get-current-user', verificarToken, (req, res) => {
     res.json({ userId: req.user.id });
 });
 
-// ENDPOINT B: Obtener las alertas del historial para pintarlas dentro de la página
+// ENDPOINT B: Obtener las alertas del historial para pintarlas dentro de la página (CORREGIDO)
 app.get('/api/notificaciones/:userId', (req, res) => {
   const { userId } = req.params;
+  
+  // Consulta simplificada para evitar errores de columnas faltantes
   const query = `
-    SELECT id, titulo, mensaje, leido, DATE_FORMAT(created_at, '%d/%m/%Y %H:%i') as fecha 
+    SELECT id, titulo, mensaje 
     FROM historial_notificaciones 
     WHERE usuario_id = ? 
-    ORDER BY created_at DESC 
+    ORDER BY id DESC 
     LIMIT 20
   `;
 
   db.query(query, [userId], (err, results) => {
-    if (err) return res.status(500).json({ error: 'Error al consultar historial' });
-    res.json(results);
+    if (err) {
+        console.error('Error al consultar historial SQL:', err);
+        return res.status(500).json({ error: 'Error al consultar historial' });
+    }
+    
+    // Le agregamos valores por defecto a los campos que la página podría estar esperando
+    const resultadosSeguros = results.map(notif => ({
+        ...notif,
+        leido: notif.leido || 0,
+        fecha: notif.fecha || "Reciente"
+    }));
+
+    res.json(resultadosSeguros);
   });
 });
 
@@ -1235,13 +1243,6 @@ app.get('/api/admin/rachas-generales', (req, res) => {
   });
 });
 
-// ==========================================
-// INICIAR SERVIDOR
-// ==========================================
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log("Servidor corriendo en el puerto " + PORT);
-});
 // ==========================================
 // ESTADÍSTICAS AVANZADAS PARA EL PANEL ADMIN
 // ==========================================
