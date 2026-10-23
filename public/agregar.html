@@ -628,19 +628,17 @@
             }
         }
 
-        // Menú Usuario
+        // DECLARACIÓN DE VARIABLES DEL DOM AL INICIO PARA EVITAR ERRORES DE REFERENCIA
         const btn = document.getElementById("userBtn");
         const menu = document.getElementById("dropdownMenu");
+        const notifBtn = document.getElementById("notifBtn");
+        const notifDropdown = document.getElementById("notifDropdown");
 
         btn.onclick = (e) => {
             e.stopPropagation();
             menu.classList.toggle("show");
             if (notifDropdown) notifDropdown.style.display = "none";
         };
-
-        // Menú Notificaciones
-        const notifBtn = document.getElementById("notifBtn");
-        const notifDropdown = document.getElementById("notifDropdown");
 
         if (notifBtn) {
             notifBtn.onclick = (e) => {
@@ -679,7 +677,6 @@
             notificacionesEstado = [];
             const idsLeidos = obtenerIDsLeidos();
 
-            // 1. Bienvenida
             notificacionesEstado.push({
                 id: "bienvenida",
                 icono: "👋",
@@ -690,7 +687,6 @@
                 destino: "modal_bienvenida"
             });
 
-            // 2. Racha Diaria
             notificacionesEstado.push({
                 id: "racha_diaria",
                 icono: "🔥",
@@ -701,7 +697,6 @@
                 destino: "racha"
             });
 
-            // 3. Metas de Ahorro
             try {
                 const token = localStorage.getItem("token");
                 if (token) {
@@ -775,12 +770,10 @@
             const notif = notificacionesEstado.find(n => n.id === id);
             if (!notif) return;
 
-            // Marcar como leída y guardar de manera permanente
             notif.leida = true;
             guardarIDLeido(id);
             renderizarNotificaciones();
 
-            // Redirección/Acción
             if (notif.destino === "modal_bienvenida") {
                 mostrarModalBienvenida();
             } else if (notif.destino === "metas") {
@@ -799,7 +792,6 @@
             renderizarNotificaciones();
         }
 
-        // Configuración inicial de límites de fecha
         document.addEventListener("DOMContentLoaded", () => {
             const inputFecha = document.getElementById('fechaGasto');
             const hoy = new Date();
@@ -871,13 +863,16 @@
 
         async function guardarGasto() {
             const categoria = document.getElementById('tipoGasto').value;
-            const monto = document.getElementById('cantidadGasto').value;
+            const montoStr = document.getElementById('cantidadGasto').value;
             const fechaStr = document.getElementById('fechaGasto').value;
 
-            if (!categoria || !monto || !fechaStr) {
+            if (!categoria || !montoStr || !fechaStr) {
                 alert("⚠️ Por favor, completa todos los campos.");
                 return;
             }
+
+            // SE CONVIERTE EL MONTO A NÚMERO (PARSE FLOAT)
+            const monto = parseFloat(montoStr);
 
             const fechaSeleccionada = new Date(fechaStr + "T00:00:00");
             const hoy = new Date();
@@ -899,25 +894,38 @@
                 return;
             }
 
-            const response = await fetch("/api/gastos", {
-                method: "POST",
-                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem("token")}` },
-                body: JSON.stringify({ categoria, monto, fecha: fechaStr })
-            });
+            try {
+                const response = await fetch("/api/gastos", {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json", 
+                        "Authorization": `Bearer ${localStorage.getItem("token")}` 
+                    },
+                    body: JSON.stringify({ categoria, monto, fecha: fechaStr })
+                });
 
-            if(response.ok) { 
-                alert("✅ ¡Gasto registrado correctamente!"); 
-                document.getElementById('tipoGasto').value = '';
-                document.getElementById('cantidadGasto').value = '';
-                renderizarGrafica(); 
-            } else {
-                alert("❌ Error al guardar el gasto.");
+                if(response.ok) { 
+                    alert("✅ ¡Gasto registrado correctamente!"); 
+                    document.getElementById('tipoGasto').value = '';
+                    document.getElementById('cantidadGasto').value = '';
+                    renderizarGrafica(); 
+                } else {
+                    // SI HAY ERROR 400, SE CAPTURA LA RESPUESTA PARA VERLA EN CONSOLA
+                    const errorInfo = await response.json().catch(() => ({}));
+                    console.error("Respuesta del Servidor al intentar guardar:", errorInfo);
+                    alert("❌ Error al guardar el gasto. Abre la consola (F12) para ver los detalles.");
+                }
+            } catch (error) {
+                console.error("Error de Red:", error);
+                alert("❌ No se pudo conectar con el servidor.");
             }
         }
         
         renderizarGrafica();
     </script>
-    <script src="/global-notificaciones" defer></script>
+    
+    <!-- SE AGREGA LA EXTENSIÓN .JS PARA EVITAR EL ERROR DE MIME TYPE -->
+    <script src="/global-notificaciones.js" defer></script>
 
 </body>
 </html>
