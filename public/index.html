@@ -6,11 +6,11 @@
 <title>ConSiente</title>
 
 <style>
-* {margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI",sans-serif;}
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI",sans-serif;}
 
 body {
   min-height:100vh;
-  background-color: #0f1110; /* Color base oscuro */
+  background-color: #0f1110;
   overflow-x: hidden;
   overflow-y: auto;
 }
@@ -249,11 +249,11 @@ input:focus { border-color: #66BB6A; }
 }
 .btn-login:hover { background: #388e3c; }
 
-/* HERO / SECCIÓN CENTRAL COMPLETA Y SU CLASE DE FONDO CORREGIDA */
+/* HERO */
 .center {
   position: relative;
   min-height: 100vh;
-  min-height: 100dvh; /* dvh calcula exactamente el alto real de pantallas móviles */
+  min-height: 100dvh;
   height: 100vh;
   height: 100dvh;
   width: 100%;
@@ -266,7 +266,6 @@ input:focus { border-color: #66BB6A; }
   overflow: hidden;
 }
 
-/* Contenedor interno para asegurar la correcta escala del fondo */
 .center-bg {
   position: absolute;
   top: 0;
@@ -277,14 +276,12 @@ input:focus { border-color: #66BB6A; }
   z-index: 1;
 }
 
-/* En computadoras grandes reactivamos el fixed con seguridad */
 @media(min-width: 992px) {
   .center-bg {
     background-attachment: fixed;
   }
 }
 
-/* Asegura que el contenido pase por encima del fondo absolute */
 .center h1, .center p, .center button {
   position: relative;
   z-index: 2;
@@ -389,7 +386,6 @@ p.hero-desc {
   text-shadow: none;
 }
 
-/* Reglas de orden por defecto (Escritorio) */
 .ods-row.left .ods-image-container { order: 0; }
 .ods-row.left .ods-text { order: 1; }
 .ods-row.right .ods-image-container { order: 1; }
@@ -422,7 +418,7 @@ p.hero-desc {
 .checkbox-group a { color: #1976D2; text-decoration: none; font-weight: bold; }
 .checkbox-group a:hover { text-decoration: underline; }
 
-/* --- RESPONSIVO PARA MÓVILES --- */
+/* RESPONSIVO */
 @media(max-width: 850px) {
   .center {
     height: 100vh;
@@ -431,7 +427,7 @@ p.hero-desc {
     min-height: 100dvh;
   }
   .center-bg {
-    background-attachment: scroll !important; /* Desactiva bugs de scroll en navegadores móviles */
+    background-attachment: scroll !important;
   }
   .ods-section {
     padding: 50px 20px;
@@ -761,6 +757,7 @@ passwordRegInput.addEventListener("input", function() {
   else ruleSpecial.classList.remove("valid");
 });
 
+// Lógica de inicio de sesión con redirección inteligente por rol
 document.getElementById("formLogin").addEventListener("submit", async function(e){
   e.preventDefault();
   const correo = document.getElementById("correo").value;
@@ -774,14 +771,24 @@ document.getElementById("formLogin").addEventListener("submit", async function(e
     });
     
     const data = await response.json();
-    alert(data.message);
     
-    if (response.status === 200) {
+    if (response.ok) {
         localStorage.setItem("token", data.token);
         localStorage.setItem("nombreUsuario", data.nombre);
         localStorage.setItem("correoUsuario", data.correo);
         localStorage.setItem("saldoUsuario", data.saldo);
-        window.location.href = "menu.html";
+        localStorage.setItem("rol", data.rol);
+
+        alert(data.message);
+        
+        // Redirección inteligente basada en el rol recibido del backend
+        if (data.rol === "admin") {
+            window.location.href = "admin.html";
+        } else {
+            window.location.href = "menu.html";
+        }
+    } else {
+        alert(data.message || "Error al iniciar sesión.");
     }
   } catch (error) {
     console.error("Error detallado en Login:", error);

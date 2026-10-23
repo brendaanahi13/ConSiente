@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConSiente</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:"Segoe UI",sans-serif; }
+        
+        body { 
+            background: radial-gradient(circle at 50% 50%, #27312a 0%, #111412 100%); 
+            min-height: 100vh; 
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* NAVBAR */
+        .navbar { 
+            position:fixed; top:0; left:0; width:100%; height:65px; background:#0d0d0d; 
+            display:flex; justify-content:space-between; align-items:center; padding:0 25px; 
+            z-index:1000; border-bottom: 1px solid rgba(129, 199, 132, 0.25); 
+        }
+        .logo-nombre { display:flex; align-items:center; gap:10px; }
+        .titulo { font-size:20px; font-weight:bold; color:#ffffff; letter-spacing: 0.5px; }
+        .logo { width:30px; }
+        .menu { display:flex; align-items:center; gap:25px; }
+        .menu a { text-decoration:none; color:#e0e0e0; font-size: 14px; transition: 0.3s ease; }
+        .menu a:hover { color: #81c784; }
+
+        /* NOTIFICACIONES */
+        .notif-wrapper { position: relative; display: flex; align-items: center; }
+        .notif-icon-img {
+            width: 38px; height: 38px; border-radius: 50%; cursor: pointer;
+            border: 1.5px solid rgba(129, 199, 132, 0.5); padding: 6px; object-fit: contain;
+            background: rgba(255, 255, 255, 0.05); transition: 0.3s ease;
+        }
+        .notif-icon-img:hover { border-color: #81c784; background: rgba(129, 199, 132, 0.15); box-shadow: 0 0 10px rgba(129, 199, 132, 0.4); }
+        .notif-badge {
+            position: absolute; top: -2px; right: -2px; background: #ef5350; color: white;
+            font-size: 10px; font-weight: 800; width: 18px; height: 18px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; border: 2px solid #0d0d0d;
+        }
+        .notif-dropdown {
+            position: absolute; right: 0; top: 50px; width: 340px; background: rgba(18, 22, 19, 0.98);
+            backdrop-filter: blur(15px); border-radius: 16px; border: 1px solid rgba(129, 199, 132, 0.25);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.7); display: none; flex-direction: column; z-index: 1200; overflow: hidden;
+        }
+        .notif-header { padding: 14px 18px; background: rgba(255, 255, 255, 0.03); border-bottom: 1px solid rgba(255, 255, 255, 0.08); display: flex; justify-content: space-between; align-items: center; }
+        .notif-header h4 { color: #ffffff; font-size: 14px; margin: 0; font-weight: 700; }
+        .notif-header span { color: #81c784; font-size: 11px; cursor: pointer; font-weight: 600; }
+        .notif-list { max-height: 320px; overflow-y: auto; }
+        .notif-item { padding: 14px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.04); display: flex; gap: 12px; align-items: flex-start; cursor: pointer; transition: all 0.2s ease; }
+        .notif-item:hover { background: rgba(46, 125, 50, 0.2); padding-left: 20px; }
+        .notif-item.unread { background: rgba(129, 199, 132, 0.08); border-left: 3px solid #81c784; }
+        .notif-icon { font-size: 20px; margin-top: 2px; }
+        .notif-detalles { flex: 1; }
+        .notif-titulo-item { font-size: 13px; font-weight: 700; color: #81c784; margin-bottom: 2px; }
+        .notif-texto { font-size: 12px; color: #cccccc; line-height: 1.4; }
+        .notif-fecha { font-size: 10px; color: #888; margin-top: 4px; font-weight: 600; }
+
+        /* USUARIO DROPDOWN */
+        .user-menu { position: relative; display: flex; align-items: center; }
+        .user-icon { width: 38px; height: 38px; border-radius: 50%; cursor: pointer; border: 1.5px solid rgba(129, 199, 132, 0.5); transition: 0.3s ease; }
+        .user-icon:hover { border-color: #81c784; box-shadow: 0 0 10px rgba(129, 199, 132, 0.4); }
+        .dropdown {
+            position: absolute; right: 0; top: 50px; background: rgba(20, 20, 20, 0.98);
+            backdrop-filter: blur(10px); border-radius: 12px; border: 1px solid rgba(129, 199, 132, 0.2);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6); display: none; flex-direction: column; min-width: 160px; overflow: hidden; z-index: 1100;
+        }
+        .dropdown a { padding: 12px 18px; text-decoration: none; color: #ffffff; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.05); transition: 0.2s ease; }
+        .dropdown a:hover { background: rgba(46, 125, 50, 0.3); color: #81c784; }
+        .show { display: flex; }
+
+        /* LAYOUT GENERAL */
+        .main-layout { display: flex; margin-top: 65px; min-height: calc(100vh - 65px); width: 100%; }
+
+        /* SIDEBAR */
+        .sidebar { 
+            width: 280px; min-width: 280px; height: calc(100vh - 65px); position: sticky; top: 65px;
+            background:#121212; border-right: 1px solid rgba(129, 199, 132, 0.15); padding: 25px 15px;
+            display: flex; flex-direction: column; justify-content: space-between; z-index: 90;
+        }
+        .sidebar-menu { display: flex; flex-direction: column; }
+        .sidebar button { 
+            width:100%; padding:16px; margin-bottom:15px; border:none; border-radius:12px; background:#1b1b1b; color:#ffffff;
+            font-size:15px; cursor:pointer; text-align:left; border-bottom:1px solid rgba(130,199,132,0.2); transition: 0.3s ease;
+        }
+        .sidebar button:hover { background:#1c2d20; color: #81c784; border-bottom:1px solid rgba(130,199,132,0.5); padding-left: 22px; }
+        .footer-privacidad { padding-top: 15px; text-align: center; }
+        .footer-privacidad a { color: rgba(255, 255, 255, 0.5); text-decoration: none; font-size: 13px; font-weight: 500; transition: 0.3s ease; }
+        .footer-privacidad a:hover { color: #81c784; }
+
+        /* CONTENEDOR PRINCIPAL */
+        .container { 
+            flex: 1; padding: 35px 40px; display: flex; flex-direction: column; gap: 25px; max-width: 1200px; margin: 0 auto; width: 100%; 
+        }
+
+        /* BANNER SUPERIOR CON FUEGUITOS DE RACHA */
+        .racha-hero-banner {
+            background: rgba(22, 22, 22, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+            padding: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .racha-hero-info h1 { font-size: 26px; color: #ffffff; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+        .racha-hero-info h1 span { color: #ff9800; }
+        .racha-hero-info p { font-size: 13px; color: #a0a0a0; margin-top: 5px; }
+
+        /* BLOQUE DE FUEGUITOS SUPERIOR */
+        .racha-tracker-pill {
+            background: #1b1b1b;
+            border: 1px solid rgba(129, 199, 132, 0.3);
+            border-radius: 14px;
+            padding: 15px 22px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+        }
+        .fuegos-fila { display: flex; gap: 6px; font-size: 20px; }
+        .fuego { filter: grayscale(100%) opacity(0.25); transition: 0.3s ease; }
+        .fuego.activo { filter: grayscale(0%) opacity(1); transform: scale(1.1); text-shadow: 0 0 10px rgba(255, 145, 0, 0.8); }
+        .racha-contador-txt { display: flex; flex-direction: column; text-align: right; }
+        .racha-contador-txt span:first-child { font-size: 11px; color: #a0a0a0; text-transform: uppercase; font-weight: 600; }
+        .racha-contador-txt span:last-child { font-size: 20px; font-weight: bold; color: #81c784; }
+
+        /* GRID DE MISIONES Y PREMIOS (2 COLUMNAS) */
+        .nook-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+        }
+
+        .nook-card {
+            background: rgba(22, 22, 22, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            transition: 0.3s ease;
+        }
+        .nook-card:hover { border-color: rgba(129, 199, 132, 0.4); transform: translateY(-3px); }
+
+        .nook-card-header { font-size: 17px; font-weight: 600; color: #ffffff; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        .nook-card-desc { font-size: 13.5px; color: #b0b0b0; line-height: 1.5; margin-bottom: 20px; }
+
+        /* Círculos de sellos limpios */
+        .sellos-container {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            align-items: center;
+            margin: 15px 0;
+            background: #1b1b1b;
+            padding: 14px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .sello-circulo {
+            width: 38px; height: 38px;
+            background: #0d0d0d;
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: bold;
+            color: #777;
+        }
+        .sello-circulo.completado {
+            background: #2e7d32;
+            border: 2px solid #81c784;
+            color: white;
+            border-style: solid;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.4);
+        }
+
+        .nook-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .recompensa-txt { font-size: 12px; font-weight: 600; color: #81c784; }
+        
+        .btn-reclamar {
+            background: #1b1b1b; color: #666; border: 1px solid rgba(255, 255, 255, 0.1); padding: 9px 18px;
+            border-radius: 10px; font-size: 12px; font-weight: 600; cursor: not-allowed;
+            transition: 0.3s ease;
+        }
+        .btn-reclamar.activo {
+            background: #2e7d32; color: white; cursor: pointer; border-color: #81c784;
+            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.4);
+        }
+        .btn-reclamar.activo:hover { background: #388e3c; }
+        .btn-reclamar:disabled { background: #1b1b1b; color: #555; cursor: not-allowed; border-color: rgba(255,255,255,0.05); }
+
+        @media (max-width: 900px) {
+            .main-layout { flex-direction: column; margin-top: 65px; min-height: auto; }
+            .container { padding: 20px 15px 100px 15px; width: 100%; }
+            .nook-grid { grid-template-columns: 1fr; }
+            .racha-hero-banner { flex-direction: column; gap: 20px; text-align: center; }
+            
+            .sidebar { 
+                position: fixed; bottom: 0; top: auto; left: 0; width: 100%; min-width: 100%; height: 72px; 
+                background: rgba(14, 14, 14, 0.97); backdrop-filter: blur(15px); border-top: 1px solid rgba(129, 199, 132, 0.3); 
+                padding: 0; flex-direction: row; justify-content: space-around; align-items: center; z-index: 1000;
+            }
+            .sidebar-menu { flex-direction: row; width: 100%; height: 100%; justify-content: space-around; align-items: center; }
+            .sidebar button { 
+                width: auto; flex: 1; height: 100%; padding: 10px 2px; margin-bottom: 0; border: none; background: transparent; 
+                font-size: 12px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: #cccccc;
+            }
+            .sidebar button span { font-size: 20px; }
+            .footer-privacidad { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="logo-nombre">
+            <span class="titulo">ConSiente</span>
+            <img src="imagenes/logo.png" class="logo" alt="Logo">
+        </div>
+        <div class="menu">
+            <!-- NOTIFICACIONES -->
+            <div class="notif-wrapper">
+                <img src="imagenes/notificacion.png" class="notif-icon-img" id="notifBtn" alt="Notificaciones" title="Notificaciones">
+                <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
+
+                <div class="notif-dropdown" id="notifDropdown">
+                    <div class="notif-header">
+                        <h4>Notificaciones</h4>
+                        <span onclick="marcarTodasLeidas()">Marcar leídas</span>
+                    </div>
+                    <div class="notif-list" id="notifList"></div>
+                </div>
+            </div>
+
+            <a href="menu.html">Home</a>
+            <a href="nosotros.html">Sobre nosotros</a>
+            <a href="ODS.html">ODS</a>
+            
+            <div class="user-menu">
+                <img src="imagenes/usuario.png" class="user-icon" id="userBtn" alt="Usuario">
+                <div class="dropdown" id="dropdownMenu">
+                    <a href="config.html">Configuración</a>
+                    <a href="index.html" onclick="cerrarSesion()">Cerrar sesión</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-layout">
+        
+        <div class="sidebar">
+            <div class="sidebar-menu">
+                <button onclick="window.location.href='menu.html'"><span>📊</span> Estadísticas</button>
+                <button onclick="window.location.href='agregar.html'"><span>➕</span> Agregar</button>
+                <button onclick="window.location.href='historial.html'"><span>📅</span> Historial</button>
+                <button onclick="window.location.href='semaforo.html'"><span>🚦</span> Semáforo</button>
+                <button onclick="window.location.href='metas.html'">🎯 Metas</button>
+                <button onclick="window.location.href='racha.html'">🔥 Misiones</button>
+                <button onclick="window.location.href='consejos.html'"><span>💡</span> Consejos</button>
+            </div>
+            <div class="footer-privacidad">
+                <a href="privacidadentro.html">Políticas de Privacidad</a>
+            </div>
+        </div>
+
+        <div class="container">
+            
+            <!-- BANNER SUPERIOR CON FUEGUITOS DE RACHA -->
+            <div class="racha-hero-banner">
+                <div class="racha-hero-info">
+                    <h1><span>🔥</span> Racha y Recompensas de Videojuego</h1>
+                    <p>Completa tus misiones y mantén el hábito financiero para reclamar premios exclusivos para el juego PuerQuito.</p>
+                </div>
+                <div class="racha-tracker-pill">
+                    <div class="fuegos-fila" id="fuegosRachaHeader">
+                        <span class="fuego">🔥</span>
+                        <span class="fuego">🔥</span>
+                        <span class="fuego">🔥</span>
+                        <span class="fuego">🔥</span>
+                        <span class="fuego">🔥</span>
+                        <span class="fuego">🔥</span>
+                        <span class="fuego">🔥</span>
+                    </div>
+                    <div class="racha-contador-txt">
+                        <span>Racha Actual</span>
+                        <span id="txtRachaDiasHeader">0 días</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GRID DE MISIONES Y PREMIOS (2 COLUMNAS) -->
+            <div class="nook-grid">
+                
+                <!-- 1. NUEVO ADMINISTRADOR -->
+                <div class="nook-card">
+                    <div>
+                        <div class="nook-card-header">🌱 Nuevo Administrador</div>
+                        <div class="nook-card-desc">Da tus primeros pasos registrando actividad en tus ahorros durante 1, 3 y 7 días.</div>
+                        <div class="sellos-container">
+                            <div class="sello-circulo" id="adm1">1</div>
+                            <div class="sello-circulo" id="adm3">3</div>
+                            <div class="sello-circulo" id="adm7">7</div>
+                        </div>
+                    </div>
+                    <div class="nook-card-footer">
+                        <span class="recompensa-txt">Premio: Monedas </span>
+                        <button class="btn-reclamar" id="btnMisionAdmin" onclick="reclamarPremio('admin', 'Ítem Inicial VIP para Videojuego')">Reclamar Premio</button>
+                    </div>
+                </div>
+
+                <!-- 2. PREMIO POR CONSTANCIA -->
+                <div class="nook-card">
+                    <div>
+                        <div class="nook-card-header">🔥 Constancia de Acero</div>
+                        <div class="nook-card-desc">Llena tus semanas seguidas con disciplina constante: 1, 5, 10 y 20 semanas.</div>
+                        <div class="sellos-container">
+                            <div class="sello-circulo" id="sem1">1</div>
+                            <div class="sello-circulo" id="sem5">5</div>
+                            <div class="sello-circulo" id="sem10">10</div>
+                            <div class="sello-circulo" id="sem20">20</div>
+                        </div>
+                    </div>
+                    <div class="nook-card-footer">
+                        <span class="recompensa-txt">Premio: Monedas</span>
+                        <button class="btn-reclamar" id="btnMisionSemanal" onclick="reclamarPremio('semanas', 'Skin Legendaria de Videojuego')">Reclamar Premio</button>
+                    </div>
+                </div>
+
+                <!-- 3. PREMIO POR CUMPLIR METAS -->
+                <div class="nook-card">
+                    <div>
+                        <div class="nook-card-header">🎯 Maestro de Metas</div>
+                        <div class="nook-card-desc">Logra completar con éxito tus objetivos financieros: 1, 5 y 10 metas cumplidas.</div>
+                        <div class="sellos-container">
+                            <div class="sello-circulo" id="meta1">1</div>
+                            <div class="sello-circulo" id="meta5">5</div>
+                            <div class="sello-circulo" id="meta10">10</div>
+                        </div>
+                    </div>
+                    <div class="nook-card-footer">
+                        <span class="recompensa-txt">Premio: Monedas</span>
+                        <button class="btn-reclamar" id="btnMisionMetasCumplidas" onclick="reclamarPremio('metas_cumplidas', 'Cofre de Tesoro Épico')">Reclamar Premio</button>
+                    </div>
+                </div>
+
+                <!-- 4. PREMIO POR NO QUEDARSE SIN PRESUPUESTO -->
+                <div class="nook-card">
+                    <div>
+                        <div class="nook-card-header">🛡️ Guardián del Presupuesto</div>
+                        <div class="nook-card-desc">Evita caer en números rojos y mantén un saldo positivo durante todo el mes actual.</div>
+                        <div class="sellos-container">
+                            <div class="sello-circulo" id="presupuestoSello">O</div>
+                        </div>
+                    </div>
+                    <div class="nook-card-footer">
+                        <span class="recompensa-txt">Premio: Monedas</span>
+                        <button class="btn-reclamar" id="btnMisionPresupuesto" onclick="reclamarPremio('presupuesto', 'Pase de Batalla VIP Canjeable')">Reclamar Premio</button>
+                    </div>
+                </div>
+
+                <!-- 5. PREMIO POR AGREGAR GASTOS -->
+                <div class="nook-card">
+                    <div>
+                        <div class="nook-card-header">📝 Registro Mensual Activo</div>
+                        <div class="nook-card-desc">Mantén tu constancia registrando tus gastos de manera mensual: 30, 50 y 100 gastos.</div>
+                        <div class="sellos-container">
+                            <div class="sello-circulo" id="g30">30</div>
+                            <div class="sello-circulo" id="g50">50</div>
+                            <div class="sello-circulo" id="g100">100</div>
+                        </div>
+                    </div>
+                    <div class="nook-card-footer">
+                        <span class="recompensa-txt">Premio: Monedas</span>
+                        <button class="btn-reclamar" id="btnMisionGastosMensuales" onclick="reclamarPremio('gastos_mensuales', 'Lote de Ítems Exclusivos')">Reclamar Premio</button>
+                    </div>
+                </div>
+
+                <!-- 6. PREMIO POR METAS SIMULTÁNEAS -->
+                <div class="nook-card">
+                    <div>
+                        <div class="nook-card-header">⚡ Estratega Simultáneo</div>
+                        <div class="nook-card-desc">Gestiona varias metas de ahorro al mismo tiempo: ten activas 2, 5 y 10 metas simultáneas.</div>
+                        <div class="sellos-container">
+                            <div class="sello-circulo" id="sim2">2</div>
+                            <div class="sello-circulo" id="sim5">5</div>
+                            <div class="sello-circulo" id="sim10">10</div>
+                        </div>
+                    </div>
+                    <div class="nook-card-footer">
+                        <span class="recompensa-txt">Premio: Monedas</span>
+                        <button class="btn-reclamar" id="btnMisionSimultaneas" onclick="reclamarPremio('simultaneas', 'Mascota Virtual Exclusiva')">Reclamar Premio</button>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const USUARIO_ACTUAL_ID = 1; // ID simulado del usuario actual
+
+async function cargarNotificacionesSistema() {
+  try {
+    const response = await fetch(`/api/notificaciones/${USUARIO_ACTUAL_ID}`);
+    const notificaciones = await response.json();
+
+    const contador = document.getElementById('notif-contador');
+    const contenedorLista = document.getElementById('lista-notificaciones-box');
+
+    if (!contenedorLista) return;
+    contenedorLista.innerHTML = '';
+
+    // Contar cuántas están sin leer
+    const sinLeer = notificaciones.filter(n => n.leido === 0).length;
+    if(contador) contador.innerText = sinLeer;
+    
+    if (notificaciones.length === 0) {
+      contenedorLista.innerHTML = '<p style="padding:15px; color:#aaa; font-size:13px; text-align:center;">No tienes notificaciones.</p>';
+      return;
+    }
+
+    // Dibujar cada alerta real
+    notificaciones.forEach(notif => {
+      const item = document.createElement('div');
+      item.style.cssText = `
+        padding: 12px 15px;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        background: ${notif.leido === 0 ? 'rgba(129, 199, 132, 0.04)' : 'transparent'};
+      `;
+
+      item.innerHTML = `
+        <div style="font-weight:600; font-size:13px; color:#81c784; margin-bottom:2px;">${notif.titulo}</div>
+        <div style="font-size:12.5px; color:#ccc; line-height:1.3;">${notif.mensaje}</div>
+        <div style="font-size:10px; color:#666; margin-top:4px; text-align:right;">${notif.fecha}</div>
+      `;
+      contenedorLista.appendChild(item);
+    });
+  } catch (error) {
+    console.error('Error al mapear alertas del historial:', error);
+  }
+}
+
+// Acción para el botón "Marcar leídas"
+async function marcarTodasComoLeidas() {
+  try {
+    await fetch('/api/notificaciones/marcar-leidas', {
+      method: 'POST',
+      body: JSON.stringify({ userId: USUARIO_ACTUAL_ID }),
+      headers: { 'Content-Type': 'application/json' }
+    });
+    // Recargar el contenedor para reflejar los cambios
+    cargarNotificacionesSistema();
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+// Inicializar la carga al entrar a la página
+document.addEventListener('DOMContentLoaded', cargarNotificacionesSistema);
+
+        // --- VALIDACIÓN DE MISIONES Y PREMIOS ---
+        async function verificarMisionesYPremios() {
+            const historialRacha = JSON.parse(localStorage.getItem("historial_racha_dias")) || [];
+            const diasRacha = historialRacha.length;
+            
+            document.getElementById("txtRachaDiasHeader").innerText = diasRacha + " días";
+            const fuegosHeader = document.querySelectorAll("#fuegosRachaHeader .fuego");
+            fuegosHeader.forEach((f, idx) => {
+                if (idx < Math.min(diasRacha, 7)) f.classList.add("activo");
+            });
+
+            // 1. Administrador (7 días)
+            const reclamadoAdmin = localStorage.getItem("reclamado_premio_admin");
+            const btnAdmin = document.getElementById("btnMisionAdmin");
+            if (reclamadoAdmin) {
+                document.getElementById("adm1").classList.add("completado");
+                document.getElementById("adm3").classList.add("completado");
+                document.getElementById("adm7").classList.add("completado");
+                btnAdmin.innerText = "Recompensa reclamada"; btnAdmin.disabled = true; btnAdmin.classList.remove("activo");
+            } else if (diasRacha >= 7) {
+                document.getElementById("adm1").classList.add("completado");
+                document.getElementById("adm3").classList.add("completado");
+                document.getElementById("adm7").classList.add("completado");
+                btnAdmin.innerText = "Reclamar Premio"; btnAdmin.disabled = false; btnAdmin.classList.add("activo");
+            } else {
+                btnAdmin.innerText = `Faltan (${7 - diasRacha}d)`; btnAdmin.disabled = true; btnAdmin.classList.remove("activo");
+            }
+
+            // 2. Constancia Semanal (5 semanas simuladas = 35 días)
+            const semanasConstante = Math.floor(diasRacha / 7);
+            const reclamadoSemanal = localStorage.getItem("reclamado_premio_semanas");
+            const btnSemanal = document.getElementById("btnMisionSemanal");
+            if (reclamadoSemanal) {
+                document.getElementById("sem1").classList.add("completado");
+                document.getElementById("sem5").classList.add("completado");
+                btnSemanal.innerText = "Recompensa reclamada"; btnSemanal.disabled = true; btnSemanal.classList.remove("activo");
+            } else if (semanasConstante >= 5) {
+                document.getElementById("sem1").classList.add("completado");
+                document.getElementById("sem5").classList.add("completado");
+                btnSemanal.innerText = "Reclamar Premio"; btnSemanal.disabled = false; btnSemanal.classList.add("activo");
+            } else {
+                btnSemanal.innerText = "En progreso"; btnSemanal.disabled = true; btnSemanal.classList.remove("activo");
+            }
+
+            // 3 & 6. Metas Cumplidas y Simultáneas
+            try {
+                const token = localStorage.getItem("token");
+                const resM = await fetch("/api/metas", { headers: { "Authorization": `Bearer ${token}` } });
+                if(resM.ok) {
+                    const metas = await resM.json();
+                    const metasCumplidas = metas.filter(m => Number(m.monto_ahorrado) >= Number(m.monto_target)).length;
+                    const metasSimultaneas = metas.filter(m => Number(m.monto_ahorrado) < Number(m.monto_target)).length;
+
+                    // Maestro de Metas (Meta: 1 cumplida)
+                    const reclamadoMetasC = localStorage.getItem("reclamado_premio_metas_cumplidas");
+                    const btnMetasC = document.getElementById("btnMisionMetasCumplidas");
+                    if(reclamadoMetasC) {
+                        document.getElementById("meta1").classList.add("completado");
+                        btnMetasC.innerText = "Recompensa reclamada"; btnMetasC.disabled = true; btnMetasC.classList.remove("activo");
+                    } else if(metasCumplidas >= 1) {
+                        document.getElementById("meta1").classList.add("completado");
+                        btnMetasC.innerText = "Reclamar Premio"; btnMetasC.disabled = false; btnMetasC.classList.add("activo");
+                    } else {
+                        btnMetasC.innerText = "Faltan metas"; btnMetasC.disabled = true; btnMetasC.classList.remove("activo");
+                    }
+
+                    // Metas Simultáneas (Meta: 2 activas)
+                    const reclamadoSim = localStorage.getItem("reclamado_premio_simultaneas");
+                    const btnSim = document.getElementById("btnMisionSimultaneas");
+                    if(reclamadoSim) {
+                        document.getElementById("sim2").classList.add("completado");
+                        btnSim.innerText = "Recompensa reclamada"; btnSim.disabled = true; btnSim.classList.remove("activo");
+                    } else if(metasSimultaneas >= 2) {
+                        document.getElementById("sim2").classList.add("completado");
+                        btnSim.innerText = "Reclamar Premio"; btnSim.disabled = false; btnSim.classList.add("activo");
+                    } else {
+                        btnSim.innerText = "Faltan metas"; btnSim.disabled = true; btnSim.classList.remove("activo");
+                    }
+                }
+            } catch(e) { console.error(e); }
+
+            // 4. Guardián del Presupuesto (Saldo positivo)
+            try {
+                const token = localStorage.getItem("token");
+                const resP = await fetch("/api/perfil", { headers: { "Authorization": `Bearer ${token}` } });
+                if(resP.ok) {
+                    const perfil = await resP.json();
+                    const reclamadoP = localStorage.getItem("reclamado_premio_presupuesto");
+                    const btnP = document.getElementById("btnMisionPresupuesto");
+                    if(reclamadoP) {
+                        document.getElementById("presupuestoSello").classList.add("completado");
+                        btnP.innerText = "Recompensa reclamada"; btnP.disabled = true; btnP.classList.remove("activo");
+                    } else if(Number(perfil.saldo) > 0) {
+                        document.getElementById("presupuestoSello").classList.add("completado");
+                        btnP.innerText = "Reclamar Premio"; btnP.disabled = false; btnP.classList.add("activo");
+                    } else {
+                        btnP.innerText = "Saldo en $0"; btnP.disabled = true; btnP.classList.remove("activo");
+                    }
+                }
+            } catch(e) { console.error(e); }
+
+            // 5. Gastos Registrados Mensuales (30 gastos)
+            try {
+                const token = localStorage.getItem("token");
+                const resG = await fetch("/api/lista-gastos", { headers: { "Authorization": `Bearer ${token}` } });
+                if(resG.ok) {
+                    const gastos = await resG.json();
+                    const totalGastos = gastos.length;
+                    const reclamadoG = localStorage.getItem("reclamado_premio_gastos_mensuales");
+                    const btnG = document.getElementById("btnMisionGastosMensuales");
+                    if(reclamadoG) {
+                        document.getElementById("g30").classList.add("completado");
+                        btnG.innerText = "Recompensa reclamada"; btnG.disabled = true; btnG.classList.remove("activo");
+                    } else if(totalGastos >= 30) {
+                        document.getElementById("g30").classList.add("completado");
+                        btnG.innerText = "Reclamar Premio"; btnG.disabled = false; btnG.classList.add("activo");
+                    } else {
+                        btnG.innerText = `Faltan (${30 - totalGastos})`; btnG.disabled = true; btnG.classList.remove("activo");
+                    }
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        function reclamarPremio(tipo, nombrePremio) {
+            if(tipo === 'admin') localStorage.setItem("reclamado_premio_admin", "true");
+            if(tipo === 'semanas') localStorage.setItem("reclamado_premio_semanas", "true");
+            if(tipo === 'metas_cumplidas') localStorage.setItem("reclamado_premio_metas_cumplidas", "true");
+            if(tipo === 'presupuesto') localStorage.setItem("reclamado_premio_presupuesto", "true");
+            if(tipo === 'gastos_mensuales') localStorage.setItem("reclamado_premio_gastos_mensuales", "true");
+            if(tipo === 'simultaneas') localStorage.setItem("reclamado_premio_simultaneas", "true");
+
+            // Envía la notificación automáticamente a la campanita
+            guardarNotificacion(
+                "¡Misión Completada!", 
+                `Has reclamado con éxito tu "${nombrePremio}". Premio reclamado (próximamente vinculado a tu videojuego).`
+            );
+
+            verificarMisionesYPremios();
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            renderizarNotificaciones();
+            verificarMisionesYPremios();
+        });
+    </script>
+    <script src="/global-notificaciones" defer></script>
+
+</body>
+</html>
