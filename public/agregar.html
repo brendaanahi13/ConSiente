@@ -8,7 +8,6 @@
     <style>
         * { margin:0; padding:0; box-sizing:border-box; font-family:"Segoe UI",sans-serif; }
         
-        /* Fondo con una luz difuminada central muy ligera */
         body { 
             background: radial-gradient(circle at 50% 50%, #27312a 0%, #111412 100%); 
             min-height: 100vh; 
@@ -38,6 +37,139 @@
         .menu { display:flex; align-items:center; gap:25px; }
         .menu a { text-decoration:none; color:#e0e0e0; font-size: 14px; transition: 0.3s ease; }
         .menu a:hover { color: #81c784; }
+
+        /* CONTENEDOR DE NOTIFICACIONES CON IMAGEN LOCAL */
+        .notif-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .notif-icon-img {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 1.5px solid rgba(129, 199, 132, 0.5);
+            padding: 6px;
+            object-fit: contain;
+            background: rgba(255, 255, 255, 0.05);
+            transition: 0.3s ease;
+        }
+
+        .notif-icon-img:hover {
+            border-color: #81c784;
+            background: rgba(129, 199, 132, 0.15);
+            box-shadow: 0 0 10px rgba(129, 199, 132, 0.4);
+        }
+
+        .notif-badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background: #ef5350;
+            color: white;
+            font-size: 10px;
+            font-weight: 800;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #0d0d0d;
+        }
+
+        .notif-dropdown {
+            position: absolute;
+            right: 0;
+            top: 50px;
+            width: 330px;
+            background: rgba(18, 22, 19, 0.98);
+            backdrop-filter: blur(15px);
+            border-radius: 16px;
+            border: 1px solid rgba(129, 199, 132, 0.25);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.7);
+            display: none;
+            flex-direction: column;
+            z-index: 1200;
+            overflow: hidden;
+        }
+
+        .notif-header {
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notif-header h4 {
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .notif-header span {
+            color: #81c784;
+            font-size: 11px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .notif-list {
+            max-height: 320px;
+            overflow-y: auto;
+        }
+
+        .notif-item {
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .notif-item:hover {
+            background: rgba(46, 125, 50, 0.2);
+            padding-left: 20px;
+        }
+
+        .notif-item.unread {
+            background: rgba(129, 199, 132, 0.08);
+            border-left: 3px solid #81c784;
+        }
+
+        .notif-icon {
+            font-size: 20px;
+            margin-top: 2px;
+        }
+
+        .notif-detalles {
+            flex: 1;
+        }
+
+        .notif-titulo-item {
+            font-size: 13px;
+            font-weight: 700;
+            color: #81c784;
+            margin-bottom: 2px;
+        }
+
+        .notif-texto {
+            font-size: 12px;
+            color: #cccccc;
+            line-height: 1.4;
+        }
+
+        .notif-fecha {
+            font-size: 10px;
+            color: #777;
+            margin-top: 4px;
+        }
 
         /* MENÚ DE USUARIO DESLIZABLE / DROPDOWN */
         .user-menu {
@@ -87,10 +219,10 @@
         }
         .show { display: flex; }
 
-        /* CONTENEDOR ESTRUCTURAL (SIDEBAR + MAIN) */
+        /* CONTENEDOR ESTRUCTURAL */
         .main-layout {
             display: flex;
-            margin-top: 65px; /* Altura de la navbar */
+            margin-top: 65px;
             min-height: calc(100vh - 65px);
             width: 100%;
         }
@@ -104,7 +236,7 @@
             padding: 25px 15px;
             display: flex;
             flex-direction: column;
-            justify-content: space-between; /* Empuja el footer hacia abajo */
+            justify-content: space-between;
         }
         .sidebar-menu {
             display: flex;
@@ -131,7 +263,6 @@
             padding-left: 22px;
         }
 
-        /* política de privacidad integrada correctamente */
         .footer-privacidad { padding-top: 15px; text-align: center; }
         .footer-privacidad a { color: rgba(255, 255, 255, 0.5); text-decoration: none; font-size: 13px; font-weight: 500; transition: 0.3s ease; }
         .footer-privacidad a:hover { color: #81c784; }
@@ -143,11 +274,10 @@
             display: flex; 
             gap: 25px; 
             max-width: 1200px;
-            margin: 0 auto; /* Centra el contenido en pantallas gigantes */
+            margin: 0 auto;
             align-items: flex-start;
         }
         
-        /* Cajas con profundidad limpia */
         .box { 
             background: rgba(22, 22, 22, 0.85);
             backdrop-filter: blur(10px);
@@ -165,6 +295,65 @@
             justify-content: center;
             background: radial-gradient(circle at top, rgba(46, 125, 50, 0.12) 0%, rgba(22, 22, 22, 0.85) 70%);
         }
+
+        /* BANNER INFORMATIVO PROFESIONAL FINTECH */
+        .nota-rango-fechas {
+            background: linear-gradient(135deg, rgba(46, 125, 50, 0.18) 0%, rgba(18, 24, 20, 0.6) 100%);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(129, 199, 132, 0.25);
+            border-left: 4px solid #81c784;
+            border-radius: 14px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+
+        .nota-icon-container {
+            background: rgba(129, 199, 132, 0.12);
+            border: 1px solid rgba(129, 199, 132, 0.3);
+            border-radius: 10px;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .nota-content { flex: 1; }
+
+        .nota-titulo {
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nota-texto {
+            font-size: 13px;
+            color: #c2e0d3;
+            line-height: 1.5;
+            font-weight: 400;
+        }
+
+        .nota-texto strong { color: #81c784; font-weight: 600; }
+
+        .nota-link-metas {
+            color: #81c784;
+            font-weight: 600;
+            text-decoration: underline;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .nota-link-metas:hover { color: #a5d6a7; }
 
         /* FORMULARIO ELEGANTE */
         .formulario label { display: block; margin-top: 15px; color: #ffffff; font-weight: 500; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -206,10 +395,91 @@
         }
         
         h2, h3 { color: #81c784; font-weight: 600; letter-spacing: 0.3px; }
-        h2 { margin-bottom: 20px; }
+        h2 { margin-bottom: 15px; }
         h3 { margin-bottom: 25px; }
 
-        /* RESPONSIVIDAD PARA TABLETS Y MÓVILES */
+        /* MODAL DE BIENVENIDA INTERACTIVO */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2500;
+        }
+
+        .modal-bienvenida {
+            background: linear-gradient(135deg, rgba(20, 26, 22, 0.95) 0%, rgba(12, 16, 13, 0.98) 100%);
+            border: 1px solid rgba(129, 199, 132, 0.35);
+            border-radius: 24px;
+            padding: 35px 30px;
+            width: 90%;
+            max-width: 480px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 30px rgba(46, 125, 50, 0.25);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .bienvenida-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            display: inline-block;
+            filter: drop-shadow(0 0 10px rgba(129, 199, 132, 0.4));
+        }
+
+        .bienvenida-titulo {
+            font-size: 22px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 12px;
+            letter-spacing: -0.3px;
+        }
+
+        .bienvenida-texto {
+            font-size: 14px;
+            color: #d1e7dd;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .bienvenida-frase {
+            background: rgba(46, 125, 50, 0.15);
+            border: 1px solid rgba(129, 199, 132, 0.2);
+            border-radius: 14px;
+            padding: 12px 16px;
+            font-style: italic;
+            color: #81c784;
+            font-size: 13px;
+            margin-bottom: 25px;
+        }
+
+        .btn-empezar {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+            border: 1px solid rgba(129, 199, 132, 0.4);
+            border-radius: 14px;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(46, 125, 50, 0.4);
+        }
+
+        .btn-empezar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(46, 125, 50, 0.6);
+            background: linear-gradient(135deg, #388e3c 0%, #2e7d32 100%);
+        }
+
         @media (max-width: 900px) {
             .main-layout { flex-direction: column; }
             .sidebar { width: 100%; min-width: 100%; height: auto; border-right: none; border-bottom: 1px solid rgba(129, 199, 132, 0.15); }
@@ -227,6 +497,22 @@
         </div>
         
         <div class="menu">
+            <!-- CAJITA DE NOTIFICACIONES CON IMAGEN LOCAL -->
+            <div class="notif-wrapper">
+                <img src="imagenes/notificacion.png" class="notif-icon-img" id="notifBtn" alt="Notificaciones" title="Notificaciones">
+                <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
+
+                <div class="notif-dropdown" id="notifDropdown">
+                    <div class="notif-header">
+                        <h4>Notificaciones</h4>
+                        <span onclick="marcarTodasLeidas()">Marcar leídas</span>
+                    </div>
+                    <div class="notif-list" id="notifList">
+                        <!-- Se inyectan notificaciones dinámicamente -->
+                    </div>
+                </div>
+            </div>
+
             <a href="menu.html">Home</a>
             <a href="nosotros.html">Sobre nosotros</a>
             <a href="ODS.html">ODS</a>
@@ -245,11 +531,13 @@
         
         <div class="sidebar">
             <div class="sidebar-menu">
-                <button onclick="window.location.href='menu.html'">📊 Mis Estadísticas</button>
-                <button onclick="window.location.href='consejos.html'">💡 Consejos de Ahorro</button>
-                <button onclick="window.location.href='agregar.html'">➕ Agregar gasto</button>
-                <button onclick="window.location.href='historial.html'">📅 Historial</button>
-                <button onclick="window.location.href='semaforo.html'">🚦 Semáforo Financiero</button>
+                <button onclick="window.location.href='menu.html'"><span>📊</span> Estadísticas</button>
+                <button onclick="window.location.href='agregar.html'"><span>➕</span> Agregar</button>
+                <button onclick="window.location.href='historial.html'"><span>📅</span> Historial</button>
+                <button onclick="window.location.href='semaforo.html'"><span>🚦</span> Semáforo</button>
+                <button onclick="window.location.href='metas.html'">🎯 Metas</button>
+                <button onclick="window.location.href='racha.html'">🔥 Misiones</button>
+                <button onclick="window.location.href='consejos.html'"><span>💡</span> Consejos</button>
             </div>
             <div class="footer-privacidad">
                 <a href="privacidadentro.html">Políticas de Privacidad</a>
@@ -259,6 +547,24 @@
         <div class="container">
             <div class="box box-formulario">
                 <h2>Agregar gasto</h2>
+                
+                <!-- BANNER INFORMATIVO PROFESIONAL FINTECH -->
+                <div class="nota-rango-fechas">
+                    <div class="nota-icon-container">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#81c784" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                    </div>
+                    <div class="nota-content">
+                        <div class="nota-titulo">Rango Operativo de Registro</div>
+                        <p class="nota-texto">
+                            Este módulo registra únicamente movimientos dentro de tu presupuesto activo (hasta <strong>1 año hacia atrás</strong> y máximo <strong>30 días a futuro</strong>). Para proyecciones financieras a mayor plazo, programa tu dinero en <span class="nota-link-metas" onclick="window.location.href='metas.html'">Metas de Ahorro</span>.
+                        </p>
+                    </div>
+                </div>
+
                 <div class="formulario">
                     <label>Categoría</label>
                     <input type="text" id="tipoGasto" list="categorias" placeholder="Selecciona o escribe...">
@@ -291,19 +597,65 @@
 
     </div>
 
+    <!-- MODAL DE BIENVENIDA INTERACTIVO -->
+    <div class="modal-overlay" id="modalBienvenida">
+        <div class="modal-bienvenida">
+            <div class="bienvenida-icon">🌿</div>
+            <h3 class="bienvenida-titulo">¡Bienvenido a ConSiente!</h3>
+            <p class="bienvenida-texto">
+                Estamos felices de acompañarte en tu camino hacia la libertad y el orden financiero. ConSiente está diseñado para ayudarte a tomar decisiones inteligentes con tu dinero día a día.
+            </p>
+            <div class="bienvenida-frase">
+                "Pequeños hábitos diarios construyen grandes metas financieras."
+            </div>
+            <button class="btn-empezar" onclick="irAlInicio()">🚀 ¡Empezar ahora!</button>
+        </div>
+    </div>
+
     <script>
-        // Lógica del menú desplegable del usuario
+        // ESTADO GLOBAL DE NOTIFICACIONES CON PERSISTENCIA (localStorage)
+        let notificacionesEstado = [];
+
+        function obtenerIDsLeidos() {
+            return JSON.parse(localStorage.getItem("notificaciones_leidas")) || [];
+        }
+
+        function guardarIDLeido(id) {
+            let leidos = obtenerIDsLeidos();
+            if (!leidos.includes(id)) {
+                leidos.push(id);
+                localStorage.setItem("notificaciones_leidas", JSON.stringify(leidos));
+            }
+        }
+
+        // Menú Usuario
         const btn = document.getElementById("userBtn");
         const menu = document.getElementById("dropdownMenu");
 
         btn.onclick = (e) => {
             e.stopPropagation();
             menu.classList.toggle("show");
+            if (notifDropdown) notifDropdown.style.display = "none";
         };
+
+        // Menú Notificaciones
+        const notifBtn = document.getElementById("notifBtn");
+        const notifDropdown = document.getElementById("notifDropdown");
+
+        if (notifBtn) {
+            notifBtn.onclick = (e) => {
+                e.stopPropagation();
+                notifDropdown.style.display = (notifDropdown.style.display === "flex") ? "none" : "flex";
+                menu.classList.remove("show");
+            };
+        }
 
         window.onclick = (e) => {
             if (!e.target.matches('#userBtn')) {
                 menu.classList.remove("show");
+            }
+            if (!e.target.closest('.notif-wrapper')) {
+                if (notifDropdown) notifDropdown.style.display = "none";
             }
         };
 
@@ -313,8 +665,155 @@
             window.location.href = "index.html";
         }
 
-        // Establecer por defecto la fecha de hoy en el input
-        document.getElementById('fechaGasto').valueAsDate = new Date();
+        function irAlInicio() {
+            window.location.href = "menu.html";
+        }
+
+        function mostrarModalBienvenida() {
+            document.getElementById("modalBienvenida").style.display = "flex";
+            if (notifDropdown) notifDropdown.style.display = "none";
+        }
+
+        // Cargar Notificaciones e integrar filtro con localStorage
+        async function cargarNotificaciones() {
+            notificacionesEstado = [];
+            const idsLeidos = obtenerIDsLeidos();
+
+            // 1. Bienvenida
+            notificacionesEstado.push({
+                id: "bienvenida",
+                icono: "👋",
+                titulo: "¡Bienvenido a ConSiente!",
+                texto: "Haz clic aquí para ver tu mensaje de bienvenida y comenzar.",
+                fecha: "Hoy",
+                leida: idsLeidos.includes("bienvenida"),
+                destino: "modal_bienvenida"
+            });
+
+            // 2. Racha Diaria
+            notificacionesEstado.push({
+                id: "racha_diaria",
+                icono: "🔥",
+                titulo: "¡Mantén tu racha activa!",
+                texto: "Registra tus movimientos de hoy para mantener tu racha financiera.",
+                fecha: "Hoy",
+                leida: idsLeidos.includes("racha_diaria"),
+                destino: "racha"
+            });
+
+            // 3. Metas de Ahorro
+            try {
+                const token = localStorage.getItem("token");
+                if (token) {
+                    const res = await fetch("/api/metas", {
+                        headers: { "Authorization": `Bearer ${token}` }
+                    });
+
+                    if (res.ok) {
+                        const metas = await res.json();
+                        metas.forEach(meta => {
+                            if (Number(meta.monto_ahorrado) < Number(meta.monto_target)) {
+                                const frec = meta.frecuencia;
+                                const metaIdNotif = `meta_${meta.id}`;
+                                notificacionesEstado.push({
+                                    id: metaIdNotif,
+                                    icono: "🎯",
+                                    titulo: `Abono de Meta: ${meta.nombre}`,
+                                    texto: `Recuerda abonar tu cuota (${frec.toLowerCase()}) de <strong>$${Number(meta.cuota).toFixed(2)}</strong>.`,
+                                    fecha: "Hoy",
+                                    leida: idsLeidos.includes(metaIdNotif),
+                                    destino: "metas"
+                                });
+                            }
+                        });
+                    }
+                }
+            } catch (e) {
+                console.error("Error al obtener metas para notificaciones:", e);
+            }
+
+            renderizarNotificaciones();
+        }
+
+        function renderizarNotificaciones() {
+            const contenedor = document.getElementById("notifList");
+            const badge = document.getElementById("notifBadge");
+            if (!contenedor) return;
+
+            contenedor.innerHTML = "";
+            let noLeidas = notificacionesEstado.filter(n => !n.leida).length;
+
+            if (noLeidas > 0) {
+                badge.innerText = noLeidas;
+                badge.style.display = "flex";
+            } else {
+                badge.style.display = "none";
+            }
+
+            if (notificacionesEstado.length === 0) {
+                contenedor.innerHTML = `<p style="padding:20px; text-align:center; color:#777; font-size:12px;">No tienes notificaciones por el momento.</p>`;
+                return;
+            }
+
+            notificacionesEstado.forEach(n => {
+                const item = document.createElement("div");
+                item.className = `notif-item ${n.leida ? '' : 'unread'}`;
+                item.onclick = () => procesarClickNotificacion(n.id);
+                item.innerHTML = `
+                    <div class="notif-icon">${n.icono}</div>
+                    <div class="notif-detalles">
+                        <div class="notif-titulo-item">${n.titulo}</div>
+                        <div class="notif-texto">${n.texto}</div>
+                        <div class="notif-fecha">${n.fecha}</div>
+                    </div>
+                `;
+                contenedor.appendChild(item);
+            });
+        }
+
+        function procesarClickNotificacion(id) {
+            const notif = notificacionesEstado.find(n => n.id === id);
+            if (!notif) return;
+
+            // Marcar como leída y guardar de manera permanente
+            notif.leida = true;
+            guardarIDLeido(id);
+            renderizarNotificaciones();
+
+            // Redirección/Acción
+            if (notif.destino === "modal_bienvenida") {
+                mostrarModalBienvenida();
+            } else if (notif.destino === "metas") {
+                window.location.href = "metas.html";
+            } else if (notif.destino === "racha") {
+                if (notifDropdown) notifDropdown.style.display = "none";
+                document.getElementById("tipoGasto").focus();
+            }
+        }
+
+        function marcarTodasLeidas() {
+            notificacionesEstado.forEach(n => {
+                n.leida = true;
+                guardarIDLeido(n.id);
+            });
+            renderizarNotificaciones();
+        }
+
+        // Configuración inicial de límites de fecha
+        document.addEventListener("DOMContentLoaded", () => {
+            const inputFecha = document.getElementById('fechaGasto');
+            const hoy = new Date();
+            
+            inputFecha.valueAsDate = hoy;
+
+            const unAnoAtras = new Date(hoy.getFullYear() - 1, hoy.getMonth(), hoy.getDate());
+            const unMesFuturo = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + 30);
+
+            inputFecha.min = unAnoAtras.toISOString().split('T')[0];
+            inputFecha.max = unMesFuturo.toISOString().split('T')[0];
+
+            cargarNotificaciones();
+        });
 
         async function renderizarGrafica() {
             try {
@@ -373,30 +872,52 @@
         async function guardarGasto() {
             const categoria = document.getElementById('tipoGasto').value;
             const monto = document.getElementById('cantidadGasto').value;
-            const fecha = document.getElementById('fechaGasto').value;
+            const fechaStr = document.getElementById('fechaGasto').value;
 
-            if (!categoria || !monto || !fecha) {
+            if (!categoria || !monto || !fechaStr) {
                 alert("⚠️ Por favor, completa todos los campos.");
+                return;
+            }
+
+            const fechaSeleccionada = new Date(fechaStr + "T00:00:00");
+            const hoy = new Date();
+            hoy.setHours(0, 0, 0, 0);
+
+            const limitePasado = new Date();
+            limitePasado.setFullYear(hoy.getFullYear() - 1);
+
+            const limiteFuturo = new Date();
+            limiteFuturo.setDate(hoy.getDate() + 30);
+
+            if (fechaSeleccionada < limitePasado) {
+                alert("📅 Recordatorio Financiero:\n\nConSiente está diseñado exclusivamente para el control de tu presupuesto actual y reciente. No se permiten registrar gastos de más de 1 año de antigüedad.");
+                return;
+            }
+
+            if (fechaSeleccionada > limiteFuturo) {
+                alert("💡 Consejos de Planeación:\n\nLos gastos futuros a largo plazo o planeaciones extendidas deben programarse dentro del apartado de 'Metas de Ahorro'. En este módulo solo se admiten registros de los próximos 30 días.");
                 return;
             }
 
             const response = await fetch("/api/gastos", {
                 method: "POST",
                 headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem("token")}` },
-                body: JSON.stringify({ categoria, monto, fecha })
+                body: JSON.stringify({ categoria, monto, fecha: fechaStr })
             });
 
             if(response.ok) { 
-                alert("✅ ¡Gasto registrado!"); 
+                alert("✅ ¡Gasto registrado correctamente!"); 
                 document.getElementById('tipoGasto').value = '';
                 document.getElementById('cantidadGasto').value = '';
                 renderizarGrafica(); 
             } else {
-                alert("❌ Error al guardar.");
+                alert("❌ Error al guardar el gasto.");
             }
         }
         
         renderizarGrafica();
     </script>
+    <script src="/global-notificaciones" defer></script>
+
 </body>
 </html>

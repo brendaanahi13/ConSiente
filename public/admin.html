@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConSiente</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:"Segoe UI",sans-serif; }
+        
+        body { 
+            background: radial-gradient(circle at 50% 50%, #27312a 0%, #111412 100%); 
+            min-height: 100vh; 
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* NAVBAR PRINCIPAL */
+        .navbar { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 65px; background: #0d0d0d; 
+            display: flex; justify-content: space-between; align-items: center; padding: 0 25px; 
+            z-index: 1000; border-bottom: 1px solid rgba(129, 199, 132, 0.25); 
+        }
+        .logo-nombre { display: flex; align-items: center; gap: 10px; }
+        .titulo { font-size: 18px; font-weight: bold; color: #ffffff; letter-spacing: 0.5px; }
+        .logo { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; }
+        .menu { display: flex; align-items: center; gap: 20px; }
+        .menu a { text-decoration: none; color: #e0e0e0; font-size: 14px; transition: 0.3s ease; cursor: pointer; white-space: nowrap; }
+        .menu a:hover { color: #81c784; }
+
+        /* USUARIO DROPDOWN */
+        .user-menu { position: relative; display: flex; align-items: center; }
+        .user-icon { width: 38px; height: 38px; border-radius: 50%; cursor: pointer; border: 1.5px solid rgba(129, 199, 132, 0.5); transition: 0.3s ease; }
+        .user-icon:hover { border-color: #81c784; box-shadow: 0 0 10px rgba(129, 199, 132, 0.4); }
+        .dropdown {
+            position: absolute; right: 0; top: 50px; background: rgba(20, 20, 20, 0.98);
+            backdrop-filter: blur(10px); border-radius: 12px; border: 1px solid rgba(129, 199, 132, 0.2);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6); display: none; flex-direction: column; min-width: 160px; overflow: hidden; z-index: 1100;
+        }
+        .dropdown a { padding: 12px 18px; text-decoration: none; color: #ffffff; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.05); transition: 0.2s ease; }
+        .dropdown a:hover { background: rgba(46, 125, 50, 0.3); color: #81c784; }
+        .show { display: flex; }
+
+        /* LAYOUT GENERAL */
+        .main-layout { 
+            display: flex; 
+            flex-direction: column; 
+            margin-top: 65px; 
+            /* En escritorio, dejamos espacio a la izquierda para el menú */
+            margin-left: 220px;
+            min-height: calc(100vh - 65px); 
+            width: calc(100% - 220px); 
+        }
+
+        /* MENÚ LATERAL (DESKTOP POR DEFECTO) */
+        .sidebar { 
+            position: fixed; 
+            top: 65px; 
+            left: 0; 
+            width: 220px; 
+            height: calc(100vh - 65px); 
+            background: rgba(18, 18, 18, 0.95); 
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(129, 199, 132, 0.25); 
+            padding: 25px 15px;
+            display: flex; 
+            flex-direction: column; 
+            align-items: flex-start; 
+            z-index: 990; 
+        }
+        .sidebar-menu { 
+            display: flex; 
+            flex-direction: column; 
+            width: 100%; 
+            gap: 15px; 
+        }
+        .sidebar button { 
+            width: 100%;
+            padding: 12px 15px; 
+            border: none; 
+            border-radius: 10px; 
+            background: transparent; 
+            color: #b0b0b0;
+            font-size: 14px; 
+            cursor: pointer; 
+            text-align: left; 
+            transition: 0.3s ease; 
+            display: flex; 
+            flex-direction: row; 
+            align-items: center; 
+            justify-content: flex-start;
+            gap: 12px;
+        }
+        .sidebar button span { font-size: 18px; }
+        .sidebar button:hover, .sidebar button.active { 
+            background: rgba(46, 125, 50, 0.25); 
+            color: #81c784; 
+        }
+
+        /* CONTENEDOR PRINCIPAL */
+        .container { 
+            flex: 1; padding: 30px; display: flex; flex-direction: column; gap: 25px; max-width: 1250px; margin: 0 auto; width: 100%; overflow-x: hidden;
+        }
+
+        .tab-content { display: none; flex-direction: column; gap: 25px; }
+        .tab-content.active-tab { display: flex; }
+
+        /* BANNER */
+        .admin-hero-banner {
+            background: rgba(22, 22, 22, 0.85); backdrop-filter: blur(10px); border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.5); padding: 25px;
+        }
+        .admin-hero-info h1 { font-size: clamp(20px, 4vw, 26px); color: #ffffff; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+        .admin-hero-info h1 span { color: #81c784; }
+        .admin-hero-info p { font-size: 13px; color: #a0a0a0; margin-top: 5px; line-height: 1.4; }
+
+        /* TARJETAS DE ESTADÍSTICAS */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        .stat-card {
+            background: rgba(22, 22, 22, 0.85); backdrop-filter: blur(10px); border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1); padding: 20px; display: flex; flex-direction: column; gap: 8px;
+        }
+        .stat-card span:first-child { font-size: 11px; color: #a0a0a0; text-transform: uppercase; font-weight: 600; }
+        .stat-card .stat-value { font-size: clamp(20px, 3vw, 24px); font-weight: bold; color: #81c784; }
+
+        /* SECCIÓN TABLA */
+        .admin-section {
+            background: rgba(22, 22, 22, 0.85); backdrop-filter: blur(10px); border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1); padding: 25px; display: flex; flex-direction: column; gap: 20px;
+        }
+        .admin-section-header { font-size: 16px; font-weight: 600; color: #ffffff; display: flex; align-items: center; gap: 10px; }
+
+        /* TABLA RESPONSIVA */
+        .users-table-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px; min-width: 650px; }
+        th { background: rgba(255, 255, 255, 0.05); color: #81c784; padding: 12px; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        td { padding: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: #cccccc; }
+        tr:hover { background: rgba(129, 199, 132, 0.03); }
+
+        .badge-corriente { background: rgba(67, 160, 71, 0.2); color: #81c784; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 600; white-space: nowrap; }
+        .badge-admin { background: rgba(33, 150, 243, 0.2); color: #64b5f6; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 600; white-space: nowrap; }
+        
+        .btn-accion {
+            background: #ef5350; color: white; border: none; padding: 6px 12px;
+            border-radius: 8px; font-size: 11.5px; font-weight: 600; cursor: pointer; transition: 0.2s ease;
+        }
+        .btn-accion:hover { background: #d32f2f; }
+
+        /* FORMULARIO DE AJUSTES */
+        .form-admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .input-box { display: flex; flex-direction: column; gap: 8px; }
+        .input-box label { font-size: 13px; color: #aaa; }
+        .input-box input {
+            background: #1a1a1a; border: 1px solid rgba(255,255,255,0.15); padding: 12px; border-radius: 10px;
+            color: white; font-size: 14px; outline: none; transition: 0.3s; width: 100%;
+        }
+        .input-box input:focus { border-color: #81c784; }
+        .btn-guardar {
+            background: #66BB6A; color: white; border: none; padding: 12px 25px; border-radius: 10px;
+            font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 15px; width: 100%; max-width: 220px;
+        }
+        .btn-guardar:hover { background: #388e3c; }
+
+        /* GRÁFICAS */
+        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .chart-box {
+            background: rgba(18, 18, 18, 0.9); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px;
+            display: flex; flex-direction: column; gap: 15px;
+        }
+        .chart-box h3 { font-size: 16px; color: #fff; }
+        .bar-chart-container { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+        .bar-row { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+        .bar-label { width: 120px; color: #aaa; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .bar-track { flex: 1; background: rgba(255,255,255,0.05); height: 12px; border-radius: 6px; overflow: hidden; }
+        .bar-fill { height: 100%; background: #66BB6A; border-radius: 6px; transition: width 0.8s ease; }
+        .bar-value { width: 45px; text-align: right; font-weight: bold; color: #81c784; font-size: 12px; }
+
+        /* BARRA FLOTANTE RETORNO */
+        #adminBarReturn {
+            display: none; position: fixed; bottom: 85px; right: 20px; background: #2e7d32; color: white;
+            padding: 10px 18px; border-radius: 30px; box-shadow: 0 5px 20px rgba(0,0,0,0.5); z-index: 9999;
+            font-weight: bold; cursor: pointer; border: 2px solid #81c784; transition: 0.3s; font-size: 13px;
+        }
+        #adminBarReturn:hover { background: #1b5e20; transform: scale(1.05); }
+
+        /* MEDIA QUERIES (TABLETS Y PANTALLAS MEDIANAS) */
+        @media (max-width: 992px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .charts-grid { grid-template-columns: 1fr; }
+        }
+
+        /* MEDIA QUERIES (MÓVILES - AQUÍ PASA A LA PARTE INFERIOR) */
+        @media (max-width: 768px) {
+            .main-layout { 
+                margin-left: 0; 
+                margin-bottom: 70px; /* Deja espacio para la barra de abajo */
+                width: 100%; 
+            }
+            .container { padding: 15px; width: 100%; }
+            .form-admin-grid { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .navbar { padding: 0 15px; }
+            .titulo { font-size: 15px; }
+            .menu { gap: 12px; }
+            .menu a { font-size: 13px; }
+            
+            /* BARRA INFERIOR EN MÓVILES */
+            .sidebar { 
+                top: auto; 
+                bottom: 0; 
+                width: 100%; 
+                height: 70px; 
+                flex-direction: row; 
+                border-right: none; 
+                border-top: 1px solid rgba(129, 199, 132, 0.25); 
+                padding: 0 5px; 
+                justify-content: center;
+                align-items: center;
+            }
+            .sidebar-menu { 
+                flex-direction: row; 
+                gap: 5px; 
+                justify-content: space-around; 
+            }
+            .sidebar button { 
+                flex-direction: column; 
+                justify-content: center; 
+                align-items: center; 
+                padding: 6px; 
+                font-size: 11.5px; 
+                gap: 3px; 
+                text-align: center;
+            }
+            .sidebar button span { font-size: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="adminBarReturn" onclick="regresarAlAdminMode()">⬅️ Volver al Panel de Administrador</div>
+
+    <!-- NAVBAR -->
+    <div class="navbar">
+        <div class="logo-nombre">
+            <span class="titulo">ConSiente - Admin</span>
+            <img src="imagenes/logo.png" class="logo" alt="Logo">
+        </div>
+        <div class="menu">
+            <a onclick="cambiarVistaUsuario()">Vista Usuario</a>
+            <div class="user-menu">
+                <img src="imagenes/usuario.png" class="user-icon" id="userBtn" alt="Usuario">
+                <div class="dropdown" id="dropdownMenu">
+                    <a onclick="cambiarTab('ajustesTab')">Configuración</a>
+                    <a onclick="cerrarSesion()">Cerrar sesión</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-layout">
+        
+        <!-- CONTENEDOR PRINCIPAL -->
+        <div class="container">
+            
+            <!-- TAB 1: PANEL GENERAL -->
+            <div id="generalTab" class="tab-content active-tab">
+                <div class="admin-hero-banner">
+                    <div class="admin-hero-info">
+                        <h1><span></span> Panel de Control ConSiente</h1>
+                        <p>Gestión integral de usuarios, supervisión de accesos y control global de la plataforma.</p>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span>👥 Total de Usuarios</span>
+                        <span class="stat-value" id="totalUsuarios">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span>🛡️ Administradores</span>
+                        <span class="stat-value" id="totalAdmins" style="color: #64b5f6;">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span>🔥 Racha Promedio</span>
+                        <span class="stat-value" id="rachaPromedio">0 días</span>
+                    </div>
+                    <div class="stat-card">
+                        <span>🎯 Metas Activas</span>
+                        <span class="stat-value" id="totalMetas">0</span>
+                    </div>
+                </div>
+
+                <div class="admin-section">
+                    <div class="admin-section-header"><span>📋</span> Cuentas Registradas</div>
+                    <div class="users-table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>Correo Electrónico</th>
+                                    <th>Rol</th>
+                                    <th>Racha</th>
+                                    <th>Saldo</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaUsuariosBody">
+                                <tr><td colspan="7" style="text-align: center; color: #888;">Cargando usuarios...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: ESTADÍSTICAS Y RACHAS -->
+            <div id="statsTab" class="tab-content">
+                <div class="admin-hero-banner">
+                    <div class="admin-hero-info">
+                        <h1><span>📈</span> Estadísticas de Uso y Rachas</h1>
+                        <p>Análisis visual del comportamiento, compromiso diario y movimientos financieros de la comunidad.</p>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-box">
+                        <h3>Distribución de Rachas</h3>
+                        <p style="font-size: 11.5px; color: #aaa;">Días consecutivos activos de los usuarios.</p>
+                        <div class="bar-chart-container" id="graficaRachasReal">
+                            <span style="color: #888; font-size: 13px;">Cargando datos...</span>
+                        </div>
+                    </div>
+
+                    <div class="chart-box">
+                        <h3>Uso de Funciones (Movimientos)</h3>
+                        <p style="font-size: 11.5px; color: #aaa;">Categorías más utilizadas en el registro de gastos.</p>
+                        <div class="bar-chart-container" id="graficaUsoReal">
+                            <span style="color: #888; font-size: 13px;">Cargando datos...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: AJUSTES Y SUB-ADMINS -->
+            <div id="ajustesTab" class="tab-content">
+                <div class="admin-hero-banner">
+                    <div class="admin-hero-info">
+                        <h1><span>⚙️</span> Ajustes & Sub-Administradores</h1>
+                        <p>Crea cuentas con privilegios administrativos para delegar la supervisión.</p>
+                    </div>
+                </div>
+
+                <div class="admin-section">
+                    <div class="admin-section-header"><span>➕</span> Registrar Nuevo Administrador</div>
+                    <form id="formCrearAdmin" onsubmit="registrarSubAdmin(event)">
+                        <div class="form-admin-grid">
+                            <div class="input-box">
+                                <label>Nombre del Administrador</label>
+                                <input type="text" id="adminNombre" placeholder="Ej. Moderador Juan" required>
+                            </div>
+                            <div class="input-box">
+                                <label>Correo Electrónico</label>
+                                <input type="email" id="adminCorreo" placeholder="admin@consiente.com" required>
+                            </div>
+                            <div class="input-box" style="grid-column: 1 / -1; max-width: 50%;">
+                                <label>Contraseña Temporal</label>
+                                <input type="password" id="adminPassword" placeholder="••••••••" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-guardar">Crear Sub-Administrador</button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- SIDEBAR (Barra de Navegación) -->
+    <div class="sidebar">
+        <div class="sidebar-menu">
+            <button class="active" onclick="cambiarTab('generalTab')" id="btnGeneral"><span>🛡️</span> General</button>
+            <button onclick="cambiarTab('statsTab')" id="btnStats"><span>📊</span> Estadísticas</button>
+            <button onclick="cambiarTab('ajustesTab')" id="btnAjustes"><span>⚙️</span> Ajustes</button>
+            <button onclick="cambiarVistaUsuario()"><span>👤</span> Ver Sitio</button>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem("token");
+        const rolUsuario = localStorage.getItem("rol");
+
+        if (!token || rolUsuario !== 'admin') {
+            alert("Acceso no autorizado.");
+            window.location.href = "index.html";
+        }
+
+        const btn = document.getElementById("userBtn");
+        const menu = document.getElementById("dropdownMenu");
+        if(btn) {
+            btn.onclick = (e) => { e.stopPropagation(); menu.classList.toggle("show"); };
+        }
+        window.onclick = () => { if (menu) menu.classList.remove("show"); };
+
+        function cerrarSesion(){
+            localStorage.clear(); sessionStorage.clear();
+            window.location.href = "index.html";
+        }
+
+        function cambiarTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active-tab'));
+            document.querySelectorAll('.sidebar-menu button').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active-tab');
+            if(tabId === 'generalTab') document.getElementById('btnGeneral').classList.add('active');
+            if(tabId === 'statsTab') { document.getElementById('btnStats').classList.add('active'); cargarEstadisticasReales(); }
+            if(tabId === 'ajustesTab') document.getElementById('btnAjustes').classList.add('active');
+        }
+
+        function cambiarVistaUsuario() {
+            localStorage.setItem("modoVistaAdmin", "activo");
+            window.location.href = "menu.html";
+        }
+
+        window.addEventListener("DOMContentLoaded", () => {
+            if (localStorage.getItem("modoVistaAdmin") === "activo") {
+                document.getElementById("adminBarReturn").style.display = "block";
+            }
+            cargarDatosAdministrador();
+        });
+
+        function regresarAlAdminMode() {
+            localStorage.removeItem("modoVistaAdmin");
+            window.location.href = "admin.html";
+        }
+
+        async function cargarDatosAdministrador() {
+            try {
+                const res = await fetch("/api/admin/usuarios", {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+
+                if(res.ok) {
+                    const usuarios = await res.json();
+                    document.getElementById("totalUsuarios").innerText = usuarios.length;
+                    
+                    let adminsCount = 0;
+                    let rachaTotal = 0;
+                    let metasSuma = 0;
+                    const tbody = document.getElementById("tablaUsuariosBody");
+                    tbody.innerHTML = "";
+
+                    usuarios.forEach(u => {
+                        if(u.rol === 'admin') adminsCount++;
+                        rachaTotal += Number(u.racha_dias || 0);
+                        if(u.total_metas) metasSuma += Number(u.total_metas);
+
+                        const tr = document.createElement("tr");
+                        tr.innerHTML = `
+                            <td>#${u.id}</td>
+                            <td><b>${u.nombre}</b></td>
+                            <td>${u.correo}</td>
+                            <td>${u.rol === 'admin' ? '<span class="badge-admin">Admin</span>' : '<span class="badge-corriente">Usuario</span>'}</td>
+                            <td style="color: #ffb74d; font-weight: bold;">🔥 ${u.racha_dias || 0}d</td>
+                            <td style="color: #81c784; font-weight: 600;">$${Number(u.saldo || 0).toFixed(2)}</td>
+                            <td>
+                                ${u.correo === 'equipoconsiente@gmail.com' ? '<span style="color:#888; font-size:11px;">Admin</span>' : `<button class="btn-accion" onclick="eliminarUsuarioAdmin(${u.id})">Eliminar</button>`}
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+
+                    document.getElementById("totalAdmins").innerText = adminsCount;
+                    document.getElementById("rachaPromedio").innerText = usuarios.length > 0 ? `${(rachaTotal / usuarios.length).toFixed(1)} días` : '0 días';
+                    document.getElementById("totalMetas").innerText = metasSuma;
+                }
+            } catch (error) {
+                console.error("Error al conectar:", error);
+            }
+        }
+
+        async function cargarEstadisticasReales() {
+            try {
+                const res = await fetch("/api/admin/estadisticas", {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+
+                if(res.ok) {
+                    const data = await res.json();
+                    
+                    const gRachas = document.getElementById("graficaRachasReal");
+                    gRachas.innerHTML = "";
+                    if(data.distribucionRachas.length === 0) {
+                        gRachas.innerHTML = `<span style="color:#888; font-size:12px;">Sin datos de rachas.</span>`;
+                    } else {
+                        data.distribucionRachas.forEach(r => {
+                            const porcentaje = Math.min(100, (r.cantidad * 15));
+                            gRachas.innerHTML += `
+                                <div class="bar-row">
+                                    <span class="bar-label">${r.racha_dias}</span>
+                                    <div class="bar-track"><div class="bar-fill" style="width: ${porcentaje}%;"></div></div>
+                                    <span class="bar-value">${r.cantidad} u.</span>
+                                </div>`;
+                        });
+                    }
+
+                    const gUso = document.getElementById("graficaUsoReal");
+                    gUso.innerHTML = "";
+                    if(data.usoMovimientos.length === 0) {
+                        gUso.innerHTML = `<span style="color:#888; font-size:12px;">Sin movimientos registrados.</span>`;
+                    } else {
+                        const maxVal = Math.max(...data.usoMovimientos.map(m => m.total));
+                        data.usoMovimientos.forEach(m => {
+                            const porcentaje = Math.round((m.total / maxVal) * 100);
+                            gUso.innerHTML += `
+                                <div class="bar-row">
+                                    <span class="bar-label" title="${m.categoria}">${m.categoria}</span>
+                                    <div class="bar-track"><div class="bar-fill" style="width: ${porcentaje}%; background: #64b5f6;"></div></div>
+                                    <span class="bar-value">${m.total}</span>
+                                </div>`;
+                        });
+                    }
+                }
+            } catch(e) {
+                console.error("Error al obtener estadísticas:", e);
+            }
+        }
+
+        async function registrarSubAdmin(e) {
+            e.preventDefault();
+            const nombre = document.getElementById("adminNombre").value;
+            const correo = document.getElementById("adminCorreo").value;
+            const password = document.getElementById("adminPassword").value;
+
+            try {
+                const res = await fetch("/api/admin/crear-subadmin", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+                    body: JSON.stringify({ nombre, correo, password })
+                });
+
+                const data = await res.json();
+                alert(data.message || data.error);
+                if(res.ok) {
+                    document.getElementById("formCrearAdmin").reset();
+                    cargarDatosAdministrador();
+                    cambiarTab('generalTab');
+                }
+            } catch(err) {
+                alert("Error al crear sub-administrador.");
+            }
+        }
+
+        async function eliminarUsuarioAdmin(idUsuario) {
+            if(!confirm("¿Estás seguro de eliminar este usuario?")) return;
+            try {
+                const res = await fetch(`/api/admin/usuarios/${idUsuario}`, {
+                    method: 'DELETE',
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if(res.ok) { alert("Usuario eliminado."); cargarDatosAdministrador(); }
+            } catch(e) { console.error(e); }
+        }
+    </script>
+    <script src="/admin-control.js" defer></script>
+
+</body>
+</html>

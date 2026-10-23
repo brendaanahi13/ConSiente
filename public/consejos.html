@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ConSiente - Consejos de Ahorro</title>
+    <title>ConSiente</title>
     <style>
         * { margin:0; padding:0; box-sizing:border-box; font-family:"Segoe UI",sans-serif; }
         
@@ -37,6 +37,43 @@
         .menu { display:flex; align-items:center; gap:25px; }
         .menu a { text-decoration:none; color:#e0e0e0; font-size: 14px; transition: 0.3s ease; }
         .menu a:hover { color: #81c784; }
+
+        /* NOTIFICACIONES */
+        .notif-wrapper { position: relative; display: flex; align-items: center; }
+        .notif-icon-img {
+            width: 38px; height: 38px; border-radius: 50%; cursor: pointer;
+            border: 1.5px solid rgba(129, 199, 132, 0.5); padding: 6px; object-fit: contain;
+            background: rgba(255, 255, 255, 0.05); transition: 0.3s ease;
+        }
+        .notif-icon-img:hover { border-color: #81c784; background: rgba(129, 199, 132, 0.15); box-shadow: 0 0 10px rgba(129, 199, 132, 0.4); }
+        .notif-badge {
+            position: absolute; top: -2px; right: -2px; background: #ef5350; color: white;
+            font-size: 10px; font-weight: 800; width: 18px; height: 18px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; border: 2px solid #0d0d0d;
+        }
+        .notif-dropdown {
+            position: absolute; right: 0; top: 50px; width: 340px; background: rgba(18, 22, 19, 0.98);
+            backdrop-filter: blur(15px); border-radius: 16px; border: 1px solid rgba(129, 199, 132, 0.25);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.7); display: none; flex-direction: column; z-index: 1200; overflow: hidden;
+        }
+        .notif-header {
+            padding: 14px 18px; background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08); display: flex; justify-content: space-between; align-items: center;
+        }
+        .notif-header h4 { color: #ffffff; font-size: 14px; font-weight: 700; }
+        .notif-header span { color: #81c784; font-size: 11px; cursor: pointer; font-weight: 600; }
+        .notif-list { max-height: 320px; overflow-y: auto; }
+        .notif-item {
+            padding: 14px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            display: flex; gap: 12px; align-items: flex-start; cursor: pointer; transition: all 0.2s ease;
+        }
+        .notif-item:hover { background: rgba(46, 125, 50, 0.2); padding-left: 20px; }
+        .notif-item.unread { background: rgba(129, 199, 132, 0.08); border-left: 3px solid #81c784; }
+        .notif-icon { font-size: 20px; margin-top: 2px; }
+        .notif-detalles { flex: 1; }
+        .notif-titulo-item { font-size: 13px; font-weight: 700; color: #81c784; margin-bottom: 2px; }
+        .notif-texto { font-size: 12px; color: #cccccc; line-height: 1.4; }
+        .notif-fecha { font-size: 10px; color: #777; margin-top: 4px; }
 
         /* MENÚ DE USUARIO DESLIZABLE / DROPDOWN */
         .user-menu {
@@ -94,7 +131,7 @@
             width: 100%;
         }
 
-        /* SIDEBAR - Corregida la altura para que el footer no desaparezca */
+        /* SIDEBAR */
         .sidebar { 
             width: 280px; 
             min-width: 280px;
@@ -106,7 +143,7 @@
             padding: 25px 15px;
             display: flex;
             flex-direction: column;
-            justify-content: space-between; /* Empuja el footer hacia abajo */
+            justify-content: space-between;
         }
         .sidebar-menu {
             display: flex;
@@ -146,7 +183,7 @@
             flex-direction: column;
             gap: 25px; 
             max-width: 1200px;
-            margin: 0 auto; /* Centra el contenido en pantallas gigantes */
+            margin: 0 auto;
             align-items: flex-start;
         }
         
@@ -209,6 +246,26 @@
             line-height: 1.4;
         }
 
+        /* MODAL DE BIENVENIDA */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(12px); display: none;
+            justify-content: center; align-items: center; z-index: 3000;
+        }
+        .modal-bienvenida {
+            background: linear-gradient(135deg, rgba(20, 26, 22, 0.95) 0%, rgba(12, 16, 13, 0.98) 100%);
+            border: 1px solid rgba(129, 199, 132, 0.35); border-radius: 24px; padding: 35px 30px;
+            width: 90%; max-width: 480px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+        }
+        .bienvenida-icon { font-size: 48px; margin-bottom: 15px; }
+        .bienvenida-titulo { font-size: 22px; font-weight: 800; color: #ffffff; margin-bottom: 12px; }
+        .bienvenida-texto { font-size: 14px; color: #d1e7dd; line-height: 1.6; margin-bottom: 25px; }
+        .btn-empezar {
+            width: 100%; padding: 15px; background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+            border: 1px solid rgba(129, 199, 132, 0.4); border-radius: 14px; color: #ffffff;
+            font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s ease;
+        }
+
         /* RESPONSIVIDAD PARA TABLETS Y MÓVILES */
         @media (max-width: 1400px) {
             .grid-consejos { grid-template-columns: repeat(3, 1fr); }
@@ -218,7 +275,7 @@
         }
         @media (max-width: 900px) {
             .main-layout { flex-direction: column; }
-            .sidebar { width: 100%; min-width: 100%; height: auto; border-right: none; border-bottom: 1px solid rgba(129, 199, 132, 0.15); }
+            .sidebar { width: 100%; min-width: 100%; height: auto; border-right: none; border-bottom: 1px solid rgba(129, 199, 132, 0.15); position: static; }
             .container { padding: 20px; width: 100%; }
         }
         @media (max-width: 600px) {
@@ -233,7 +290,22 @@
             <span class="titulo">ConSiente</span>
             <img src="imagenes/logo.png" class="logo" alt="Logo">
         </div>
+        
         <div class="menu">
+            <!-- NOTIFICACIONES -->
+            <div class="notif-wrapper">
+                <img src="imagenes/notificacion.png" class="notif-icon-img" id="notifBtn" alt="Notificaciones" title="Notificaciones">
+                <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
+
+                <div class="notif-dropdown" id="notifDropdown">
+                    <div class="notif-header">
+                        <h4>Notificaciones</h4>
+                        <span onclick="marcarTodasLeidas()">Marcar leídas</span>
+                    </div>
+                    <div class="notif-list" id="notifList"></div>
+                </div>
+            </div>
+
             <a href="menu.html">Home</a>
             <a href="nosotros.html">Sobre nosotros</a>
             <a href="ODS.html">ODS</a>
@@ -252,11 +324,13 @@
         
         <div class="sidebar">
             <div class="sidebar-menu">
-                <button onclick="window.location.href='menu.html'">📊 Mis Estadísticas</button>
-                <button onclick="window.location.href='consejos.html'">💡 Consejos de Ahorro</button>
-                <button onclick="window.location.href='agregar.html'">➕ Agregar gasto</button>
-                <button onclick="window.location.href='historial.html'">📅 Historial</button>
-                <button onclick="window.location.href='semaforo.html'">🚦 Semáforo Financiero</button>
+            <button onclick="window.location.href='menu.html'"><span>📊</span> Estadísticas</button>
+                <button onclick="window.location.href='agregar.html'"><span>➕</span> Agregar</button>
+                <button onclick="window.location.href='historial.html'"><span>📅</span> Historial</button>
+                <button onclick="window.location.href='semaforo.html'"><span>🚦</span> Semáforo</button>
+                <button onclick="window.location.href='metas.html'">🎯 Metas</button>
+                <button onclick="window.location.href='racha.html'">🔥 Misiones</button>
+                <button onclick="window.location.href='consejos.html'"><span>💡</span> Consejos</button>
             </div>
             <div class="footer-privacidad">
                 <a href="privacidadentro.html">Políticas de Privacidad</a>
@@ -372,18 +446,58 @@
         </div>
     </div>
 
+    <!-- MODAL DE BIENVENIDA -->
+    <div class="modal-overlay" id="modalBienvenida">
+        <div class="modal-bienvenida">
+            <div class="bienvenida-icon">🌿</div>
+            <h3 class="bienvenida-titulo">¡Bienvenido a ConSiente!</h3>
+            <p class="bienvenida-texto">
+                Estamos felices de acompañarte en tu camino hacia la libertad y el orden financiero. ConSiente está diseñado para ayudarte a tomar decisiones inteligentes con tu dinero día a día.
+            </p>
+            <button class="btn-empezar" onclick="irAlInicio()">🚀 ¡Empezar ahora!</button>
+        </div>
+    </div>
+
     <script>
+        let notificacionesEstado = [];
+
+        function obtenerIDsLeidos() {
+            return JSON.parse(localStorage.getItem("notificaciones_leidas")) || [];
+        }
+
+        function guardarIDLeido(id) {
+            let leidos = obtenerIDsLeidos();
+            if (!leidos.includes(id)) {
+                leidos.push(id);
+                localStorage.setItem("notificaciones_leidas", JSON.stringify(leidos));
+            }
+        }
+
+        // MENÚS DROPDOWN (Usuario y Notificaciones)
         const btn = document.getElementById("userBtn");
         const menu = document.getElementById("dropdownMenu");
 
         btn.onclick = (e) => {
             e.stopPropagation();
             menu.classList.toggle("show");
+            if (notifDropdown) notifDropdown.style.display = "none";
         };
 
-        window.onclick = (e) => {
-            if (!e.target.matches('#userBtn')) {
+        const notifBtn = document.getElementById("notifBtn");
+        const notifDropdown = document.getElementById("notifDropdown");
+
+        if (notifBtn) {
+            notifBtn.onclick = (e) => {
+                e.stopPropagation();
+                notifDropdown.style.display = (notifDropdown.style.display === "flex") ? "none" : "flex";
                 menu.classList.remove("show");
+            };
+        }
+
+        window.onclick = (e) => {
+            if (!e.target.matches('#userBtn')) menu.classList.remove("show");
+            if (!e.target.closest('.notif-wrapper')) {
+                if (notifDropdown) notifDropdown.style.display = "none";
             }
         };
 
@@ -392,6 +506,155 @@
             localStorage.removeItem("token");
             window.location.href = "index.html";
         }
+
+        function irAlInicio() { window.location.href = "menu.html"; }
+
+        function mostrarModalBienvenida() {
+            document.getElementById("modalBienvenida").style.display = "flex";
+            if (notifDropdown) notifDropdown.style.display = "none";
+        }
+
+        // CARGAR NOTIFICACIONES
+        async function cargarNotificaciones() {
+            notificacionesEstado = [];
+            const idsLeidos = obtenerIDsLeidos();
+
+            notificacionesEstado.push({
+                id: "bienvenida",
+                icono: "👋",
+                titulo: "¡Bienvenido a ConSiente!",
+                texto: "Haz clic aquí para ver tu mensaje de bienvenida y comenzar.",
+                fecha: "Hoy",
+                leida: idsLeidos.includes("bienvenida"),
+                destino: "modal_bienvenida"
+            });
+
+            notificacionesEstado.push({
+                id: "racha_diaria",
+                icono: "🔥",
+                titulo: "¡Mantén tu racha activa!",
+                texto: "Registra tus movimientos de hoy para mantener tu racha financiera.",
+                fecha: "Hoy",
+                leida: idsLeidos.includes("racha_diaria"),
+                destino: "racha"
+            });
+
+            try {
+                const token = localStorage.getItem("token");
+                if (token) {
+                    const res = await fetch("/api/metas", {
+                        headers: { "Authorization": `Bearer ${token}` }
+                    });
+
+                    if (res.ok) {
+                        const metas = await res.json();
+                        const hoy = new Date();
+                        const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+                        const diaHoyNombre = diasSemana[hoy.getDay()];
+                        const diaMesHoy = hoy.getDate();
+
+                        metas.forEach(meta => {
+                            if (Number(meta.monto_ahorrado) < Number(meta.monto_target)) {
+                                const frec = meta.frecuencia;
+                                const diaConfig = meta.dia_pago || "Viernes";
+                                let correspondeHoy = false;
+
+                                if (frec === "Diario") {
+                                    correspondeHoy = true;
+                                } else if (frec === "Semanal") {
+                                    if (diaConfig === diaHoyNombre) correspondeHoy = true;
+                                } else if (frec === "Quincenal") {
+                                    if ((diaConfig.includes("15") && (diaMesHoy === 15 || diaMesHoy === 30)) ||
+                                        (diaConfig.includes("1") && (diaMesHoy === 1 || diaMesHoy === 16))) {
+                                        correspondeHoy = true;
+                                    }
+                                } else if (frec === "Mensual") {
+                                    if ((diaConfig.includes("1") && diaMesHoy === 1) ||
+                                        (diaConfig.includes("15") && diaMesHoy === 15) ||
+                                        (diaConfig.includes("30") && diaMesHoy === 30)) {
+                                        correspondeHoy = true;
+                                    }
+                                }
+
+                                const idNotif = `meta_${correspondeHoy ? 'hoy' : 'plan'}_${meta.id}`;
+                                notificacionesEstado.push({
+                                    id: idNotif,
+                                    icono: correspondeHoy ? "🎯" : "⏰",
+                                    titulo: `Meta: ${meta.nombre}`,
+                                    texto: correspondeHoy ? `¡Hoy toca abono! Cuota (${frec.toLowerCase()}) de $${Number(meta.cuota || 0).toFixed(2)}.` : `Recuerda tu cuota programada (${frec.toLowerCase()}) de $${Number(meta.cuota || 0).toFixed(2)}.`,
+                                    fecha: correspondeHoy ? "Hoy" : "Próximo pago",
+                                    leida: idsLeidos.includes(idNotif),
+                                    destino: "metas"
+                                });
+                            }
+                        });
+                    }
+                }
+            } catch (e) {
+                console.error("Error al sincronizar notificaciones:", e);
+            }
+
+            renderizarNotificaciones();
+        }
+
+        function renderizarNotificaciones() {
+            const contenedor = document.getElementById("notifList");
+            const badge = document.getElementById("notifBadge");
+            if (!contenedor) return;
+
+            contenedor.innerHTML = "";
+            let noLeidas = notificacionesEstado.filter(n => !n.leida).length;
+
+            if (noLeidas > 0) {
+                badge.innerText = noLeidas;
+                badge.style.display = "flex";
+            } else {
+                badge.style.display = "none";
+            }
+
+            notificacionesEstado.forEach(n => {
+                const item = document.createElement("div");
+                item.className = `notif-item ${n.leida ? '' : 'unread'}`;
+                item.onclick = () => procesarClickNotificacion(n.id);
+                item.innerHTML = `
+                    <div class="notif-icon">${n.icono}</div>
+                    <div class="notif-detalles">
+                        <div class="notif-titulo-item">${n.titulo}</div>
+                        <div class="notif-texto">${n.texto}</div>
+                        <div class="notif-fecha">${n.fecha}</div>
+                    </div>
+                `;
+                contenedor.appendChild(item);
+            });
+        }
+
+        function procesarClickNotificacion(id) {
+            const notif = notificacionesEstado.find(n => n.id === id);
+            if (!notif) return;
+
+            notif.leida = true;
+            guardarIDLeido(id);
+            renderizarNotificaciones();
+
+            if (notif.destino === "modal_bienvenida") mostrarModalBienvenida();
+            else if (notif.destino === "racha") window.location.href = "agregar.html";
+            else if (notif.destino === "metas") window.location.href = "metas.html";
+            else if (notifDropdown) notifDropdown.style.display = "none";
+        }
+
+        function marcarTodasLeidas() {
+            notificacionesEstado.forEach(n => {
+                n.leida = true;
+                guardarIDLeido(n.id);
+            });
+            renderizarNotificaciones();
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            cargarNotificaciones();
+        });
     </script>
+    <script src="/global-notificaciones" defer></script>
+
 </body>
 </html>
