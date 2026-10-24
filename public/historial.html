@@ -7,7 +7,6 @@
     <style>
         * { margin:0; padding:0; box-sizing:border-box; font-family:"Segoe UI",sans-serif; }
         
-        /* Fondo con una luz difuminada central muy ligera */
         body { 
             background: radial-gradient(circle at 50% 50%, #27312a 0%, #111412 100%); 
             min-height: 100vh; 
@@ -378,6 +377,14 @@
         let fechaActualVista = new Date();
         let notificacionesEstado = [];
 
+        // Función para parsear fechas de forma limpia evitando desfases de zona horaria
+        function parseFechaLocal(fechaStr) {
+            if (!fechaStr) return new Date();
+            const soloFecha = fechaStr.split('T')[0];
+            const [anio, mes, dia] = soloFecha.split('-').map(Number);
+            return new Date(anio, mes - 1, dia);
+        }
+
         function obtenerIDsLeidos() {
             return JSON.parse(localStorage.getItem("notificaciones_leidas")) || [];
         }
@@ -599,8 +606,8 @@
                 const tipo = g.categoria || "Sin tipo";
                 const monto = g.cantidad || g.monto || 0;
                 
-                const dateObj = new Date(g.fecha);
-                const fechaFormateada = new Date(dateObj.getTime() + dateObj.getTimezoneOffset() * 60000).toLocaleDateString();
+                const dateObj = parseFechaLocal(g.fecha);
+                const fechaFormateada = dateObj.toLocaleDateString();
 
                 tbody.innerHTML += `
                     <tr>
@@ -636,7 +643,7 @@
             
             for(let d = 1; d <= totalDias; d++) {
                 const filtrados = todosLosGastos.filter(g => {
-                    const f = new Date(g.fecha);
+                    const f = parseFechaLocal(g.fecha);
                     return f.getDate() === d && f.getMonth() === mes && f.getFullYear() === anio;
                 });
 
@@ -655,7 +662,7 @@
                 grid.appendChild(div);
             }
             const gastosDelMes = todosLosGastos.filter(g => {
-                const f = new Date(g.fecha);
+                const f = parseFechaLocal(g.fecha);
                 return f.getMonth() === mes && f.getFullYear() === anio;
             });
             renderizarTabla(gastosDelMes);
@@ -666,7 +673,7 @@
             document.getElementById("editMonto").value = monto;
             document.getElementById("editCategoria").value = categoria;
             
-            const f = new Date(fechaRaw);
+            const f = parseFechaLocal(fechaRaw);
             const yyyy = f.getFullYear();
             const mm = String(f.getMonth() + 1).padStart(2, '0');
             const dd = String(f.getDate()).padStart(2, '0');
@@ -764,7 +771,8 @@
             cargarDatos();
         });
     </script>
-    <script src="/global-notificaciones" defer></script>
+
+    <script src="/global-notificaciones.js" defer></script>
 
 </body>
 </html>
