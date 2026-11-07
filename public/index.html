@@ -878,6 +878,19 @@ function checkVisible() {
 }
 window.addEventListener('scroll', checkVisible);
 window.addEventListener('load', checkVisible);
+  </script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function() {
+    navigator.serviceWorker.register("/sw.js")
+      .then(function(registration) {
+        console.log("Consiente PWA activada:", registration.scope);
+      })
+      .catch(function(error) {
+        console.error("Error al registrar PWA:", error);
+      });
+  });
+}
 </script>
 
 </body>
