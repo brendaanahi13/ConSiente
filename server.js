@@ -5,6 +5,8 @@ const cors = require("cors");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const webpush = require('web-push');
+const multer = require('multer');
+const path = require('path');
 
 require("dotenv").config();
 
@@ -15,12 +17,36 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
 
+// Configuración de almacenamiento inteligente con Multer para avatares duales (gris y color)
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, path.join(__dirname, 'public/imagenes/perfiles'));
+    },
+    filename: (req, file, cb) => {
+        let nombreBase = req.body.recompensa || req.body.titulo || "avatar";
+        nombreBase = nombreBase
+            .toLowerCase()
+            .replace(/avatar:/g, '') 
+            .trim()
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "") 
+            .replace(/\s+/g, '-'); 
+
+        const tipoSufijo = file.fieldname === 'archivoGris' ? 'gris' : 'color';
+        const uniqueSuffix = Date.now();
+
+        cb(null, `avatar-${nombreBase}_${tipoSufijo}-${uniqueSuffix}${path.extname(file.originalname)}`);
+    }
+});
+const upload = multer({ storage: storage });
+
 // Configurar las llaves VAPID de seguridad
-webpush.setVapidDetails(
-  process.env.VAPID_EMAIL,
-  process.env.VAPID_PUBLIC_KEY,
-  process.env.VAPID_PRIVATE_KEY
-);
+if (process.env.VAPID_EMAIL && process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+    webpush.setVapidDetails(
+        process.env.VAPID_EMAIL,
+        process.env.VAPID_PUBLIC_KEY,
+        process.env.VAPID_PRIVATE_KEY
+    );
+}
 
 // ==========================================
 // VERIFICAR TOKEN
@@ -70,7 +96,6 @@ app.post("/registro", async (req, res) => {
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
         
-        // Si el correo coincide con el equipo, se registra automáticamente como admin
         const rolAsignado = (correo.trim().toLowerCase() === "equipoconsiente@gmail.com") ? "admin" : "usuario";
 
         const sql = `
@@ -147,11 +172,9 @@ app.post("/login", (req, res) => {
                     });
                 }
 
-                // Asegurar que la cuenta oficial siempre tenga rol admin en el token
                 const esAdmin = (correoLimpio === "equipoconsiente@gmail.com" || user.rol === "admin");
                 const rolFinal = esAdmin ? "admin" : "usuario";
 
-                // Si entró el admin con contraseña correcta pero en la BD decía usuario, lo actualizamos
                 if (esAdmin && user.rol !== "admin") {
                     db.query("UPDATE usuarios SET rol = 'admin' WHERE id = ?", [user.id]);
                 }
@@ -181,13 +204,12 @@ app.post("/login", (req, res) => {
 });
 
 // ==========================================
-// OBTENER PERFIL (CON CONTROL DE RACHAS INTEGRADO)
+// OBTENER PERFIL (CON CONTROL DE RACHAS Y AVATAR)
 // ==========================================
 app.get("/api/perfil", verificarToken, (req, res) => {
     const usuarioId = req.user.id; 
     const hoy = new Date().toISOString().split('T')[0]; 
 
-    // 1. Primero procesamos la racha de este usuario de forma interna
     db.query('SELECT racha_dias, DATE_FORMAT(ultimo_acceso, "%Y-%m-%d") AS ultimo_acceso FROM usuarios WHERE id = ?', [usuarioId], (err, results) => {
         if (!err && results && results.length > 0) {
             const usuario = results[0];
@@ -219,18 +241,23 @@ app.get("/api/perfil", verificarToken, (req, res) => {
                     if (enviarAlertaRacha && !errUpdate) {
                         const titulo = '🔥 ¡Mantienes tu Racha Activa!';
                         const mensaje = `Felicidades por ingresar hoy a ConSiente. Tu racha actual es de ${nuevaRacha} días seguidos.`;
-                        db.query('INSERT INTO historial_notificaciones (usuario_id, titulo, mensaje) VALUES (?, ?, ?)', [usuarioId, titulo, mensaje]);
+                        
+                        db.query('INSERT INTO notificaciones (usuario_id, titulo, mensaje, leida) VALUES (?, ?, ?, 0)', [usuarioId, titulo, mensaje], (err) => {
+                            if (err) console.error("Error silencioso al guardar notificación:", err.message);
+                        });
                     }
                 });
             }
         }
 
-        // 2. Al terminar la racha, mandamos los datos al frente de inmediato
         db.query(
-            "SELECT nombre, saldo, rol, racha_dias FROM usuarios WHERE id = ?",
+            "SELECT nombre, saldo, rol, racha_dias, avatar FROM usuarios WHERE id = ?",
             [usuarioId],
             (errPerfil, perfilResults) => {
-                if (errPerfil) return res.status(500).json({ message: "Error al obtener datos" });
+                if (errPerfil) {
+                    console.error("Error al obtener perfil:", errPerfil);
+                    return res.status(500).json({ message: "Error al obtener datos" });
+                }
                 if (perfilResults.length === 0) return res.status(404).json({ message: "Usuario no encontrado" });
                 res.json(perfilResults[0]);
             }
@@ -239,22 +266,48 @@ app.get("/api/perfil", verificarToken, (req, res) => {
 });
 
 // ==========================================
-// GUARDAR MOVIMIENTO (CORREGIDO)
+// ACTUALIZAR FOTO DE PERFIL / AVATAR
+// ==========================================
+app.put("/api/perfil/avatar", verificarToken, upload.single('avatar'), (req, res) => {
+    const usuarioId = req.user.id;
+    
+    let rutaAvatar = req.body.avatarUrl || req.body.avatar;
+
+    if (req.file) {
+        rutaAvatar = `/imagenes/perfiles/${req.file.filename}`;
+    }
+
+    if (!rutaAvatar) {
+        return res.status(400).json({ message: "No se proporcionó ninguna imagen o avatar válido." });
+    }
+
+    db.query(
+        "UPDATE usuarios SET avatar = ? WHERE id = ?",
+        [rutaAvatar, usuarioId],
+        (err, resultado) => {
+            if (err) {
+                console.error("Error al actualizar avatar en BD:", err);
+                return res.status(500).json({ message: "Error al actualizar la foto de perfil en el servidor." });
+            }
+
+            res.json({
+                message: "Foto de perfil actualizada con éxito",
+                avatar: rutaAvatar
+            });
+        }
+    );
+});
+
+// ==========================================
+// GUARDAR MOVIMIENTO
 // ==========================================
 app.post("/api/gastos", verificarToken, (req, res) => {
     const { categoria, monto, fecha } = req.body;
     const usuarioId = req.user.id;
     const montoNum = Number(monto);
-    
-    // Forzamos "Gasto" por defecto si no viene en la petición para evitar error 400
     const tipo = req.body.tipo || "Gasto"; 
 
-    if (
-        !categoria ||
-        !Number.isFinite(montoNum) ||
-        montoNum <= 0 ||
-        !fecha
-    ) {
+    if (!categoria || !Number.isFinite(montoNum) || montoNum <= 0 || !fecha) {
         return res.status(400).json({
             message: "Datos del movimiento inválidos"
         });
@@ -348,7 +401,7 @@ app.get("/api/resumen-gastos", verificarToken, (req, res) => {
 });
 
 // ==========================================
-// ACTUALIZAR PERFIL
+// ACTUALIZAR PERFIL (Usuario regular)
 // ==========================================
 app.put("/api/perfil", verificarToken, (req, res) => {
     const { nombre, saldo } = req.body;
@@ -444,7 +497,7 @@ app.post("/api/solicitar-recuperacion", (req, res) => {
                                 <h2>Recuperación de cuenta</h2>
                                 <p>Hola <b>${usuarioNombre}</b>,</p>
                                 <p>Solicitaste restablecer tu contraseña.</p>
-                                <a href="/restablecer.html?token=${token}">
+                                <a href="http://localhost:3000/restablecer.html?token=${token}">
                                     Restablecer mi contraseña
                                 </a>
                             </div>
@@ -659,19 +712,23 @@ app.delete("/api/cuenta", verificarToken, (req, res) => {
 });
 
 // ==========================================
-// SEMÁFORO FINANCIERO
+// SEMÁFORO FINANCIERO (Blindado contra errores)
 // ==========================================
 app.get("/api/semaforo-economico", verificarToken, async (req, res) => {
     try {
         const API_KEY = process.env.FASTFOREX_API_KEY;
 
         if (!API_KEY) {
-            throw new Error("Falta FASTFOREX_API_KEY en .env");
+            return res.json({
+                success: true,
+                dolar: "18.04",
+                gasolina: "23.69",
+                inflacion: "3.94",
+                salarioMinimo: "315.04"
+            });
         }
 
-        const url =
-            `https://api.fastforex.io/fetch-one?from=USD&to=MXN&api_key=${API_KEY}`;
-
+        const url = `https://api.fastforex.io/fetch-one?from=USD&to=MXN&api_key=${API_KEY}`;
         const response = await fetch(url);
 
         if (!response.ok) {
@@ -688,10 +745,8 @@ app.get("/api/semaforo-economico", verificarToken, async (req, res) => {
             salarioMinimo: "315.04"
         });
     } catch (error) {
-        console.error("Error del semáforo:", error);
-
-        res.status(500).json({
-            success: false,
+        res.json({
+            success: true,
             dolar: "18.04",
             gasolina: "23.69",
             inflacion: "3.94",
@@ -703,8 +758,6 @@ app.get("/api/semaforo-economico", verificarToken, async (req, res) => {
 // ==========================================
 // METAS DE AHORRO
 // ==========================================
-
-// Obtener metas
 app.get("/api/metas", verificarToken, (req, res) => {
     const usuarioId = req.user.id;
 
@@ -724,7 +777,6 @@ app.get("/api/metas", verificarToken, (req, res) => {
     );
 });
 
-// Crear meta
 app.post("/api/metas", verificarToken, (req, res) => {
     const usuarioId = req.user.id;
     const {
@@ -787,7 +839,6 @@ app.post("/api/metas", verificarToken, (req, res) => {
     );
 });
 
-// Editar meta
 app.put("/api/metas/:id", verificarToken, (req, res) => {
     const usuarioId = req.user.id;
     const metaId = req.params.id;
@@ -854,9 +905,6 @@ app.put("/api/metas/:id", verificarToken, (req, res) => {
     );
 });
 
-// ==========================================
-// ELIMINAR META Y MOVIMIENTOS ASOCIADOS
-// ==========================================
 app.delete("/api/metas/:id", verificarToken, (req, res) => {
     const usuarioId = req.user.id;
     const metaId = req.params.id;
@@ -912,9 +960,6 @@ app.delete("/api/metas/:id", verificarToken, (req, res) => {
     );
 });
 
-// ==========================================
-// ABONAR A UNA META
-// ==========================================
 app.post("/api/metas/:id/abonar", verificarToken, abonarMetaLogica);
 app.put("/api/metas/:id/abonar", verificarToken, abonarMetaLogica);
 
@@ -1015,25 +1060,118 @@ function abonarMetaLogica(req, res) {
 }
 
 // ==========================================
-// RUTAS DE ADMINISTRACIÓN (Panel Admin)
+// RUTAS DE ADMINISTRACIÓN (Panel Admin Pro)
 // ==========================================
 app.get("/api/admin/usuarios", verificarToken, (req, res) => {
-    // Verificamos si el usuario actual es administrador
     db.query("SELECT rol FROM usuarios WHERE id = ?", [req.user.id], (err, results) => {
         if (err || results.length === 0 || results[0].rol !== 'admin') {
             return res.status(403).json({ error: "Acceso denegado. Se requieren privilegios de administrador." });
         }
 
-                const sql = `
+        const buscar = req.query.buscar ? `%${req.query.buscar}%` : '%%';
+
+        const sql = `
             SELECT u.id, u.nombre, u.correo, u.saldo, u.rol, u.racha_dias,
+                   DATE_FORMAT(u.ultimo_acceso, '%d/%m/%Y') AS ultimo_ingreso,
                    (SELECT COUNT(*) FROM metas m WHERE m.usuario_id = u.id) AS total_metas
             FROM usuarios u
+            WHERE u.nombre LIKE ? OR u.correo LIKE ?
         `;
 
-
-        db.query(sql, (errUsers, usuarios) => {
+        db.query(sql, [buscar, buscar], (errUsers, usuarios) => {
             if (errUsers) return res.status(500).json({ error: "Error al obtener lista de usuarios" });
             res.json(usuarios);
+        });
+    });
+});
+
+app.get("/api/admin/usuarios/:id/detalle", verificarToken, (req, res) => {
+    const adminId = req.user.id;
+    const usuarioId = req.params.id;
+
+    db.query("SELECT rol FROM usuarios WHERE id = ?", [adminId], (err, results) => {
+        if (err || results.length === 0 || results[0].rol !== 'admin') {
+            return res.status(403).json({ error: "Acceso denegado." });
+        }
+
+        db.query("SELECT id, nombre, correo, rol, racha_dias, saldo FROM usuarios WHERE id = ?", [usuarioId], (errUser, userRes) => {
+            if (errUser || userRes.length === 0) return res.status(404).json({ error: "Usuario no encontrado" });
+            const usuario = userRes[0];
+
+            db.query("SELECT COUNT(*) AS totalMetas FROM metas WHERE usuario_id = ?", [usuarioId], (errMeta, metaRes) => {
+                db.query("SELECT COUNT(*) AS totalMovimientos, SUM(CASE WHEN tipo = 'Gasto' THEN monto ELSE 0 END) AS sumaGastos FROM movimientos WHERE usuario_id = ?", [usuarioId], (errMov, movRes) => {
+                    res.json({
+                        usuario: usuario,
+                        estadisticas: {
+                            totalMetas: metaRes[0]?.totalMetas || 0,
+                            totalMovimientos: movRes[0]?.totalMovimientos || 0,
+                            sumaGastos: movRes[0]?.sumaGastos || 0
+                        }
+                    });
+                });
+            });
+        });
+    });
+});
+
+app.put("/api/admin/usuarios/:id", verificarToken, (req, res) => {
+    const adminId = req.user.id;
+    const usuarioEditarId = req.params.id;
+    const { nombre, correo, saldo, rol } = req.body;
+
+    db.query("SELECT rol FROM usuarios WHERE id = ?", [adminId], (err, results) => {
+        if (err || results.length === 0 || results[0].rol !== 'admin') {
+            return res.status(403).json({ error: "Acceso denegado. Se requieren privilegios de administrador." });
+        }
+
+        if (!nombre || !correo || saldo === undefined || !rol) {
+            return res.status(400).json({ error: "Faltan datos obligatorios para la actualización." });
+        }
+
+        const query = `
+            UPDATE usuarios 
+            SET nombre = ?, correo = ?, saldo = ?, rol = ? 
+            WHERE id = ? 
+        `;
+
+        db.query(query, [nombre, correo, saldo, rol, usuarioEditarId], (updateErr, updateResult) => {
+            if (updateErr) {
+                console.error("Error al actualizar usuario en BD:", updateErr);
+                return res.status(500).json({ error: "Error al actualizar la base de datos." });
+            }
+            
+            if (updateResult.affectedRows === 0) {
+                return res.status(404).json({ error: "Usuario no encontrado en la base de datos." });
+            }
+
+            res.json({ mensaje: "Perfil actualizado con éxito." });
+        });
+    });
+});
+
+app.post("/api/admin/usuarios/:id/notificar", verificarToken, (req, res) => {
+    const adminId = req.user.id;
+    const usuarioDestinoId = req.params.id;
+    const { titulo, mensaje } = req.body;
+
+    db.query("SELECT rol FROM usuarios WHERE id = ?", [adminId], (err, results) => {
+        if (err || results.length === 0 || results[0].rol !== 'admin') {
+            return res.status(403).json({ error: "Acceso denegado." });
+        }
+
+        if (!titulo || !mensaje) {
+            return res.status(400).json({ error: "El título y el mensaje son obligatorios." });
+        }
+
+        const sql = `INSERT INTO notificaciones (usuario_id, titulo, mensaje, leida) VALUES (?, ?, ?, 0)`;
+        
+        db.query(sql, [usuarioDestinoId, titulo, mensaje], (errNotif) => {
+            if (errNotif) {
+                console.error("Error al registrar notificación desde admin:", errNotif);
+                return res.status(500).json({ error: "Error al registrar la notificación en la base de datos." });
+            }
+
+            res.json({ mensaje: "Notificación enviada correctamente al usuario." });
         });
     });
 });
@@ -1053,36 +1191,33 @@ app.delete("/api/admin/usuarios/:id", verificarToken, (req, res) => {
             db.query("DELETE FROM metas WHERE usuario_id = ?", [usuarioEliminarId], (errMetas) => {
                 if (errMetas) return res.status(500).json({ error: "Error al borrar metas" });
 
-                db.query("DELETE FROM usuarios WHERE id = ?", [usuarioEliminarId], (errUsr) => {
-                    if (errUsr) return res.status(500).json({ error: "Error al eliminar usuario" });
+                db.query("DELETE FROM notificaciones WHERE usuario_id = ?", [usuarioEliminarId], () => {
+                    db.query("DELETE FROM usuarios WHERE id = ?", [usuarioEliminarId], (errUsr) => {
+                        if (errUsr) return res.status(500).json({ error: "Error al eliminar usuario" });
 
-                    res.json({ mensaje: "Usuario eliminado correctamente por el administrador" });
+                        res.json({ mensaje: "Usuario eliminado correctamente por el administrador" });
+                    });
                 });
             });
         });
     });
 });
-// ==========================================
-// CREAR SUB-ADMINISTRADOR
-// ==========================================
+
 app.post("/api/admin/crear-subadmin", verificarToken, (req, res) => {
     const adminId = req.user.id;
     const { nombre, correo, password } = req.body;
 
-    // 1. Verificar que el usuario que ejecuta la acción realmente es administrador
     db.query("SELECT rol FROM usuarios WHERE id = ?", [adminId], async (err, results) => {
         if (err || results.length === 0 || results[0].rol !== 'admin') {
             return res.status(403).json({ error: "Acceso denegado. Se requieren privilegios de administrador." });
         }
 
-        // 2. Validar que vengan todos los datos
         if (!nombre || !correo || !password) {
             return res.status(400).json({ error: "Todos los campos son obligatorios." });
         }
 
         const correoLimpio = correo.trim().toLowerCase();
 
-        // 3. Verificar si el correo ya existe en la base de datos
         db.query("SELECT id FROM usuarios WHERE correo = ?", [correoLimpio], async (errValidacion, resValidacion) => {
             if (errValidacion) {
                 console.error(errValidacion);
@@ -1094,10 +1229,7 @@ app.post("/api/admin/crear-subadmin", verificarToken, (req, res) => {
             }
 
             try {
-                // 4. Encriptar la contraseña
                 const hashedPassword = await bcrypt.hash(password, 10);
-
-                // 5. Insertar al nuevo usuario forzando el rol a 'admin'
                 const sqlInsert = `
                     INSERT INTO usuarios (nombre, correo, password, saldo, rol)
                     VALUES (?, ?, ?, 0, 'admin')
@@ -1109,7 +1241,7 @@ app.post("/api/admin/crear-subadmin", verificarToken, (req, res) => {
                         return res.status(500).json({ error: "Error al guardar el administrador en la base de datos." });
                     }
 
-                    res.status(201).json({ message: "✅ Sub-administrador creado correctamente." });
+                    res.status(201).json({ message: "Sub-administrador creado correctamente." });
                 });
             } catch (hashError) {
                 console.error(hashError);
@@ -1118,11 +1250,31 @@ app.post("/api/admin/crear-subadmin", verificarToken, (req, res) => {
         });
     });
 });
-// =========================================================================
-// MÓDULO DE ALERTAS AUTOMÁTICAS Y NOTIFICACIONES - CONSIENTE
-// =========================================================================
 
-// ENDPOINT A: Guardar la suscripción del navegador para las alertas Push flotantes
+app.get("/api/admin/estadisticas", verificarToken, (req, res) => {
+    db.query("SELECT rol FROM usuarios WHERE id = ?", [req.user.id], (err, results) => {
+        if (err || results.length === 0 || results[0].rol !== 'admin') {
+            return res.status(403).json({ error: "Acceso denegado." });
+        }
+
+        db.query("SELECT racha_dias, COUNT(*) as cantidad FROM usuarios GROUP BY racha_dias", (errRachas, rachasData) => {
+            if (errRachas) return res.status(500).json({ error: "Error al calcular rachas" });
+
+            db.query("SELECT categoria, COUNT(*) as total FROM movimientos GROUP BY categoria ORDER BY total DESC LIMIT 5", (errMov, movData) => {
+                if (errMov) return res.status(500).json({ error: "Error al calcular movimientos" });
+
+                res.json({
+                    distribucionRachas: rachasData,
+                    usoMovimientos: movData
+                });
+            });
+        });
+    });
+});
+
+// ==========================================
+// MÓDULO DE NOTIFICACIONES
+// ==========================================
 app.post('/api/save-subscription', (req, res) => {
   const { userId, subscription } = req.body;
   const subscriptionJson = JSON.stringify(subscription);
@@ -1146,129 +1298,251 @@ app.get('/api/get-current-user', verificarToken, (req, res) => {
     res.json({ userId: req.user.id });
 });
 
-// ENDPOINT B: Obtener las alertas del historial para pintarlas dentro de la página (CORREGIDO)
-app.get('/api/notificaciones/:userId', (req, res) => {
-  const { userId } = req.params;
+app.get('/api/notificaciones', verificarToken, (req, res) => {
+  const usuarioId = req.user.id;
   
-  // Consulta simplificada para evitar errores de columnas faltantes
   const query = `
-    SELECT id, titulo, mensaje 
-    FROM historial_notificaciones 
+    SELECT id, titulo, mensaje, leida, fecha 
+    FROM notificaciones 
     WHERE usuario_id = ? 
     ORDER BY id DESC 
     LIMIT 20
   `;
 
-  db.query(query, [userId], (err, results) => {
+  db.query(query, [usuarioId], (err, results) => {
     if (err) {
-        console.error('Error al consultar historial SQL:', err);
+        console.error('Error al consultar notificaciones:', err);
         return res.status(500).json({ error: 'Error al consultar historial' });
     }
     
-    // Le agregamos valores por defecto a los campos que la página podría estar esperando
     const resultadosSeguros = results.map(notif => ({
         ...notif,
-        leido: notif.leido || 0,
-        fecha: notif.fecha || "Reciente"
+        leida: notif.leida || 0,
+        fecha: notif.fecha || new Date()
     }));
 
     res.json(resultadosSeguros);
   });
 });
 
-// ENDPOINT C: Marcar todas las notificaciones de un usuario como leídas
-app.post('/api/notificaciones/marcar-leidas', (req, res) => {
-  const { userId } = req.body;
-  const query = `UPDATE historial_notificaciones SET leido = 1 WHERE usuario_id = ?`;
+app.put('/api/notificaciones/:id/leida', verificarToken, (req, res) => {
+  const usuarioId = req.user.id;
+  const notifId = req.params.id;
 
-  db.query(query, [userId], (err) => {
+  const query = `UPDATE notificaciones SET leida = 1 WHERE id = ? AND usuario_id = ?`;
+
+  db.query(query, [notifId, usuarioId], (err) => {
+    if (err) return res.status(500).json({ error: 'Error al actualizar' });
+    res.json({ success: true, message: 'Notificación marcada como leída.' });
+  });
+});
+
+app.put('/api/notificaciones/marcar-leidas', verificarToken, (req, res) => {
+  const usuarioId = req.user.id;
+  const query = `UPDATE notificaciones SET leida = 1 WHERE usuario_id = ?`;
+
+  db.query(query, [usuarioId], (err) => {
     if (err) return res.status(500).json({ error: 'Error al actualizar' });
     res.json({ success: true, message: 'Notificaciones marcadas como leídas.' });
   });
 });
 
-// FUNCIÓN DE REVISIÓN AUTOMÁTICA DE METAS (Se ejecuta de fondo)
-function verificarYEnviarAbonosHoy() {
-  console.log('⏰ [Filtro Automático] Buscando abonos programados para el día de hoy...');
+app.delete('/api/notificaciones/:id', verificarToken, (req, res) => {
+  const usuarioId = req.user.id;
+  const notifId = req.params.id;
 
+  const query = `DELETE FROM notificaciones WHERE id = ? AND usuario_id = ?`;
+
+  db.query(query, [notifId, usuarioId], (err, resultado) => {
+    if (err) return res.status(500).json({ error: 'Error al eliminar' });
+    if (resultado.affectedRows === 0) return res.status(404).json({ error: 'Notificación no encontrada' });
+    res.json({ success: true, message: 'Notificación eliminada correctamente.' });
+  });
+});
+
+function verificarYEnviarAbonosHoy() {
   const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-  const hoyEnEspañol = diasSemana[new Date().getDay()]; 
+  const hoyEnEspañol = diasSemana[new Date().getDay()];
 
   const query = `
-    SELECT m.usuario_id, m.nombre AS nombre_meta, s.subscription_data 
-    FROM metas m
-    INNER JOIN suscripciones_push s ON m.usuario_id = s.user_id
-    WHERE m.dia_pago = ? AND m.frecuencia = 'Semanal'
+    SELECT usuario_id, nombre AS nombre_meta 
+    FROM metas 
+    WHERE dia_pago = ? AND frecuencia = 'Semanal'
   `;
 
   db.query(query, [hoyEnEspañol], (err, results) => {
-    if (err) return console.error('Error en consulta de metas:', err);
-
-    console.log(`[MySQL] Se encontraron ${results.length} metas para hoy (${hoyEnEspañol}).`);
+    if (err) return console.error('Error en consulta de metas automáticas:', err);
 
     results.forEach(row => {
-      const subscription = JSON.parse(row.subscription_data);
-      const tituloAlerta = '⏰ Día de Abono - ConSiente';
-      const mensajeAlerta = `¡Hola! Hoy es tu día preferido para aportar a tu meta: "${row.nombre_meta}". ¡Sigue así!`;
+      const tituloAlerta = '⏰ Día de Abono ConSiente';
+      const mensajeAlerta = `¡Hola! Hoy es tu día programado para aportar a tu meta: "${row.nombre_meta}". ¡Haz clic para abonar!`;
 
-      // 1. Clonar y guardar la alerta en la tabla del apartado visual
-      const sqlHistorial = `INSERT INTO historial_notificaciones (usuario_id, titulo, mensaje) VALUES (?, ?, ?)`;
+      const sqlHistorial = `INSERT INTO notificaciones (usuario_id, titulo, mensaje, leida) VALUES (?, ?, ?, 0)`;
       db.query(sqlHistorial, [row.usuario_id, tituloAlerta, mensajeAlerta], (errHistorial) => {
-        if (errHistorial) console.error('Error al guardar historial:', errHistorial);
+        if (errHistorial) console.error('Error al guardar notificación automática:', errHistorial);
       });
-
-      // 2. Disparar el globo flotante Push al escritorio
-      const payload = JSON.stringify({ title: tituloAlerta, body: mensajeAlerta, url: '/mis-metas' });
-      webpush.sendNotification(subscription, payload).catch(() => {});
     });
   });
 }
 
-// Configurar relojes de ejecución
-setInterval(verificarYEnviarAbonosHoy, 1000 * 60 * 60 * 24); // Cada 24 horas
-setTimeout(verificarYEnviarAbonosHoy, 5000); // 5 segundos después de encender el servidor
+setInterval(verificarYEnviarAbonosHoy, 1000 * 60 * 60 * 24); 
+setTimeout(verificarYEnviarAbonosHoy, 5000); 
 
-
-
-// ENDPOINT CORREGIDO PARA EL PANEL ADMIN: Ver rachas generales de todos
-app.get('/api/admin/rachas-generales', (req, res) => {
-  const query = `
-    SELECT id, nombre, racha_dias, DATE_FORMAT(ultimo_acceso, '%d/%m/%Y') as ultimo_ingreso 
-    FROM usuarios 
-    ORDER BY racha_dias DESC
-  `;
-  db.query(query, (err, results) => {
-    if (err) return res.status(500).json({ error: 'Error al consultar rachas generales' });
-    res.json(results);
-  });
+// ==========================================
+// OBTENER MISIONES PARA LA VISTA DE RACHA (CORREGIDO A ASC)
+// ==========================================
+app.get("/api/misiones", verificarToken, (req, res) => {
+    db.query("SELECT * FROM misiones ORDER BY id ASC", (err, resultados) => {
+        if (err) {
+            console.error("Error al obtener misiones:", err);
+            return res.status(500).json({ error: "Error al obtener las misiones" });
+        }
+        res.json(resultados);
+    });
 });
 
 // ==========================================
-// ESTADÍSTICAS AVANZADAS PARA EL PANEL ADMIN
+// MISIONES Y PREMIOS (CRUD Y REQUISITOS DINÁMICOS)
 // ==========================================
-app.get("/api/admin/estadisticas", verificarToken, (req, res) => {
+app.post("/api/admin/misiones", verificarToken, upload.fields([{ name: 'archivoGris', maxCount: 1 }, { name: 'archivoColor', maxCount: 1 }]), (req, res) => {
+    const { titulo, recompensa, descripcion, tipo_condicion, cantidad_objetivo } = req.body;
+    
     db.query("SELECT rol FROM usuarios WHERE id = ?", [req.user.id], (err, results) => {
         if (err || results.length === 0 || results[0].rol !== 'admin') {
             return res.status(403).json({ error: "Acceso denegado." });
         }
 
-        // Consultamos la distribución de rachas de los usuarios
-        db.query("SELECT racha_dias, COUNT(*) as cantidad FROM usuarios GROUP BY racha_dias", (errRachas, rachasData) => {
-            if (errRachas) return res.status(500).json({ error: "Error al calcular rachas" });
+        if (!titulo || !recompensa) {
+            return res.status(400).json({ error: "Título y recompensa son obligatorios." });
+        }
 
-            // Consultamos el uso por categorías en los movimientos
-            db.query("SELECT categoria, COUNT(*) as total FROM movimientos GROUP BY categoria ORDER BY total DESC LIMIT 5", (errMov, movData) => {
-                if (errMov) return res.status(500).json({ error: "Error al calcular movimientos" });
+        let rutaGris = req.files && req.files['archivoGris'] ? `/imagenes/perfiles/${req.files['archivoGris'][0].filename}` : '';
+        let rutaColor = req.files && req.files['archivoColor'] ? `/imagenes/perfiles/${req.files['archivoColor'][0].filename}` : '';
 
-                res.json({
-                    distribucionRachas: rachasData,
-                    usoMovimientos: movData
-                });
+        const sql = `
+            INSERT INTO misiones 
+            (titulo, recompensa, descripcion, imagen_gris, imagen_color, tipo_condicion, cantidad_objetivo) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        `;
+        
+        db.query(sql, [titulo, recompensa, descripcion, rutaGris, rutaColor, tipo_condicion || 'racha', cantidad_objetivo || 1], (errInsert) => {
+            if (errInsert) {
+                console.error("Error al guardar misión:", errInsert);
+                return res.status(500).json({ error: "Error al guardar la misión en la base de datos." });
+            }
+            res.status(201).json({ mensaje: "Misión, iconos y requisitos guardados con éxito." });
+        });
+    });
+});
+
+// Actualizar Misión (CRUD - Admin)
+app.put("/api/admin/misiones/:id", verificarToken, upload.fields([{ name: 'archivoGris', maxCount: 1 }, { name: 'archivoColor', maxCount: 1 }]), (req, res) => {
+    const misionId = req.params.id;
+    const { titulo, recompensa, descripcion, tipo_condicion, cantidad_objetivo } = req.body;
+
+    db.query("SELECT rol FROM usuarios WHERE id = ?", [req.user.id], (err, results) => {
+        if (err || results.length === 0 || results[0].rol !== 'admin') {
+            return res.status(403).json({ error: "Acceso denegado." });
+        }
+
+        db.query("SELECT imagen_gris, imagen_color FROM misiones WHERE id = ?", [misionId], (errSelect, misRes) => {
+            if (errSelect || misRes.length === 0) {
+                return res.status(404).json({ error: "Misión no encontrada." });
+            }
+
+            let rutaGris = req.files && req.files['archivoGris'] ? `/imagenes/perfiles/${req.files['archivoGris'][0].filename}` : misRes[0].imagen_gris;
+            let rutaColor = req.files && req.files['archivoColor'] ? `/imagenes/perfiles/${req.files['archivoColor'][0].filename}` : misRes[0].imagen_color;
+
+            const sql = `
+                UPDATE misiones 
+                SET titulo = ?, recompensa = ?, descripcion = ?, imagen_gris = ?, imagen_color = ?, tipo_condicion = ?, cantidad_objetivo = ?
+                WHERE id = ?
+            `;
+
+            db.query(sql, [titulo, recompensa, descripcion, rutaGris, rutaColor, tipo_condicion || 'racha', cantidad_objetivo || 1, misionId], (errUpdate) => {
+                if (errUpdate) {
+                    console.error("Error al actualizar misión:", errUpdate);
+                    return res.status(500).json({ error: "Error al actualizar la misión en la base de datos." });
+                }
+                res.json({ mensaje: "Misión actualizada correctamente." });
             });
         });
     });
 });
+
+// Eliminar Misión (CRUD - Admin)
+app.delete("/api/admin/misiones/:id", verificarToken, (req, res) => {
+    const misionId = req.params.id;
+
+    db.query("SELECT rol FROM usuarios WHERE id = ?", [req.user.id], (err, results) => {
+        if (err || results.length === 0 || results[0].rol !== 'admin') {
+            return res.status(403).json({ error: "Acceso denegado." });
+        }
+
+        db.query("DELETE FROM misiones WHERE id = ?", [misionId], (errDel, resultado) => {
+            if (errDel) {
+                console.error("Error al eliminar misión:", errDel);
+                return res.status(500).json({ error: "Error al eliminar la misión." });
+            }
+
+            if (resultado.affectedRows === 0) {
+                return res.status(404).json({ error: "Misión no encontrada." });
+            }
+
+            res.json({ mensaje: "Misión eliminada correctamente." });
+        });
+    });
+});
+
+app.get("/api/admin/premios-reclamados", verificarToken, (req, res) => {
+    db.query("SELECT rol FROM usuarios WHERE id = ?", [req.user.id], (err, results) => {
+        if (err || results.length === 0 || results[0].rol !== 'admin') {
+            return res.status(403).json({ error: "Acceso denegado." });
+        }
+
+        const sql = `
+            SELECT p.id, u.nombre, u.correo, p.mision_titulo, p.premio_reclamado, 
+                   DATE_FORMAT(p.fecha_reclamado, '%d/%m/%Y %H:%i') AS fecha
+            FROM premios_reclamados p
+            JOIN usuarios u ON p.usuario_id = u.id
+            ORDER BY p.fecha_reclamado DESC
+        `;
+        db.query(sql, (errSelect, premios) => {
+            if (errSelect) return res.status(500).json({ error: "Error al obtener historial." });
+            res.json(premios);
+        });
+    });
+});
+
+app.post("/api/premios/reclamar", verificarToken, (req, res) => {
+    const usuarioId = req.user.id;
+    const { mision_titulo, premio_reclamado, iconoUrl } = req.body;
+
+    if (!mision_titulo || !premio_reclamado) {
+        return res.status(400).json({ error: "Faltan datos del premio." });
+    }
+
+    const sql = `INSERT INTO premios_reclamados (usuario_id, mision_titulo, premio_reclamado) VALUES (?, ?, ?)`;
+    db.query(sql, [usuarioId, mision_titulo, premio_reclamado], (err) => {
+        if (err) {
+            console.error("Error al registrar el premio:", err);
+            return res.status(500).json({ error: "Error al registrar el premio." });
+        }
+
+        if (iconoUrl) {
+            db.query("UPDATE usuarios SET avatar = ? WHERE id = ?", [iconoUrl, usuarioId], (errAvatar) => {
+                if (errAvatar) console.error("Error al actualizar avatar por misión:", errAvatar);
+            });
+        }
+
+        res.status(201).json({ mensaje: "¡Premio e icono desbloqueados y registrados con éxito!" });
+    });
+});
+
+// ==========================================
+// INICIAR SERVIDOR (Soporte dinámico para puerto en producción/Render)
+// ==========================================
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Servidor corriendo en el puerto ${PORT}`);
+    console.log(`Servidor corriendo en puerto ${PORT}`);
 });
