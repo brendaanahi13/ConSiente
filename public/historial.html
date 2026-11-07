@@ -17,18 +17,9 @@
 
         /* NAVBAR */
         .navbar { 
-            position:fixed; 
-            top:0; 
-            left: 0;
-            width:100%; 
-            height:65px; 
-            background:#0d0d0d; 
-            display:flex; 
-            justify-content:space-between; 
-            align-items:center; 
-            padding:0 25px; 
-            z-index:1000; 
-            border-bottom: 1px solid rgba(129, 199, 132, 0.25); 
+            position:fixed; top:0; left: 0; width:100%; height:65px; background:#0d0d0d; 
+            display:flex; justify-content:space-between; align-items:center; padding:0 25px; 
+            z-index:2000; border-bottom: 1px solid rgba(129, 199, 132, 0.25); 
         }
         .logo-nombre { display:flex; align-items:center; gap:10px; }
         .titulo { font-size:20px; font-weight:bold; color:#ffffff; letter-spacing: 0.5px; }
@@ -53,13 +44,14 @@
         .notif-dropdown {
             position: absolute; right: 0; top: 50px; width: 340px; background: rgba(18, 22, 19, 0.98);
             backdrop-filter: blur(15px); border-radius: 16px; border: 1px solid rgba(129, 199, 132, 0.25);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.7); display: none; flex-direction: column; z-index: 1200; overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.7); display: none; flex-direction: column; z-index: 2500; overflow: hidden;
         }
+        .notif-dropdown.show { display: flex !important; }
         .notif-header {
             padding: 14px 18px; background: rgba(255, 255, 255, 0.03);
             border-bottom: 1px solid rgba(255, 255, 255, 0.08); display: flex; justify-content: space-between; align-items: center;
         }
-        .notif-header h4 { color: #ffffff; font-size: 14px; font-weight: 700; }
+        .notif-header h4 { color: #ffffff; font-size: 14px; font-weight: 700; margin: 0; }
         .notif-header span { color: #81c784; font-size: 11px; cursor: pointer; font-weight: 600; }
         .notif-list { max-height: 320px; overflow-y: auto; }
         .notif-item {
@@ -68,185 +60,113 @@
         }
         .notif-item:hover { background: rgba(46, 125, 50, 0.2); padding-left: 20px; }
         .notif-item.unread { background: rgba(129, 199, 132, 0.08); border-left: 3px solid #81c784; }
-        .notif-icon { font-size: 20px; margin-top: 2px; }
         .notif-detalles { flex: 1; }
         .notif-titulo-item { font-size: 13px; font-weight: 700; color: #81c784; margin-bottom: 2px; }
         .notif-texto { font-size: 12px; color: #cccccc; line-height: 1.4; }
         .notif-fecha { font-size: 10px; color: #777; margin-top: 4px; }
         
-        /* MENÚ DE USUARIO DESPLEGABLE */
+        /* MENÚ DE USUARIO */
         .user-menu { position: relative; display: flex; align-items: center; }
-        .user-icon { width: 38px; height: 38px; border-radius: 50%; cursor: pointer; border: 1.5px solid rgba(129, 199, 132, 0.5); transition: 0.3s ease; }
+        .user-icon { width: 38px; height: 38px; border-radius: 50%; cursor: pointer; border: 1.5px solid rgba(129, 199, 132, 0.5); transition: 0.3s ease; object-fit: cover; }
         .user-icon:hover { border-color: #81c784; box-shadow: 0 0 10px rgba(129, 199, 132, 0.4); }
         
         .dropdown-menu {
-            position: absolute;
-            top: 50px;
-            right: 0;
-            background: #161616;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            width: 180px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
-            display: none;
-            flex-direction: column;
-            overflow: hidden;
-            z-index: 1010;
-            backdrop-filter: blur(10px);
+            position: absolute; top: 50px; right: 0; background: #161616;
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; width: 180px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6); display: none; flex-direction: column;
+            overflow: hidden; z-index: 2500; backdrop-filter: blur(10px);
         }
         .dropdown-menu a, .dropdown-menu button {
-            background: transparent;
-            border: none;
-            color: #e0e0e0;
-            padding: 12px 16px;
-            text-align: left;
-            font-size: 14px;
-            text-decoration: none;
-            cursor: pointer;
-            width: 100%;
-            transition: 0.2s ease;
+            background: transparent; border: none; color: #e0e0e0; padding: 12px 16px;
+            text-align: left; font-size: 14px; text-decoration: none; cursor: pointer; width: 100%;
+            transition: 0.2s ease; display: block;
         }
-        .dropdown-menu a:hover, .dropdown-menu button:hover {
-            background: rgba(129, 199, 132, 0.15);
-            color: #81c784;
-        }
-        .dropdown-menu .btn-logout {
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        .dropdown-menu .btn-logout:hover {
-            background: rgba(129, 199, 132, 0.1);
-            color: #81c784;
-        }
+        .dropdown-menu a:hover, .dropdown-menu button:hover { background: rgba(129, 199, 132, 0.15); color: #81c784; }
+        .dropdown-menu .btn-logout { border-top: 1px solid rgba(255, 255, 255, 0.05); }
+        .dropdown-menu.show { display: flex !important; }
 
-        /* CONTENEDOR ESTRUCTURAL (SIDEBAR + MAIN) */
-        .main-layout {
-            display: flex;
-            margin-top: 65px;
-            min-height: calc(100vh - 65px);
-            width: 100%;
-        }
-
-        /* SIDEBAR */
+        /* LAYOUT Y CONTENEDORES */
+        .main-layout { display: flex; margin-top: 65px; min-height: calc(100vh - 65px); width: 100%; }
         .sidebar { 
-            width: 280px; 
-            min-width: 280px;
-            background:#121212; 
-            border-right: 1px solid rgba(129, 199, 132, 0.15); 
-            padding: 25px 15px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+            width: 280px; min-width: 280px; background:#121212; 
+            border-right: 1px solid rgba(129, 199, 132, 0.15); padding: 25px 15px;
+            display: flex; flex-direction: column; justify-content: space-between;
         }
         .sidebar-menu { display: flex; flex-direction: column; }
         .sidebar button { 
             width:100%; padding:16px; margin-bottom:15px; border:none; border-radius:12px; background:#1b1b1b; color:#ffffff; font-size:15px; cursor:pointer; text-align:left; border-bottom:1px solid rgba(130,199,132,0.2); transition: 0.3s ease;
         }
-        .sidebar button:hover { 
+        .sidebar button:hover, .sidebar button.btn-active { 
             background:#1c2d20; color: #81c784; border-bottom:1px solid rgba(130,199,132,0.5); padding-left: 22px;
         }
-        .sidebar button.btn-active { background:#1c2d20; color: #81c784; border-bottom:1px solid rgba(130,199,132,0.5); padding-left: 22px; }
-
         .footer-privacidad { padding-top: 15px; text-align: center; }
         .footer-privacidad a { color: rgba(255, 255, 255, 0.5); text-decoration: none; font-size: 13px; font-weight: 500; transition: 0.3s ease; }
         .footer-privacidad a:hover { color: #81c784; }
 
-        /* CONTENEDOR PRINCIPAL DOS COLUMNAS */
-        .container { 
-            flex: 1;
-            padding: 40px; 
-            display: flex; 
-            gap: 25px; 
-            max-width: 1300px;
-            margin: 0 auto;
-            align-items: flex-start;
-        }
+        .container { flex: 1; padding: 40px; display: flex; gap: 25px; max-width: 1300px; margin: 0 auto; align-items: flex-start; }
         
-        /* Cajas de Secciones (Cards) */
         .card-seccion { 
-            background: rgba(22, 22, 22, 0.85);
-            backdrop-filter: blur(10px);
-            border-radius: 20px; 
-            padding: 30px; 
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08); 
-            flex: 1;
+            background: rgba(22, 22, 22, 0.85); backdrop-filter: blur(10px);
+            border-radius: 20px; padding: 30px; border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); flex: 1;
         }
-        .card-tabla { flex: 1.2; overflow-x: auto; }
+        .card-tabla { flex: 1.2; overflow-x: auto; max-height: 600px; overflow-y: auto; }
 
-        h2, h3 { color: #81c784; font-weight: 600; letter-spacing: 0.3px; }
-        h2 { margin-bottom: 20px; }
+        .header-tabla-acciones { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .btn-ver-todo { background: rgba(46, 125, 50, 0.25); border: 1px solid rgba(129, 199, 132, 0.4); color: #81c784; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; transition: 0.2s; }
+        .btn-ver-todo:hover { background: #2e7d32; color: #fff; }
 
-        /* DISEÑO CALENDARIO PREMIUM */
+        h2, h3 { color: #81c784; font-weight: 600; letter-spacing: 0.3px; margin-bottom: 0; }
+
+        /* CALENDARIO */
         .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .cal-header h2 { font-size: 20px; text-transform: capitalize; margin-bottom: 0; }
-        .cal-controles { display: flex; align-items: center; gap: 8px; }
-        .cal-controles button { background: #1a1a1a; color: white; border: 1px solid rgba(255,255,255,0.1); padding: 8px 14px; border-radius: 8px; cursor: pointer; transition: 0.3s; font-size: 14px; font-weight: 500; }
+        .cal-header h2 { font-size: 18px; text-transform: capitalize; }
+        .cal-controles { display: flex; align-items: center; gap: 6px; }
+        .cal-controles button { background: #1a1a1a; color: white; border: 1px solid rgba(255,255,255,0.1); padding: 6px 10px; border-radius: 8px; cursor: pointer; transition: 0.3s; font-size: 13px; }
         .cal-controles button:hover { background: #1c2d20; color: #81c784; border-color: rgba(129,199,132,0.4); }
-        #selector-fecha { background: #1a1a1a; color: white; border: 1px solid rgba(255,255,255,0.1); padding: 7px; border-radius: 8px; cursor: pointer; transition: 0.3s; }
-        #selector-fecha:focus { outline: none; border-color: #81c784; }
+        #selector-fecha { background: #1a1a1a; color: white; border: 1px solid rgba(255,255,255,0.1); padding: 5px; border-radius: 8px; cursor: pointer; font-size: 12px; }
 
-        .cal-grid { display:grid; grid-template-columns:repeat(7, 1fr); gap:10px; margin-top:15px; }
-        .cal-date { padding:12px 5px; text-align:center; background:#161616; border-radius:10px; cursor:pointer; border:1.5px solid transparent; font-size: 14px; transition: 0.2s ease; }
+        .cal-grid { display:grid; grid-template-columns:repeat(7, 1fr); gap:8px; margin-top:15px; }
+        .cal-date { padding:10px 4px; text-align:center; background:#161616; border-radius:8px; cursor:pointer; border:1.5px solid transparent; font-size: 13px; transition: 0.2s ease; }
         .cal-date:hover { background: #222; border-color: rgba(255,255,255,0.1); }
-        .cal-date.today { background: #2e7d32 !important; color: white; font-weight: bold; box-shadow: 0 4px 12px rgba(46,125,50,0.4); }
+        .cal-date.today { background: #2e7d32 !important; color: white; font-weight: bold; }
         .cal-date.has-gasto { border-color: rgba(129, 199, 132, 0.4); background: rgba(46, 125, 50, 0.15); color: #81c784; font-weight: 500; }
         .cal-date.selected { background: rgba(129, 199, 132, 0.25); border: 1.5px dashed #81c784; color: #ffffff; }
 
-        /* TABLA DE MOVIMIENTOS ELEGANTE */
+        /* TABLA */
         table { width:100%; border-collapse:collapse; margin-top:5px; }
-        th { color:#81c784; text-align:left; padding:14px 10px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid rgba(129,199,132,0.3); }
-        td { padding:14px 10px; border-bottom:1px solid rgba(255,255,255,0.05); color: #e0e0e0; font-size: 15px; }
+        th { color:#81c784; text-align:left; padding:12px 10px; font-size: 12px; text-transform: uppercase; border-bottom: 2px solid rgba(129,199,132,0.3); position: sticky; top: 0; background: #161616; z-index: 10; }
+        td { padding:12px 10px; border-bottom:1px solid rgba(255,255,255,0.05); color: #e0e0e0; font-size: 14px; }
         tr:hover td { background: rgba(129,199,132,0.04); color: #ffffff; }
         
-        .btn-edit-gasto { background: transparent; color: #81c784; border: none; cursor: pointer; font-size: 14px; padding: 6px 10px; border-radius: 6px; transition: 0.2s; display: inline-flex; align-items: center; gap: 5px; background: rgba(129,199,132,0.1); }
+        .badge-tipo { padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+        .badge-gasto { background: rgba(239, 83, 80, 0.15); color: #ef5350; border: 1px solid rgba(239, 83, 80, 0.3); }
+        .badge-ingreso { background: rgba(46, 125, 50, 0.2); color: #81c784; border: 1px solid rgba(129, 199, 132, 0.3); }
+
+        .btn-edit-gasto { background: rgba(129,199,132,0.1); color: #81c784; border: none; cursor: pointer; font-size: 13px; padding: 5px 10px; border-radius: 6px; transition: 0.2s; }
         .btn-edit-gasto:hover { background: #2e7d32; color: white; }
 
-        /* MODALES */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 2000; }
-        .modal-content { background: #161616; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 30px; width: 380px; color: white; box-shadow: 0 15px 40px rgba(0,0,0,0.8); position: relative; }
+        /* MODAL */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 3000; }
+        .modal-content { background: #161616; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 30px; width: 380px; color: white; box-shadow: 0 15px 40px rgba(0,0,0,0.8); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .modal-header h3 { color: #81c784; margin: 0; font-size: 18px; }
-        .modal-cerrar { background: transparent; border: none; color: #aaa; font-size: 26px; cursor: pointer; line-height: 1; transition: 0.2s; }
+        .modal-cerrar { background: transparent; border: none; color: #aaa; font-size: 26px; cursor: pointer; }
         .modal-cerrar:hover { color: #81c784; }
-
         .modal-group { margin-bottom: 18px; display: flex; flex-direction: column; gap: 6px; }
-        .modal-group label { font-size: 13px; color: #b0b0b0; text-transform: uppercase; letter-spacing: 0.5px; }
-        .modal-group input { background: #222; border: 1px solid rgba(255,255,255,0.15); color: white; padding: 12px; border-radius: 10px; font-size: 15px; transition: 0.3s; }
-        .modal-group input:focus { outline: none; border-color: #81c784; background: #2a2a2a; }
-        
+        .modal-group label { font-size: 13px; color: #b0b0b0; text-transform: uppercase; }
+        .modal-group input { background: #222; border: 1px solid rgba(255,255,255,0.15); color: white; padding: 12px; border-radius: 10px; font-size: 15px; }
         .modal-acciones { display: flex; justify-content: space-between; margin-top: 25px; gap: 12px; }
-        .modal-acciones button { padding: 13px; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 14px; flex: 1; transition: 0.3s ease; }
-        .btn-guardar { background: #2e7d32; color: white; box-shadow: 0 4px 12px rgba(46,125,50,0.2); }
-        .btn-guardar:hover { background: #388e3c; }
-        .btn-eliminar { background: #951b1b; color: #ffdfda; border: 1px solid rgba(129,199,132,0.3); }
-        .btn-eliminar:hover { background: #5c1010; color: #ffffff; }
+        .modal-acciones button { padding: 13px; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 14px; flex: 1; }
+        .btn-guardar { background: #2e7d32; color: white; }
+        .btn-eliminar { background: #951b1b; color: #ffdfda; }
 
-        /* MODAL BIENVENIDA */
-        .modal-bienvenida {
-            background: linear-gradient(135deg, rgba(20, 26, 22, 0.95) 0%, rgba(12, 16, 13, 0.98) 100%);
-            border: 1px solid rgba(129, 199, 132, 0.35); border-radius: 24px; padding: 35px 30px;
-            width: 90%; max-width: 480px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-        }
-        .bienvenida-icon { font-size: 48px; margin-bottom: 15px; }
-        .bienvenida-titulo { font-size: 22px; font-weight: 800; color: #ffffff; margin-bottom: 12px; }
-        .bienvenida-texto { font-size: 14px; color: #d1e7dd; line-height: 1.6; margin-bottom: 25px; }
-        .btn-empezar {
-            width: 100%; padding: 15px; background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
-            border: 1px solid rgba(129, 199, 132, 0.4); border-radius: 14px; color: #ffffff;
-            font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s ease;
-        }
-
-        /* RESPONSIVIDAD */
         @media (max-width: 900px) {
             .main-layout { flex-direction: column; }
-            .sidebar { width: 100%; min-width: 100%; height: auto; border-right: none; border-bottom: 1px solid rgba(129, 199, 132, 0.15); padding: 15px; }
-            .sidebar button { margin-bottom: 8px; }
-            .container { flex-direction: column-reverse; padding: 20px; width: 100%; }
-            .card-seccion { width: 100%; }
+            .sidebar { width: 100%; min-width: 100%; height: auto; }
+            .container { flex-direction: column-reverse; padding: 20px; }
         }
     </style>
 </head>
-
 <body>
 
     <div class="navbar">
@@ -255,15 +175,13 @@
             <img src="imagenes/logo.png" class="logo" alt="Logo">
         </div>
         <div class="menu">
-            <!-- NOTIFICACIONES -->
             <div class="notif-wrapper">
                 <img src="imagenes/notificacion.png" class="notif-icon-img" id="notifBtn" alt="Notificaciones" title="Notificaciones">
                 <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
-
                 <div class="notif-dropdown" id="notifDropdown">
                     <div class="notif-header">
                         <h4>Notificaciones</h4>
-                        <span onclick="marcarTodasLeidas()">Marcar leídas</span>
+                        <span id="marcarTodasLeidasBtn">Marcar leídas</span>
                     </div>
                     <div class="notif-list" id="notifList"></div>
                 </div>
@@ -284,15 +202,15 @@
     </div>
 
     <div class="main-layout">
-        
+        <!-- SIDEBAR -->
         <div class="sidebar">
             <div class="sidebar-menu">
-                <button onclick="window.location.href='menu.html'"><span>📊</span> Estadísticas</button>
-                <button onclick="window.location.href='agregar.html'"><span>➕</span> Agregar</button>
-                <button onclick="window.location.href='historial.html'"><span>📅</span> Historial</button>
-                <button onclick="window.location.href='semaforo.html'"><span>🚦</span> Semáforo</button>
-                <button onclick="window.location.href='metas.html'">🎯 Metas</button>
-                <button onclick="window.location.href='racha.html'">🔥 Misiones</button>
+                <button onclick="window.location.href='menu.html'"><span>📊</span> Mis Estadísticas</button>
+                <button onclick="window.location.href='agregar.html'"><span>➕</span> Agregar gasto</button>
+                <button onclick="window.location.href='historial.html'" class="btn-active"><span>📅</span> Historial</button>
+                <button onclick="window.location.href='semaforo.html'"><span>🚦</span> Semáforo Financiero</button>
+                <button onclick="window.location.href='metas.html'"><span>🎯</span> Metas</button>
+                <button onclick="window.location.href='racha.html'"><span>🔥</span> Misiones</button>
                 <button onclick="window.location.href='consejos.html'"><span>💡</span> Consejos</button>
             </div>
             <div class="footer-privacidad">
@@ -301,12 +219,14 @@
         </div>
 
         <div class="container">
-            
             <div class="card-seccion card-tabla">
-                <h2>Historial de Movimientos</h2>
+                <div class="header-tabla-acciones">
+                    <h2 id="tituloTablaHistorial">Todos los Movimientos</h2>
+                    <button class="btn-ver-todo" onclick="mostrarTodosLosMovimientos()">Ver todo el historial</button>
+                </div>
                 <table>
                     <thead>
-                        <tr><th>Tipo</th><th>Monto</th><th>Fecha</th><th>Acciones</th></tr>
+                        <tr><th>Categoría</th><th>Tipo</th><th>Monto</th><th>Fecha</th><th>Acciones</th></tr>
                     </thead>
                     <tbody id="tablaGastosCuerpo"></tbody>
                 </table>
@@ -324,7 +244,6 @@
                 </div>
                 <div class="cal-grid" id="calendarioGrid"></div>
             </div>
-
         </div>
     </div>
 
@@ -332,27 +251,22 @@
     <div class="modal-overlay" id="modalEditar">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Editar Gasto</h3>
-                <button class="modal-cerrar" onclick="cerrarModal()" title="Cerrar ventana">&times;</button>
+                <h3>Editar Movimiento</h3>
+                <button class="modal-cerrar" onclick="cerrarModal()">&times;</button>
             </div>
-
             <input type="hidden" id="editGastoId">
-            
             <div class="modal-group">
                 <label for="editMonto">Monto ($):</label>
                 <input type="number" id="editMonto" step="0.01" required>
             </div>
-            
             <div class="modal-group">
                 <label for="editCategoria">Categoría:</label>
                 <input type="text" id="editCategoria" required>
             </div>
-            
             <div class="modal-group">
                 <label for="editFecha">Fecha:</label>
                 <input type="date" id="editFecha" required>
             </div>
-            
             <div class="modal-acciones">
                 <button type="button" class="btn-guardar" onclick="guardarCambiosGasto()">Guardar</button>
                 <button type="button" class="btn-eliminar" onclick="eliminarGasto()">Eliminar</button>
@@ -360,231 +274,135 @@
         </div>
     </div>
 
-    <!-- MODAL BIENVENIDA -->
-    <div class="modal-overlay" id="modalBienvenida">
-        <div class="modal-bienvenida">
-            <div class="bienvenida-icon">🌿</div>
-            <h3 class="bienvenida-titulo">¡Bienvenido a ConSiente!</h3>
-            <p class="bienvenida-texto">
-                Estamos felices de acompañarte en tu camino hacia la libertad y el orden financiero. ConSiente está diseñado para ayudarte a tomar decisiones inteligentes con tu dinero día a día.
-            </p>
-            <button class="btn-empezar" onclick="irAlInicio()">🚀 ¡Empezar ahora!</button>
-        </div>
-    </div>
-
     <script>
+        // CONFIGURACIÓN DINÁMICA DE LA API (Abierta para local y producción en Render)
+        const API_URL = "";
+
         let todosLosGastos = [];
         let fechaActualVista = new Date();
-        let notificacionesEstado = [];
 
-        // Función para parsear fechas de forma limpia evitando desfases de zona horaria
-        function parseFechaLocal(fechaStr) {
-            if (!fechaStr) return new Date();
-            const soloFecha = fechaStr.split('T')[0];
-            const [anio, mes, dia] = soloFecha.split('-').map(Number);
-            return new Date(anio, mes - 1, dia);
-        }
+        // Control unificado para menús desplegables y notificaciones
+        document.addEventListener("DOMContentLoaded", () => {
+            const userBtn = document.getElementById("userBtn");
+            const userDropdown = document.getElementById("userDropdown");
+            const notifBtn = document.getElementById("notifBtn");
+            const notifDropdown = document.getElementById("notifDropdown");
 
-        function obtenerIDsLeidos() {
-            return JSON.parse(localStorage.getItem("notificaciones_leidas")) || [];
-        }
-
-        function guardarIDLeido(id) {
-            let leidos = obtenerIDsLeidos();
-            if (!leidos.includes(id)) {
-                leidos.push(id);
-                localStorage.setItem("notificaciones_leidas", JSON.stringify(leidos));
+            // Control menú de usuario
+            if (userBtn && userDropdown) {
+                userBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    if (notifDropdown) notifDropdown.classList.remove("show");
+                    userDropdown.classList.toggle("show");
+                });
             }
-        }
 
-        // --- GESTIÓN DE MENÚS (USUARIO Y NOTIFICACIONES) ---
-        const userBtn = document.getElementById("userBtn");
-        const userDropdown = document.getElementById("userDropdown");
-        const notifBtn = document.getElementById("notifBtn");
-        const notifDropdown = document.getElementById("notifDropdown");
+            // Control menú de notificaciones
+            if (notifBtn && notifDropdown) {
+                notifBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    if (userDropdown) userDropdown.classList.remove("show");
+                    notifDropdown.classList.toggle("show");
+                });
+            }
 
-        userBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            const estaAbierto = userDropdown.style.display === "flex";
-            userDropdown.style.display = estaAbierto ? "none" : "flex";
-            if (notifDropdown) notifDropdown.style.display = "none";
+            // Cerrar menús al hacer clic fuera
+            window.addEventListener("click", (e) => {
+                if (userDropdown && userBtn && !userBtn.contains(e.target) && !userDropdown.contains(e.target)) {
+                    userDropdown.classList.remove("show");
+                }
+                if (notifDropdown && notifBtn && !notifBtn.contains(e.target) && !notifDropdown.contains(e.target)) {
+                    notifDropdown.classList.remove("show");
+                }
+            });
+
+            cargarPerfilUsuario();
+            cargarNotificacionesLocales();
+            cargarDatos();
         });
 
-        if (notifBtn) {
-            notifBtn.addEventListener("click", (e) => {
-                e.stopPropagation();
-                notifDropdown.style.display = (notifDropdown.style.display === "flex") ? "none" : "flex";
-                userDropdown.style.display = "none";
-            });
-        }
-
-        document.addEventListener("click", (e) => {
-            if (!e.target.closest('.user-menu')) userDropdown.style.display = "none";
-            if (!e.target.closest('.notif-wrapper')) {
-                if (notifDropdown) notifDropdown.style.display = "none";
-            }
-        });
-
-        function cerrarSesion() {
-            sessionStorage.removeItem("sesionActiva");
-            localStorage.removeItem("token");
-            alert("Sesión cerrada correctamente.");
-            window.location.href = "login.html";
-        }
-
-        function irAlInicio() { window.location.href = "menu.html"; }
-
-        function mostrarModalBienvenida() {
-            document.getElementById("modalBienvenida").style.display = "flex";
-            if (notifDropdown) notifDropdown.style.display = "none";
-        }
-
-        // --- SISTEMA DE NOTIFICACIONES ---
-        async function cargarNotificaciones() {
-            notificacionesEstado = [];
-            const idsLeidos = obtenerIDsLeidos();
-
-            notificacionesEstado.push({
-                id: "bienvenida",
-                icono: "👋",
-                titulo: "¡Bienvenido a ConSiente!",
-                texto: "Haz clic aquí para ver tu mensaje de bienvenida y comenzar.",
-                fecha: "Hoy",
-                leida: idsLeidos.includes("bienvenida"),
-                destino: "modal_bienvenida"
-            });
-
-            notificacionesEstado.push({
-                id: "racha_diaria",
-                icono: "🔥",
-                titulo: "¡Mantén tu racha activa!",
-                texto: "Registra tus movimientos de hoy para mantener tu racha financiera.",
-                fecha: "Hoy",
-                leida: idsLeidos.includes("racha_diaria"),
-                destino: "racha"
-            });
+        async function cargarPerfilUsuario() {
+            const token = localStorage.getItem("token");
+            if (!token) return;
 
             try {
-                const token = localStorage.getItem("token");
-                if (token) {
-                    const res = await fetch("/api/metas", {
-                        headers: { "Authorization": `Bearer ${token}` }
-                    });
-
-                    if (res.ok) {
-                        const metas = await res.json();
-                        const hoy = new Date();
-                        const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-                        const diaHoyNombre = diasSemana[hoy.getDay()];
-                        const diaMesHoy = hoy.getDate();
-
-                        metas.forEach(meta => {
-                            if (Number(meta.monto_ahorrado) < Number(meta.monto_target)) {
-                                const frec = meta.frecuencia;
-                                const diaConfig = meta.dia_pago || "Viernes";
-                                let correspondeHoy = false;
-
-                                if (frec === "Diario") {
-                                    correspondeHoy = true;
-                                } else if (frec === "Semanal") {
-                                    if (diaConfig === diaHoyNombre) correspondeHoy = true;
-                                } else if (frec === "Quincenal") {
-                                    if ((diaConfig.includes("15") && (diaMesHoy === 15 || diaMesHoy === 30)) ||
-                                        (diaConfig.includes("1") && (diaMesHoy === 1 || diaMesHoy === 16))) {
-                                        correspondeHoy = true;
-                                    }
-                                } else if (frec === "Mensual") {
-                                    if ((diaConfig.includes("1") && diaMesHoy === 1) ||
-                                        (diaConfig.includes("15") && diaMesHoy === 15) ||
-                                        (diaConfig.includes("30") && diaMesHoy === 30)) {
-                                        correspondeHoy = true;
-                                    }
-                                }
-
-                                const idNotif = `meta_${correspondeHoy ? 'hoy' : 'plan'}_${meta.id}`;
-                                notificacionesEstado.push({
-                                    id: idNotif,
-                                    icono: correspondeHoy ? "🎯" : "⏰",
-                                    titulo: `Meta: ${meta.nombre}`,
-                                    texto: correspondeHoy ? `¡Hoy toca abono! Cuota (${frec.toLowerCase()}) de $${Number(meta.cuota || 0).toFixed(2)}.` : `Recuerda tu cuota programada (${frec.toLowerCase()}) de $${Number(meta.cuota || 0).toFixed(2)}.`,
-                                    fecha: correspondeHoy ? "Hoy" : "Próximo pago",
-                                    leida: idsLeidos.includes(idNotif),
-                                    destino: "metas"
-                                });
-                            }
-                        });
+                const response = await fetch(`${API_URL}/api/perfil`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    const perfil = await response.json();
+                    if (perfil.avatar) {
+                        document.getElementById("userBtn").src = perfil.avatar;
                     }
                 }
             } catch (e) {
-                console.error("Error al sincronizar notificaciones:", e);
+                console.error("Error al cargar foto de perfil:", e);
             }
-
-            renderizarNotificaciones();
         }
 
-        function renderizarNotificaciones() {
-            const contenedor = document.getElementById("notifList");
-            const badge = document.getElementById("notifBadge");
-            if (!contenedor) return;
+        async function cargarNotificacionesLocales() {
+            const token = localStorage.getItem("token");
+            if (!token) return;
 
-            contenedor.innerHTML = "";
-            let noLeidas = notificacionesEstado.filter(n => !n.leida).length;
+            try {
+                const res = await fetch(`${API_URL}/api/notificaciones`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const notificaciones = await res.json();
+                    const lista = document.getElementById("notifList");
+                    const badge = document.getElementById("notifBadge");
+                    if (!lista) return;
+                    
+                    lista.innerHTML = "";
+                    let noLeidas = 0;
 
-            if (noLeidas > 0) {
-                badge.innerText = noLeidas;
-                badge.style.display = "flex";
-            } else {
-                badge.style.display = "none";
+                    if (notificaciones.length === 0) {
+                        lista.innerHTML = `<div style="padding: 20px; text-align: center; color: #888; font-size: 13px;">No hay notificaciones</div>`;
+                    } else {
+                        notificaciones.forEach(n => {
+                            if (!n.leida) noLeidas++;
+                            lista.innerHTML += `
+                                <div class="notif-item ${n.leida ? '' : 'unread'}">
+                                    <div class="notif-detalles">
+                                        <div class="notif-titulo-item">${n.titulo}</div>
+                                        <div class="notif-texto">${n.mensaje}</div>
+                                        <div class="notif-fecha">${n.fecha || ''}</div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
+
+                    if (badge) {
+                        if (noLeidas > 0) {
+                            badge.style.display = "flex";
+                            badge.innerText = noLeidas;
+                        } else {
+                            badge.style.display = "none";
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("Error al cargar notificaciones:", e);
             }
-
-            notificacionesEstado.forEach(n => {
-                const item = document.createElement("div");
-                item.className = `notif-item ${n.leida ? '' : 'unread'}`;
-                item.onclick = () => procesarClickNotificacion(n.id);
-                item.innerHTML = `
-                    <div class="notif-icon">${n.icono}</div>
-                    <div class="notif-detalles">
-                        <div class="notif-titulo-item">${n.titulo}</div>
-                        <div class="notif-texto">${n.texto}</div>
-                        <div class="notif-fecha">${n.fecha}</div>
-                    </div>
-                `;
-                contenedor.appendChild(item);
-            });
         }
 
-        function procesarClickNotificacion(id) {
-            const notif = notificacionesEstado.find(n => n.id === id);
-            if (!notif) return;
-
-            notif.leida = true;
-            guardarIDLeido(id);
-            renderizarNotificaciones();
-
-            if (notif.destino === "modal_bienvenida") mostrarModalBienvenida();
-            else if (notif.destino === "racha") window.location.href = "agregar.html";
-            else if (notif.destino === "metas") window.location.href = "metas.html";
-            else if (notifDropdown) notifDropdown.style.display = "none";
+        function cerrarSesion() {
+            localStorage.removeItem("token");
+            window.location.href = "index.html";
         }
 
-        function marcarTodasLeidas() {
-            notificacionesEstado.forEach(n => {
-                n.leida = true;
-                guardarIDLeido(n.id);
-            });
-            renderizarNotificaciones();
-        }
-
-        // --- CARGA DE DATOS API ---
         async function cargarDatos() {
             const token = localStorage.getItem("token");
             try {
-                const response = await fetch("/api/lista-gastos", {
+                const response = await fetch(`${API_URL}/api/lista-gastos`, {
                     headers: { "Authorization": `Bearer ${token}` }
                 });
-                const data = await response.json();
-                todosLosGastos = data; 
-                
+                if (response.ok) {
+                    todosLosGastos = await response.json();
+                }
+                mostrarTodosLosMovimientos();
                 generarCalendario();
             } catch (e) { 
                 console.error("Error al cargar:", e);
@@ -592,30 +410,40 @@
             }
         }
 
+        function mostrarTodosLosMovimientos() {
+            document.getElementById("tituloTablaHistorial").innerText = "Todos los Movimientos";
+            renderizarTabla(todosLosGastos);
+            document.querySelectorAll('.cal-date').forEach(el => el.classList.remove('selected'));
+        }
+
         function renderizarTabla(gastos) {
             const tbody = document.getElementById("tablaGastosCuerpo");
             tbody.innerHTML = "";
             
-            if (gastos.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#aaa; padding: 20px;">No hay movimientos</td></tr>`;
+            if (!gastos || gastos.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#aaa; padding: 25px;">No hay movimientos registrados</td></tr>`;
                 return;
             }
             
             gastos.forEach(g => {
                 const id = g.id || g._id; 
-                const tipo = g.categoria || "Sin tipo";
+                const categoria = g.categoria || "Sin categoría";
+                const tipo = g.tipo || "Gasto";
                 const monto = g.cantidad || g.monto || 0;
                 
-                const dateObj = parseFechaLocal(g.fecha);
-                const fechaFormateada = dateObj.toLocaleDateString();
+                const dateObj = new Date(g.fecha);
+                const fechaFormateada = new Date(dateObj.getTime() + dateObj.getTimezoneOffset() * 60000).toLocaleDateString();
+
+                const badgeClass = tipo.toLowerCase() === 'ingreso' ? 'badge-ingreso' : 'badge-gasto';
 
                 tbody.innerHTML += `
                     <tr>
-                        <td>${tipo}</td>
+                        <td>${categoria}</td>
+                        <td><span class="badge-tipo ${badgeClass}">${tipo}</span></td>
                         <td style="font-weight: 600; color: #fff;">$${parseFloat(monto).toFixed(2)}</td>
                         <td>${fechaFormateada}</td>
                         <td>
-                            <button class="btn-edit-gasto" onclick="abrirModalEditar('${id}', ${monto}, '${tipo}', '${g.fecha}')" title="Editar">Editar</button>
+                            <button class="btn-edit-gasto" onclick="abrirModalEditar('${id}', ${monto}, '${categoria}', '${g.fecha}')">Editar</button>
                         </td>
                     </tr>`;
             });
@@ -631,7 +459,7 @@
             
             grid.innerHTML = '';
             ['Do','Lu','Ma','Mi','Ju','Vi','Sá'].forEach(d => {
-                grid.innerHTML += `<div style="font-size:12px; color:#81c784; text-align:center; font-weight:bold; padding-bottom: 5px;">${d}</div>`;
+                grid.innerHTML += `<div style="font-size:11px; color:#81c784; text-align:center; font-weight:bold; padding-bottom: 5px;">${d}</div>`;
             });
             
             const primerDiaMes = new Date(anio, mes, 1).getDay();
@@ -642,30 +470,26 @@
             }
             
             for(let d = 1; d <= totalDias; d++) {
-                const filtrados = todosLosGastos.filter(g => {
-                    const f = parseFechaLocal(g.fecha);
+                const filtradosDia = todosLosGastos.filter(g => {
+                    const f = new Date(g.fecha);
                     return f.getDate() === d && f.getMonth() === mes && f.getFullYear() === anio;
                 });
 
                 const esHoy = (d === hoy.getDate() && mes === hoy.getMonth() && anio === hoy.getFullYear());
                 const div = document.createElement('div');
                 
-                div.className = `cal-date ${esHoy ? 'today' : ''} ${filtrados.length > 0 ? 'has-gasto' : ''}`;
+                div.className = `cal-date ${esHoy ? 'today' : ''} ${filtradosDia.length > 0 ? 'has-gasto' : ''}`;
                 div.innerText = d;
 
                 div.onclick = () => {
                     document.querySelectorAll('.cal-date').forEach(el => el.classList.remove('selected'));
                     div.classList.add('selected');
-                    renderizarTabla(filtrados);
+                    document.getElementById("tituloTablaHistorial").innerText = `Movimientos del ${d} de ${fechaActualVista.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}`;
+                    renderizarTabla(filtradosDia);
                 };
 
                 grid.appendChild(div);
             }
-            const gastosDelMes = todosLosGastos.filter(g => {
-                const f = parseFechaLocal(g.fecha);
-                return f.getMonth() === mes && f.getFullYear() === anio;
-            });
-            renderizarTabla(gastosDelMes);
         }
 
         function abrirModalEditar(id, monto, categoria, fechaRaw) {
@@ -673,7 +497,7 @@
             document.getElementById("editMonto").value = monto;
             document.getElementById("editCategoria").value = categoria;
             
-            const f = parseFechaLocal(fechaRaw);
+            const f = new Date(fechaRaw);
             const yyyy = f.getFullYear();
             const mm = String(f.getMonth() + 1).padStart(2, '0');
             const dd = String(f.getDate()).padStart(2, '0');
@@ -694,7 +518,7 @@
             const token = localStorage.getItem("token");
 
             try {
-                const response = await fetch(`/api/lista-gastos/${id}`, {
+                const response = await fetch(`${API_URL}/api/lista-gastos/${id}`, {
                     method: "PUT",
                     headers: { 
                         "Authorization": `Bearer ${token}`,
@@ -704,7 +528,7 @@
                 });
 
                 if(response.ok) {
-                    alert("Gasto actualizado con éxito.");
+                    alert("Movimiento actualizado con éxito.");
                     cerrarModal();
                     cargarDatos(); 
                 } else {
@@ -717,17 +541,16 @@
             const id = document.getElementById("editGastoId").value;
             const token = localStorage.getItem("token");
 
-            const confirmar = confirm("¿Deseas eliminar este gasto?");
-            if(!confirmar) return;
+            if(!confirm("¿Deseas eliminar este movimiento?")) return;
 
             try {
-                const response = await fetch(`/api/lista-gastos/${id}`, {
+                const response = await fetch(`${API_URL}/api/lista-gastos/${id}`, {
                     method: "DELETE",
                     headers: { "Authorization": `Bearer ${token}` }
                 });
 
                 if(response.ok) {
-                    alert("Gasto eliminado.");
+                    alert("Movimiento eliminado.");
                     cerrarModal();
                     cargarDatos(); 
                 } else {
@@ -739,40 +562,34 @@
         document.getElementById('mes-anterior').addEventListener('click', () => {
             fechaActualVista.setMonth(fechaActualVista.getMonth() - 1);
             generarCalendario();
+            filtrarTablaPorMesActual();
         });
 
         document.getElementById('mes-siguiente').addEventListener('click', () => {
             fechaActualVista.setMonth(fechaActualVista.getMonth() + 1);
             generarCalendario();
+            filtrarTablaPorMesActual();
         });
 
         document.getElementById('btn-hoy').addEventListener('click', () => {
             fechaActualVista = new Date();
             generarCalendario();
+            mostrarTodosLosMovimientos();
         });
 
-        document.getElementById('selector-fecha').addEventListener('change', (e) => {
-            if(e.target.value) {
-                const nuevaFecha = new Date(e.target.value.replace(/-/g, '\/'));
-                fechaActualVista = nuevaFecha;
-                generarCalendario();
-                
-                setTimeout(() => {
-                    const dias = document.querySelectorAll('.cal-date');
-                    dias.forEach(div => {
-                        if(div.innerText == nuevaFecha.getDate()) div.click();
-                    });
-                }, 50);
-            }
-        });
+        function filtrarTablaPorMesActual() {
+            const mes = fechaActualVista.getMonth();
+            const anio = fechaActualVista.getFullYear();
+            const nombreMes = fechaActualVista.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+            
+            const filtradosMes = todosLosGastos.filter(g => {
+                const f = new Date(g.fecha);
+                return f.getMonth() === mes && f.getFullYear() === anio;
+            });
 
-        document.addEventListener("DOMContentLoaded", () => {
-            cargarNotificaciones();
-            cargarDatos();
-        });
+            document.getElementById("tituloTablaHistorial").innerText = `Movimientos de ${nombreMes}`;
+            renderizarTabla(filtradosMes);
+        }
     </script>
-
-    <script src="/global-notificaciones.js" defer></script>
-
 </body>
 </html>
