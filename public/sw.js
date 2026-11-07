@@ -46,3 +46,11 @@ self.addEventListener('notificationclick', function(event) {
     })
   );
 });
+// Activar el service worker
+self.addEventListener('install', function(event) {
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', function(event) {
+  event.waitUntil(self.clients.claim());
+});
