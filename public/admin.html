@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ConSiente</title>
+    <title>ConSiente - Panel de Admin</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        * { margin:0; padding:0; box-sizing:border-box; font-family:"Segoe UI",sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Segoe UI", sans-serif; }
         
         body { 
             background: radial-gradient(circle at 50% 50%, #27312a 0%, #111412 100%); 
@@ -16,405 +17,507 @@
             overflow-x: hidden;
         }
 
-        /* NAVBAR PRINCIPAL */
+        /* NAVBAR */
         .navbar { 
             position: fixed; top: 0; left: 0; width: 100%; height: 65px; background: #0d0d0d; 
-            display: flex; justify-content: space-between; align-items: center; padding: 0 25px; 
-            z-index: 1000; border-bottom: 1px solid rgba(129, 199, 132, 0.25); 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 0 30px; z-index: 2000; border-bottom: 1px solid rgba(129, 199, 132, 0.25); 
         }
-        .logo-nombre { display: flex; align-items: center; gap: 10px; }
+        .logo-nombre { display: flex; align-items: center; gap: 12px; }
         .titulo { font-size: 18px; font-weight: bold; color: #ffffff; letter-spacing: 0.5px; }
-        .logo { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; }
         .menu { display: flex; align-items: center; gap: 20px; }
         .menu a { text-decoration: none; color: #e0e0e0; font-size: 14px; transition: 0.3s ease; cursor: pointer; white-space: nowrap; }
         .menu a:hover { color: #81c784; }
 
-        /* USUARIO DROPDOWN */
-        .user-menu { position: relative; display: flex; align-items: center; }
-        .user-icon { width: 38px; height: 38px; border-radius: 50%; cursor: pointer; border: 1.5px solid rgba(129, 199, 132, 0.5); transition: 0.3s ease; }
-        .user-icon:hover { border-color: #81c784; box-shadow: 0 0 10px rgba(129, 199, 132, 0.4); }
-        .dropdown {
-            position: absolute; right: 0; top: 50px; background: rgba(20, 20, 20, 0.98);
-            backdrop-filter: blur(10px); border-radius: 12px; border: 1px solid rgba(129, 199, 132, 0.2);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.6); display: none; flex-direction: column; min-width: 160px; overflow: hidden; z-index: 1100;
-        }
-        .dropdown a { padding: 12px 18px; text-decoration: none; color: #ffffff; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.05); transition: 0.2s ease; }
-        .dropdown a:hover { background: rgba(46, 125, 50, 0.3); color: #81c784; }
-        .show { display: flex; }
-
         /* LAYOUT GENERAL */
         .main-layout { 
-            display: flex; 
-            flex-direction: column; 
-            margin-top: 65px; 
-            /* En escritorio, dejamos espacio a la izquierda para el menú */
-            margin-left: 220px;
-            min-height: calc(100vh - 65px); 
-            width: calc(100% - 220px); 
+            display: flex; flex-direction: column; margin-top: 65px; margin-left: 280px;
+            min-height: calc(100vh - 65px); width: calc(100% - 280px); 
         }
 
-        /* MENÚ LATERAL (DESKTOP POR DEFECTO) */
+        /* SIDEBAR */
         .sidebar { 
-            position: fixed; 
-            top: 65px; 
-            left: 0; 
-            width: 220px; 
-            height: calc(100vh - 65px); 
-            background: rgba(18, 18, 18, 0.95); 
-            backdrop-filter: blur(10px);
-            border-right: 1px solid rgba(129, 199, 132, 0.25); 
-            padding: 25px 15px;
-            display: flex; 
-            flex-direction: column; 
-            align-items: flex-start; 
-            z-index: 990; 
+            position: fixed; top: 65px; left: 0; width: 280px; height: calc(100vh - 65px); 
+            background: #121212; border-right: 1px solid rgba(129, 199, 132, 0.15); padding: 25px 15px;
+            display: flex; flex-direction: column; justify-content: space-between; z-index: 1000; 
         }
-        .sidebar-menu { 
-            display: flex; 
-            flex-direction: column; 
-            width: 100%; 
-            gap: 15px; 
-        }
+        .sidebar-menu { display: flex; flex-direction: column; width: 100%; gap: 12px; }
         .sidebar button { 
-            width: 100%;
-            padding: 12px 15px; 
-            border: none; 
-            border-radius: 10px; 
-            background: transparent; 
-            color: #b0b0b0;
-            font-size: 14px; 
-            cursor: pointer; 
-            text-align: left; 
-            transition: 0.3s ease; 
-            display: flex; 
-            flex-direction: row; 
-            align-items: center; 
-            justify-content: flex-start;
-            gap: 12px;
+            width: 100%; padding: 16px; border: none; border-radius: 12px; background: #1b1b1b; 
+            color: #ffffff; font-size: 15px; cursor: pointer; text-align: left; 
+            border-bottom: 1px solid rgba(130,199,132,0.2); transition: 0.3s ease; 
+            display: flex; align-items: center; gap: 12px;
         }
         .sidebar button span { font-size: 18px; }
-        .sidebar button:hover, .sidebar button.active { 
-            background: rgba(46, 125, 50, 0.25); 
-            color: #81c784; 
-        }
+        .sidebar button:hover, .sidebar button.active { background: #1c2d20; color: #81c784; border-bottom: 1px solid rgba(130,199,132,0.5); padding-left: 22px; }
+        .footer-privacidad { padding-top: 15px; text-align: center; }
+        .footer-privacidad a { color: rgba(255, 255, 255, 0.5); text-decoration: none; font-size: 13px; font-weight: 500; transition: 0.3s ease; }
+        .footer-privacidad a:hover { color: #81c784; }
 
-        /* CONTENEDOR PRINCIPAL */
-        .container { 
-            flex: 1; padding: 30px; display: flex; flex-direction: column; gap: 25px; max-width: 1250px; margin: 0 auto; width: 100%; overflow-x: hidden;
-        }
-
+        /* CONTENEDOR */
+        .container { flex: 1; padding: 35px 40px; display: flex; flex-direction: column; gap: 30px; max-width: 1350px; margin: 0 auto; width: 100%; }
         .tab-content { display: none; flex-direction: column; gap: 25px; }
         .tab-content.active-tab { display: flex; }
 
-        /* BANNER */
+        /* BANNER Y TARJETAS */
         .admin-hero-banner {
             background: rgba(22, 22, 22, 0.85); backdrop-filter: blur(10px); border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.5); padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.5); padding: 30px;
         }
-        .admin-hero-info h1 { font-size: clamp(20px, 4vw, 26px); color: #ffffff; font-weight: 600; display: flex; align-items: center; gap: 10px; }
-        .admin-hero-info h1 span { color: #81c784; }
-        .admin-hero-info p { font-size: 13px; color: #a0a0a0; margin-top: 5px; line-height: 1.4; }
+        .admin-hero-info h1 { font-size: 22px; color: #ffffff; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+        .admin-hero-info p { font-size: 13.5px; color: #b0b0b0; margin-top: 6px; }
 
-        /* TARJETAS DE ESTADÍSTICAS */
         .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
         .stat-card {
             background: rgba(22, 22, 22, 0.85); backdrop-filter: blur(10px); border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.1); padding: 20px; display: flex; flex-direction: column; gap: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1); padding: 22px; display: flex; flex-direction: column; gap: 10px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3); transition: transform 0.2s ease;
         }
-        .stat-card span:first-child { font-size: 11px; color: #a0a0a0; text-transform: uppercase; font-weight: 600; }
-        .stat-card .stat-value { font-size: clamp(20px, 3vw, 24px); font-weight: bold; color: #81c784; }
+        .stat-card:hover { transform: translateY(-3px); border-color: rgba(129, 199, 132, 0.4); }
+        .stat-card span:first-child { font-size: 11px; color: #a0a0a0; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
+        .stat-card .stat-value { font-size: 24px; font-weight: 700; color: #81c784; }
 
-        /* SECCIÓN TABLA */
+        /* SECCIÓN GENERAL */
         .admin-section {
-            background: rgba(22, 22, 22, 0.85); backdrop-filter: blur(10px); border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1); padding: 25px; display: flex; flex-direction: column; gap: 20px;
+            background: rgba(22, 22, 22, 0.85); 
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            padding: 30px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4); 
         }
-        .admin-section-header { font-size: 16px; font-weight: 600; color: #ffffff; display: flex; align-items: center; gap: 10px; }
+        .admin-section-header { font-size: 16px; font-weight: 600; color: #81c784; display: flex; align-items: center; gap: 10px; }
 
-        /* TABLA RESPONSIVA */
-        .users-table-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px; min-width: 650px; }
-        th { background: rgba(255, 255, 255, 0.05); color: #81c784; padding: 12px; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        td { padding: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: #cccccc; }
-        tr:hover { background: rgba(129, 199, 132, 0.03); }
+        /* LISTA DESPLEGABLE DE RESULTADOS */
+        .search-results-container {
+            max-height: 250px; 
+            overflow-y: auto; 
+            background: #161616; 
+            border-radius: 12px;
+            border: 1px solid rgba(129, 199, 132, 0.4); 
+            display: none; 
+            margin-top: 6px; 
+            width: 100%;
+            position: absolute; 
+            left: 0; 
+            top: 100%; 
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.95); 
+            z-index: 2500;
+        }
+        .search-result-item {
+            padding: 14px 18px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center; transition: all 0.2s ease; font-size: 13.5px;
+        }
+        .search-result-item:hover { background: rgba(46, 125, 50, 0.25); color: #81c784; padding-left: 22px; }
 
-        .badge-corriente { background: rgba(67, 160, 71, 0.2); color: #81c784; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 600; white-space: nowrap; }
-        .badge-admin { background: rgba(33, 150, 243, 0.2); color: #64b5f6; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 600; white-space: nowrap; }
+        /* TARJETA DE PERFIL DETALLADO */
+        .user-profile-card {
+            background: rgba(18, 22, 19, 0.98); border: 1px solid rgba(129,199,132,0.4); border-radius: 16px;
+            padding: 25px; display: none; flex-direction: column; gap: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+            margin-top: 15px; animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+
+        .profile-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 15px; }
+        .profile-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
+        .sub-box { background: rgba(255,255,255,0.03); padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
+
+        .users-table-wrapper { width: 100%; overflow-x: auto; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; min-width: 700px; }
+        th { background: #161616; color: #81c784; padding: 14px 16px; font-weight: 600; border-bottom: 2px solid rgba(129,199,132,0.3); }
+        td { padding: 14px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: #e0e0e0; }
+        tr:hover td { background: rgba(129, 199, 132, 0.05); color: #fff; cursor: pointer; }
+
+        .badge-corriente { background: rgba(46, 125, 50, 0.2); color: #81c784; padding: 5px 12px; border-radius: 20px; font-size: 11.5px; font-weight: 600; border: 1px solid rgba(129,199,132,0.3); }
+        .badge-admin { background: rgba(33, 150, 243, 0.15); color: #64b5f6; padding: 5px 12px; border-radius: 20px; font-size: 11.5px; font-weight: 600; border: 1px solid rgba(100,181,246,0.3); }
         
-        .btn-accion {
-            background: #ef5350; color: white; border: none; padding: 6px 12px;
-            border-radius: 8px; font-size: 11.5px; font-weight: 600; cursor: pointer; transition: 0.2s ease;
-        }
-        .btn-accion:hover { background: #d32f2f; }
+        .btn-accion { background: rgba(239, 83, 80, 0.15); color: #ef5350; border: 1px solid rgba(239,83,80,0.3); padding: 6px 12px; border-radius: 8px; font-size: 11.5px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-accion:hover { background: #ef5350; color: #fff; }
+        .btn-editar { background: rgba(255, 183, 77, 0.15); color: #ffb74d; border: 1px solid rgba(255,183,77,0.3); padding: 6px 12px; border-radius: 8px; font-size: 11.5px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-editar:hover { background: #ffb74d; color: #000; }
+        .btn-notificar { background: rgba(66, 165, 245, 0.15); color: #42a5f5; border: 1px solid rgba(66,165,245,0.3); padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-notificar:hover { background: #42a5f5; color: #fff; }
 
-        /* FORMULARIO DE AJUSTES */
         .form-admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .input-box { display: flex; flex-direction: column; gap: 8px; }
-        .input-box label { font-size: 13px; color: #aaa; }
-        .input-box input {
-            background: #1a1a1a; border: 1px solid rgba(255,255,255,0.15); padding: 12px; border-radius: 10px;
-            color: white; font-size: 14px; outline: none; transition: 0.3s; width: 100%;
+        .input-box label { font-size: 13px; color: #b0b0b0; font-weight: 500; text-transform: uppercase; }
+        .input-box input, .input-box textarea, .input-box select {
+            background: #161616; border: 1px solid rgba(255,255,255,0.15); padding: 13px 15px; border-radius: 10px;
+            color: white; font-size: 14px; outline: none; width: 100%; transition: 0.3s;
         }
-        .input-box input:focus { border-color: #81c784; }
+        .input-box input:focus, .input-box textarea:focus, .input-box select:focus { border-color: #81c784; }
         .btn-guardar {
-            background: #66BB6A; color: white; border: none; padding: 12px 25px; border-radius: 10px;
-            font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 15px; width: 100%; max-width: 220px;
+            background: #2e7d32; color: white; border: none; padding: 13px 25px; border-radius: 10px;
+            font-weight: 600; cursor: pointer; margin-top: 15px; width: 100%; max-width: 220px; transition: 0.3s;
         }
         .btn-guardar:hover { background: #388e3c; }
 
-        /* GRÁFICAS */
-        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .chart-box {
-            background: rgba(18, 18, 18, 0.9); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px;
-            display: flex; flex-direction: column; gap: 15px;
-        }
-        .chart-box h3 { font-size: 16px; color: #fff; }
-        .bar-chart-container { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
-        .bar-row { display: flex; align-items: center; gap: 10px; font-size: 13px; }
-        .bar-label { width: 120px; color: #aaa; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .bar-track { flex: 1; background: rgba(255,255,255,0.05); height: 12px; border-radius: 6px; overflow: hidden; }
-        .bar-fill { height: 100%; background: #66BB6A; border-radius: 6px; transition: width 0.8s ease; }
-        .bar-value { width: 45px; text-align: right; font-weight: bold; color: #81c784; font-size: 12px; }
+        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+        .chart-box { background: rgba(22, 22, 22, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 25px; display: flex; flex-direction: column; gap: 15px; }
 
-        /* BARRA FLOTANTE RETORNO */
         #adminBarReturn {
-            display: none; position: fixed; bottom: 85px; right: 20px; background: #2e7d32; color: white;
-            padding: 10px 18px; border-radius: 30px; box-shadow: 0 5px 20px rgba(0,0,0,0.5); z-index: 9999;
-            font-weight: bold; cursor: pointer; border: 2px solid #81c784; transition: 0.3s; font-size: 13px;
-        }
-        #adminBarReturn:hover { background: #1b5e20; transform: scale(1.05); }
-
-        /* MEDIA QUERIES (TABLETS Y PANTALLAS MEDIANAS) */
-        @media (max-width: 992px) {
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            .charts-grid { grid-template-columns: 1fr; }
+            display: none; position: fixed; bottom: 25px; right: 25px; background: #2e7d32; color: white;
+            padding: 12px 22px; border-radius: 30px; box-shadow: 0 8px 25px rgba(0,0,0,0.6); z-index: 9999;
+            font-weight: 600; cursor: pointer; border: 2px solid #81c784;
         }
 
-        /* MEDIA QUERIES (MÓVILES - AQUÍ PASA A LA PARTE INFERIOR) */
-        @media (max-width: 768px) {
-            .main-layout { 
-                margin-left: 0; 
-                margin-bottom: 70px; /* Deja espacio para la barra de abajo */
-                width: 100%; 
-            }
-            .container { padding: 15px; width: 100%; }
-            .form-admin-grid { grid-template-columns: 1fr; }
-            .stats-grid { grid-template-columns: 1fr; }
-            .navbar { padding: 0 15px; }
-            .titulo { font-size: 15px; }
-            .menu { gap: 12px; }
-            .menu a { font-size: 13px; }
-            
-            /* BARRA INFERIOR EN MÓVILES */
-            .sidebar { 
-                top: auto; 
-                bottom: 0; 
-                width: 100%; 
-                height: 70px; 
-                flex-direction: row; 
-                border-right: none; 
-                border-top: 1px solid rgba(129, 199, 132, 0.25); 
-                padding: 0 5px; 
-                justify-content: center;
-                align-items: center;
-            }
-            .sidebar-menu { 
-                flex-direction: row; 
-                gap: 5px; 
-                justify-content: space-around; 
-            }
-            .sidebar button { 
-                flex-direction: column; 
-                justify-content: center; 
-                align-items: center; 
-                padding: 6px; 
-                font-size: 11.5px; 
-                gap: 3px; 
-                text-align: center;
-            }
-            .sidebar button span { font-size: 16px; }
+        @media (max-width: 900px) {
+            .main-layout { margin-left: 0; width: 100%; margin-top: 65px; }
+            .sidebar { width: 100%; height: auto; position: relative; top: 0; flex-direction: row; flex-wrap: wrap; }
+            .stats-grid, .charts-grid, .form-admin-grid, .profile-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
-    <div id="adminBarReturn" onclick="regresarAlAdminMode()">⬅️ Volver al Panel de Administrador</div>
+    <div id="adminBarReturn" onclick="regresarAlAdminMode()">Volver al Panel Admin</div>
 
-    <!-- NAVBAR -->
     <div class="navbar">
         <div class="logo-nombre">
-            <span class="titulo">ConSiente - Admin</span>
-            <img src="imagenes/logo.png" class="logo" alt="Logo">
+            <span class="titulo">ConSiente Admin</span>
         </div>
         <div class="menu">
             <a onclick="cambiarVistaUsuario()">Vista Usuario</a>
-            <div class="user-menu">
-                <img src="imagenes/usuario.png" class="user-icon" id="userBtn" alt="Usuario">
-                <div class="dropdown" id="dropdownMenu">
-                    <a onclick="cambiarTab('ajustesTab')">Configuración</a>
-                    <a onclick="cerrarSesion()">Cerrar sesión</a>
-                </div>
-            </div>
+            <a onclick="cerrarSesion()" style="color: #ef5350;">Cerrar sesión</a>
         </div>
     </div>
 
     <div class="main-layout">
         
-        <!-- CONTENEDOR PRINCIPAL -->
+        <!-- SIDEBAR (Navegación) -->
+        <div class="sidebar">
+            <div class="sidebar-menu">
+                <button class="active" onclick="cambiarTab('generalTab')" id="btnGeneral"><span>🛡️</span> General</button>
+                <button onclick="cambiarTab('statsTab')" id="btnStats"><span>📊</span> Estadísticas</button>
+                <button onclick="cambiarTab('misionesTab')" id="btnMisiones"><span>🎁</span> Misiones & Iconos</button>
+                <button onclick="cambiarTab('ajustesTab')" id="btnAjustes"><span>⚙️</span> Ajustes & Alertas</button>
+                <button onclick="cambiarVistaUsuario()"><span>👤</span> Ver Sitio</button>
+            </div>
+            <div class="footer-privacidad">
+                <a href="privacidadentro.html">Políticas de Privacidad</a>
+            </div>
+        </div>
+
         <div class="container">
             
-            <!-- TAB 1: PANEL GENERAL -->
+            <!-- TAB 1: GENERAL -->
             <div id="generalTab" class="tab-content active-tab">
+                
                 <div class="admin-hero-banner">
                     <div class="admin-hero-info">
-                        <h1><span></span> Panel de Control ConSiente</h1>
-                        <p>Gestión integral de usuarios, supervisión de accesos y control global de la plataforma.</p>
+                        <h1>Panel Principal de Administración</h1>
+                        <p>Resumen general del estado de la plataforma y gestión avanzada de cuentas de usuario.</p>
                     </div>
                 </div>
 
                 <div class="stats-grid">
-                    <div class="stat-card">
-                        <span>👥 Total de Usuarios</span>
-                        <span class="stat-value" id="totalUsuarios">0</span>
+                    <div class="stat-card"><span>👥 Total Usuarios</span><span class="stat-value" id="totalUsuarios">0</span></div>
+                    <div class="stat-card"><span>🛡️ Administradores</span><span class="stat-value" id="totalAdmins" style="color: #64b5f6;">0</span></div>
+                    <div class="stat-card"><span>🔥 Racha Promedio Global</span><span class="stat-value" id="rachaPromedio">0 días</span></div>
+                    <div class="stat-card"><span>🎯 Metas Activas</span><span class="stat-value" id="totalMetas">0</span></div>
+                </div>
+
+                <div class="admin-section">
+                    <div class="admin-section-header">Búsqueda de Usuarios y Estadísticas Individuales</div>
+                    <div style="position: relative;">
+                        <input type="text" id="inputBusquedaAdmin" oninput="filtrarUsuariosEnVivo()" placeholder="Escribe nombre o correo para ver coincidencias..." style="width: 100%; padding: 14px 18px; border-radius: 12px; background: #161616; border: 1px solid rgba(255,255,255,0.15); color: white; font-size: 14px; outline: none;">
+                        <div id="listaCoincidencias" class="search-results-container"></div>
                     </div>
-                    <div class="stat-card">
-                        <span>🛡️ Administradores</span>
-                        <span class="stat-value" id="totalAdmins" style="color: #64b5f6;">0</span>
-                    </div>
-                    <div class="stat-card">
-                        <span>🔥 Racha Promedio</span>
-                        <span class="stat-value" id="rachaPromedio">0 días</span>
-                    </div>
-                    <div class="stat-card">
-                        <span>🎯 Metas Activas</span>
-                        <span class="stat-value" id="totalMetas">0</span>
+
+                    <!-- TARJETA DE PERFIL DETALLADO -->
+                    <div id="tarjetaPerfilDetalle" class="user-profile-card">
+                        <div class="profile-header">
+                            <div>
+                                <h3 id="detNombre" style="color: #81c784; font-size: 20px;"></h3>
+                                <p id="detCorreo" style="font-size: 13px; color: #a0a0a0;"></p>
+                            </div>
+                            <button onclick="cerrarPerfilDetalle()" style="background:none; border:none; color:#aaa; font-size:24px; cursor:pointer;">&times;</button>
+                        </div>
+
+                        <div class="profile-grid">
+                            <div class="sub-box"><span>RACHA ACTUAL</span><h4 id="detRacha" style="color: #ffb74d;">0 días</h4></div>
+                            <div class="sub-box"><span>SALDO ACTUAL</span><h4 id="detSaldo" style="color: #81c784;">$0.00</h4></div>
+                            <div class="sub-box"><span>GASTOS TOTALES</span><h4 id="detGastos" style="color: #ef5350;">$0.00</h4></div>
+                            <div class="sub-box"><span>ROL DE CUENTA</span><h4 id="detRol" style="color: #64b5f6;">Usuario</h4></div>
+                        </div>
+
+                        <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px;">
+                            <h4 style="color: #fff; font-size: 14px; margin-bottom: 8px;">Resumen de Actividad</h4>
+                            <div style="display: flex; gap: 30px; font-size: 13px; color: #b0b0b0;">
+                                <p>Total de Metas: <strong id="detTotalMetas" style="color:#fff;">0</strong></p>
+                                <p>Movimientos Registrados: <strong id="detTotalMov" style="color:#fff;">0</strong></p>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                            <button onclick="abrirModalNotificacion()" class="btn-notificar">Enviar Notificación</button>
+                            <button onclick="abrirModalEdicionDesdePerfil()" class="btn-editar">Editar Perfil</button>
+                        </div>
                     </div>
                 </div>
 
                 <div class="admin-section">
-                    <div class="admin-section-header"><span>📋</span> Cuentas Registradas</div>
+                    <div class="admin-section-header">Cuentas Registradas</div>
                     <div class="users-table-wrapper">
                         <table>
                             <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Nombre</th>
-                                    <th>Correo Electrónico</th>
-                                    <th>Rol</th>
-                                    <th>Racha</th>
-                                    <th>Saldo</th>
-                                    <th>Acciones</th>
-                                </tr>
+                                <tr><th>ID</th><th>Nombre</th><th>Correo</th><th>Rol</th><th>Racha</th><th>Saldo</th><th>Acciones</th></tr>
                             </thead>
                             <tbody id="tablaUsuariosBody">
-                                <tr><td colspan="7" style="text-align: center; color: #888;">Cargando usuarios...</td></tr>
+                                <tr><td colspan="7" style="text-align: center; color: #888; padding: 25px;">Cargando...</td></tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- TAB 2: ESTADÍSTICAS Y RACHAS -->
+            <!-- TAB 2: ESTADÍSTICAS (CHARTS.JS) -->
             <div id="statsTab" class="tab-content">
                 <div class="admin-hero-banner">
                     <div class="admin-hero-info">
-                        <h1><span>📈</span> Estadísticas de Uso y Rachas</h1>
-                        <p>Análisis visual del comportamiento, compromiso diario y movimientos financieros de la comunidad.</p>
+                        <h1>Estadísticas de Uso y Rachas</h1>
+                        <p>Análisis visual del comportamiento y compromiso diario de la comunidad.</p>
                     </div>
                 </div>
-
                 <div class="charts-grid">
                     <div class="chart-box">
-                        <h3>Distribución de Rachas</h3>
-                        <p style="font-size: 11.5px; color: #aaa;">Días consecutivos activos de los usuarios.</p>
-                        <div class="bar-chart-container" id="graficaRachasReal">
-                            <span style="color: #888; font-size: 13px;">Cargando datos...</span>
-                        </div>
+                        <h3 style="color:#fff; font-size:15px;">Distribución de Rachas</h3>
+                        <canvas id="graficaRachasCanvas" style="max-height: 250px;"></canvas>
                     </div>
-
                     <div class="chart-box">
-                        <h3>Uso de Funciones (Movimientos)</h3>
-                        <p style="font-size: 11.5px; color: #aaa;">Categorías más utilizadas en el registro de gastos.</p>
-                        <div class="bar-chart-container" id="graficaUsoReal">
-                            <span style="color: #888; font-size: 13px;">Cargando datos...</span>
-                        </div>
+                        <h3 style="color:#fff; font-size:15px;">Uso de Funciones (Movimientos)</h3>
+                        <canvas id="graficaUsoCanvas" style="max-height: 250px;"></canvas>
                     </div>
                 </div>
             </div>
 
-            <!-- TAB 3: AJUSTES Y SUB-ADMINS -->
+            <!-- TAB 3: AJUSTES Y SUB-ADMINS (NOTIFICACIÓN GLOBAL) -->
             <div id="ajustesTab" class="tab-content">
                 <div class="admin-hero-banner">
                     <div class="admin-hero-info">
-                        <h1><span>⚙️</span> Ajustes & Sub-Administradores</h1>
-                        <p>Crea cuentas con privilegios administrativos para delegar la supervisión.</p>
+                        <h1>Ajustes & Sub-Administradores</h1>
+                        <p>Gestiona los roles administrativos y envía notificaciones globales a todos los usuarios.</p>
                     </div>
                 </div>
-
+                
                 <div class="admin-section">
-                    <div class="admin-section-header"><span>➕</span> Registrar Nuevo Administrador</div>
+                    <div class="admin-section-header">Enviar Notificación a Todos los Usuarios</div>
+                    <p style="font-size: 13px; color: #a0a0a0; margin-bottom: 10px;">Esta notificación se enviará de inmediato a todos los usuarios registrados en la plataforma.</p>
+                    <div class="form-admin-grid" style="grid-template-columns: 1fr;">
+                        <div class="input-box">
+                            <label>Título de la Notificación Global</label>
+                            <input type="text" id="notifGlobalTitulo" placeholder="Ej. ¡Nueva actualización disponible en ConSiente!">
+                        </div>
+                        <div class="input-box">
+                            <label>Mensaje de la Notificación</label>
+                            <textarea id="notifGlobalMensaje" rows="3" placeholder="Escribe el mensaje que llegará a toda la comunidad..."></textarea>
+                        </div>
+                    </div>
+                    <button onclick="enviarNotificacionGlobal()" class="btn-notificar" style="margin-top: 15px; width: 100%; max-width: 280px; padding: 12px; font-size: 14px;">Enviar Notificación Global</button>
+                </div>
+                
+                <div class="admin-section">
+                    <div class="admin-section-header">Registrar Nuevo Administrador</div>
                     <form id="formCrearAdmin" onsubmit="registrarSubAdmin(event)">
                         <div class="form-admin-grid">
-                            <div class="input-box">
-                                <label>Nombre del Administrador</label>
-                                <input type="text" id="adminNombre" placeholder="Ej. Moderador Juan" required>
-                            </div>
-                            <div class="input-box">
-                                <label>Correo Electrónico</label>
-                                <input type="email" id="adminCorreo" placeholder="admin@consiente.com" required>
-                            </div>
-                            <div class="input-box" style="grid-column: 1 / -1; max-width: 50%;">
-                                <label>Contraseña Temporal</label>
-                                <input type="password" id="adminPassword" placeholder="••••••••" required>
-                            </div>
+                            <div class="input-box"><label>Nombre</label><input type="text" id="adminNombre" required placeholder="Ej. Moderador Juan"></div>
+                            <div class="input-box"><label>Correo</label><input type="email" id="adminCorreo" required placeholder="Ej. juan@consiente.com"></div>
+                            <div class="input-box" style="grid-column: 1 / -1; max-width: 50%;"><label>Contraseña Temporal</label><input type="password" id="adminPassword" required></div>
                         </div>
                         <button type="submit" class="btn-guardar">Crear Sub-Administrador</button>
                     </form>
                 </div>
             </div>
 
+            <!-- TAB 4: MISIONES E ICONOS -->
+            <div id="misionesTab" class="tab-content">
+                <div class="admin-hero-banner">
+                    <div class="admin-hero-info">
+                        <h1>Gestión de Misiones e Iconos</h1>
+                        <p>Crea, visualiza y administra las misiones de desbloqueo con iconos duales (gris y color) y requisitos dinámicos.</p>
+                    </div>
+                </div>
+
+                <div class="admin-section">
+                    <div class="admin-section-header">Crear Nueva Misión con Requisitos Numéricos</div>
+                    <form id="formCrearMision" onsubmit="crearNuevaMision(event)">
+                        <div class="form-admin-grid">
+                            <div class="input-box">
+                                <label>Título de la Misión</label>
+                                <input type="text" id="misionTituloNueva" required placeholder="Ej. Ahorrador Pro">
+                            </div>
+                            <div class="input-box">
+                                <label>Nombre del Premio / Avatar</label>
+                                <input type="text" id="misionPremioNueva" required placeholder="PuerQuito">
+                            </div>
+                            <div class="input-box">
+                                <label>Tipo de Condición</label>
+                                <select id="misionTipoCondicion" required>
+                                    <option value="racha">Días de Racha Consecutivos</option>
+                                    <option value="metas_cumplidas">Metas Financieras Completadas</option>
+                                    <option value="gastos">Cantidad de Gastos / Movimientos</option>
+                                </select>
+                            </div>
+                            <div class="input-box">
+                                <label>Cantidad Objetivo (Número)</label>
+                                <input type="number" id="misionCantidadObjetivo" min="1" value="7" required placeholder="Ej. 7, 10, 30">
+                            </div>
+                            <div class="input-box">
+                                <label>Imagen en Gris (Bloqueada)</label>
+                                <input type="file" id="misionArchivoGris" accept="image/*" required style="padding: 10px; background: #161616; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); color: #fff;">
+                            </div>
+                            <div class="input-box">
+                                <label>Imagen a Color (Desbloqueada)</label>
+                                <input type="file" id="misionArchivoColor" accept="image/*" required style="padding: 10px; background: #161616; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); color: #fff;">
+                            </div>
+                            <div class="input-box" style="grid-column: 1 / -1;">
+                                <label>Breve Descripción</label>
+                                <input type="text" id="misionDescNueva" required placeholder="Ej. Mantén tu racha activa durante 7 días seguidos.">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-guardar">Publicar Misión</button>
+                    </form>
+                </div>
+
+                <!-- TABLA CRUD DE MISIONES -->
+                <div class="admin-section">
+                    <div class="admin-section-header">Misiones Registradas en la Base de Datos</div>
+                    <div class="users-table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Iconos y Título</th>
+                                    <th>Premio</th>
+                                    <th>Requisito</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaMisionesAdminBody">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: #888; padding: 25px;">
+                                        Cargando misiones...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="admin-section">
+                    <div class="admin-section-header">Premios e Iconos Reclamados por la Comunidad</div>
+                    <div class="users-table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Usuario</th>
+                                    <th>Correo</th>
+                                    <th>Misión</th>
+                                    <th>Premio Reclamado</th>
+                                    <th>Fecha</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaPremiosBody">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: #888; padding: 25px;">
+                                        Cargando historial de premios...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
-    <!-- SIDEBAR (Barra de Navegación) -->
-    <div class="sidebar">
-        <div class="sidebar-menu">
-            <button class="active" onclick="cambiarTab('generalTab')" id="btnGeneral"><span>🛡️</span> General</button>
-            <button onclick="cambiarTab('statsTab')" id="btnStats"><span>📊</span> Estadísticas</button>
-            <button onclick="cambiarTab('ajustesTab')" id="btnAjustes"><span>⚙️</span> Ajustes</button>
-            <button onclick="cambiarVistaUsuario()"><span>👤</span> Ver Sitio</button>
+    <!-- MODAL EDITAR USUARIO -->
+    <div id="modalEditarUsuario" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:20000; justify-content:center; align-items:center;">
+        <div style="background:#161616; padding:30px; border-radius:18px; width:420px; border:1px solid rgba(129,199,132,0.3); display:flex; flex-direction:column; gap:16px; box-shadow: 0 15px 40px rgba(0,0,0,0.8);">
+            <h3 style="color:#81c784;">Editar Perfil de Usuario</h3>
+            <input type="hidden" id="editUserId">
+            <div class="input-box"><label>Nombre:</label><input type="text" id="editUserNombre"></div>
+            <div class="input-box"><label>Correo:</label><input type="email" id="editUserCorreo"></div>
+            <div class="input-box"><label>Saldo ($):</label><input type="number" step="0.01" id="editUserSaldo"></div>
+            <div class="input-box"><label>Rol:</label><select id="editUserRol"><option value="usuario">Usuario</option><option value="admin">Admin</option></select></div>
+            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:10px;">
+                <button onclick="cerrarModalEdicion()" style="background:rgba(255,255,255,0.06); color:#fff; border:none; padding:10px 18px; border-radius:10px; cursor:pointer;">Cancelar</button>
+                <button onclick="guardarCambiosUsuario()" style="background:#2e7d32; color:#fff; border:none; padding:10px 18px; border-radius:10px; cursor:pointer; font-weight:600;">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR MISIÓN -->
+    <div id="modalEditarMision" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:20000; justify-content:center; align-items:center;">
+        <div style="background:#161616; padding:30px; border-radius:18px; width:480px; border:1px solid rgba(129,199,132,0.3); display:flex; flex-direction:column; gap:16px; box-shadow: 0 15px 40px rgba(0,0,0,0.8);">
+            <h3 style="color:#81c784;">Editar Misión</h3>
+            <input type="hidden" id="editMisionId">
+            <div class="input-box"><label>Título:</label><input type="text" id="editMisionTitulo"></div>
+            <div class="input-box"><label>Premio / Avatar:</label><input type="text" id="editMisionPremio"></div>
+            <div class="input-box">
+                <label>Tipo de Condición:</label>
+                <select id="editMisionTipoCondicion">
+                    <option value="racha">Días de Racha Consecutivos</option>
+                    <option value="metas_cumplidas">Metas Financieras Completadas</option>
+                    <option value="gastos">Cantidad de Gastos / Movimientos</option>
+                </select>
+            </div>
+            <div class="input-box"><label>Cantidad Objetivo:</label><input type="number" id="editMisionCantidadObjetivo" min="1"></div>
+            <div class="input-box"><label>Descripción:</label><input type="text" id="editMisionDesc"></div>
+            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:10px;">
+                <button onclick="cerrarModalEditarMision()" style="background:rgba(255,255,255,0.06); color:#fff; border:none; padding:10px 18px; border-radius:10px; cursor:pointer;">Cancelar</button>
+                <button onclick="guardarCambiosMision()" style="background:#2e7d32; color:#fff; border:none; padding:10px 18px; border-radius:10px; cursor:pointer; font-weight:600;">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL NOTIFICACIÓN (Individual) -->
+    <div id="modalNotificacion" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:20000; justify-content:center; align-items:center;">
+        <div style="background:#161616; padding:30px; border-radius:18px; width:440px; border:1px solid rgba(66,165,245,0.3); display:flex; flex-direction:column; gap:16px; box-shadow: 0 15px 40px rgba(0,0,0,0.8);">
+            <h3 style="color:#42a5f5;">Enviar Notificación Directa</h3>
+            <div class="input-box"><label>Título:</label><input type="text" id="notifTitulo" placeholder="Ej. Aviso importante"></div>
+            <div class="input-box"><label>Mensaje:</label><textarea id="notifMensaje" rows="4" placeholder="Escribe el mensaje..."></textarea></div>
+            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:10px;">
+                <button onclick="cerrarModalNotificacion()" style="background:rgba(255,255,255,0.06); color:#fff; border:none; padding:10px 18px; border-radius:10px; cursor:pointer;">Cancelar</button>
+                <button onclick="enviarNotificacionUsuario()" style="background:#42a5f5; color:#fff; border:none; padding:10px 18px; border-radius:10px; cursor:pointer; font-weight:600;">Enviar Aviso</button>
+            </div>
         </div>
     </div>
 
     <script>
+        // USO DE RUTA RELATIVA ABIERTA (Funciona tanto en Localhost como en Render automáticamente)
+        const API_URL = "";
+
         const token = localStorage.getItem("token");
         const rolUsuario = localStorage.getItem("rol");
+        let usuarioSeleccionadoActual = null;
+        let chartRachasInstance = null;
+        let chartUsoInstance = null;
+        let todosLosUsuariosBD = [];
 
         if (!token || rolUsuario !== 'admin') {
             alert("Acceso no autorizado.");
             window.location.href = "index.html";
         }
 
-        const btn = document.getElementById("userBtn");
-        const menu = document.getElementById("dropdownMenu");
-        if(btn) {
-            btn.onclick = (e) => { e.stopPropagation(); menu.classList.toggle("show"); };
-        }
-        window.onclick = () => { if (menu) menu.classList.remove("show"); };
-
-        function cerrarSesion(){
-            localStorage.clear(); sessionStorage.clear();
-            window.location.href = "index.html";
-        }
-
+        // CONTROL DE PESTAÑAS (TABS)
         function cambiarTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active-tab'));
             document.querySelectorAll('.sidebar-menu button').forEach(el => el.classList.remove('active'));
-            
             document.getElementById(tabId).classList.add('active-tab');
+            
             if(tabId === 'generalTab') document.getElementById('btnGeneral').classList.add('active');
             if(tabId === 'statsTab') { document.getElementById('btnStats').classList.add('active'); cargarEstadisticasReales(); }
             if(tabId === 'ajustesTab') document.getElementById('btnAjustes').classList.add('active');
+            
+            if(tabId === 'misionesTab') { 
+                document.getElementById('btnMisiones').classList.add('active'); 
+                cargarHistorialPremios(); 
+                cargarMisionesAdmin();
+            }
         }
 
         function cambiarVistaUsuario() {
@@ -422,11 +525,17 @@
             window.location.href = "menu.html";
         }
 
+        function cerrarSesion() {
+            localStorage.clear();
+            window.location.href = "index.html";
+        }
+
         window.addEventListener("DOMContentLoaded", () => {
             if (localStorage.getItem("modoVistaAdmin") === "activo") {
                 document.getElementById("adminBarReturn").style.display = "block";
             }
             cargarDatosAdministrador();
+            cargarMisionesAdmin();
         });
 
         function regresarAlAdminMode() {
@@ -436,12 +545,13 @@
 
         async function cargarDatosAdministrador() {
             try {
-                const res = await fetch("/api/admin/usuarios", {
+                const res = await fetch(`${API_URL}/api/admin/usuarios`, {
                     headers: { "Authorization": `Bearer ${token}` }
                 });
 
                 if(res.ok) {
                     const usuarios = await res.json();
+                    todosLosUsuariosBD = usuarios;
                     document.getElementById("totalUsuarios").innerText = usuarios.length;
                     
                     let adminsCount = 0;
@@ -456,15 +566,22 @@
                         if(u.total_metas) metasSuma += Number(u.total_metas);
 
                         const tr = document.createElement("tr");
+                        tr.onclick = (e) => {
+                            if(e.target.tagName !== 'BUTTON') seleccionarUsuarioPorId(u.id);
+                        };
+
                         tr.innerHTML = `
                             <td>#${u.id}</td>
-                            <td><b>${u.nombre}</b></td>
-                            <td>${u.correo}</td>
+                            <td><strong style="color: #fff;">${u.nombre}</strong></td>
+                            <td style="color: #a0a0a0;">${u.correo}</td>
                             <td>${u.rol === 'admin' ? '<span class="badge-admin">Admin</span>' : '<span class="badge-corriente">Usuario</span>'}</td>
-                            <td style="color: #ffb74d; font-weight: bold;">🔥 ${u.racha_dias || 0}d</td>
+                            <td style="color: #ffb74d; font-weight: 600;">${u.racha_dias || 0}d</td>
                             <td style="color: #81c784; font-weight: 600;">$${Number(u.saldo || 0).toFixed(2)}</td>
                             <td>
-                                ${u.correo === 'equipoconsiente@gmail.com' ? '<span style="color:#888; font-size:11px;">Admin</span>' : `<button class="btn-accion" onclick="eliminarUsuarioAdmin(${u.id})">Eliminar</button>`}
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="btn-editar" onclick="event.stopPropagation(); seleccionarUsuarioPorId(${u.id})">Ver Perfil</button>
+                                    ${u.correo === 'equipoconsiente@gmail.com' ? '' : `<button class="btn-accion" onclick="event.stopPropagation(); eliminarUsuarioAdmin(${u.id})">Eliminar</button>`}
+                                </div>
                             </td>
                         `;
                         tbody.appendChild(tr);
@@ -474,56 +591,235 @@
                     document.getElementById("rachaPromedio").innerText = usuarios.length > 0 ? `${(rachaTotal / usuarios.length).toFixed(1)} días` : '0 días';
                     document.getElementById("totalMetas").innerText = metasSuma;
                 }
-            } catch (error) {
-                console.error("Error al conectar:", error);
-            }
+            } catch (error) { console.error("Error:", error); }
         }
 
-        async function cargarEstadisticasReales() {
+        async function filtrarUsuariosEnVivo() {
+            const query = document.getElementById("inputBusquedaAdmin").value.trim();
+            const contenedor = document.getElementById("listaCoincidencias");
+            
+            if(!query) { contenedor.style.display = "none"; return; }
+
             try {
-                const res = await fetch("/api/admin/estadisticas", {
+                const res = await fetch(`${API_URL}/api/admin/usuarios?buscar=${encodeURIComponent(query)}`, {
                     headers: { "Authorization": `Bearer ${token}` }
                 });
 
                 if(res.ok) {
-                    const data = await res.json();
+                    const coincidences = await res.json();
+                    contenedor.innerHTML = "";
                     
-                    const gRachas = document.getElementById("graficaRachasReal");
-                    gRachas.innerHTML = "";
-                    if(data.distribucionRachas.length === 0) {
-                        gRachas.innerHTML = `<span style="color:#888; font-size:12px;">Sin datos de rachas.</span>`;
+                    if(coincidences.length === 0) {
+                        contenedor.innerHTML = `<div style="padding:14px; color:#888; font-size:13px;">No se encontraron perfiles.</div>`;
                     } else {
-                        data.distribucionRachas.forEach(r => {
-                            const porcentaje = Math.min(100, (r.cantidad * 15));
-                            gRachas.innerHTML += `
-                                <div class="bar-row">
-                                    <span class="bar-label">${r.racha_dias}</span>
-                                    <div class="bar-track"><div class="bar-fill" style="width: ${porcentaje}%;"></div></div>
-                                    <span class="bar-value">${r.cantidad} u.</span>
-                                </div>`;
+                        coincidences.forEach(u => {
+                            const item = document.createElement("div");
+                            item.className = "search-result-item";
+                            item.innerHTML = `<span><strong>${u.nombre}</strong> (${u.correo})</span> <span style="color:#81c784; font-size:12px;">Ver perfil ➔</span>`;
+                            
+                            item.onmousedown = (e) => {
+                                e.preventDefault();
+                                seleccionarUsuarioPorId(u.id);
+                                contenedor.style.display = "none";
+                                document.getElementById("inputBusquedaAdmin").value = "";
+                            };
+                            contenedor.appendChild(item);
                         });
                     }
+                    contenedor.style.display = "block";
+                }
+            } catch(e) { console.error(e); }
+        }
 
-                    const gUso = document.getElementById("graficaUsoReal");
-                    gUso.innerHTML = "";
-                    if(data.usoMovimientos.length === 0) {
-                        gUso.innerHTML = `<span style="color:#888; font-size:12px;">Sin movimientos registrados.</span>`;
-                    } else {
-                        const maxVal = Math.max(...data.usoMovimientos.map(m => m.total));
-                        data.usoMovimientos.forEach(m => {
-                            const porcentaje = Math.round((m.total / maxVal) * 100);
-                            gUso.innerHTML += `
-                                <div class="bar-row">
-                                    <span class="bar-label" title="${m.categoria}">${m.categoria}</span>
-                                    <div class="bar-track"><div class="bar-fill" style="width: ${porcentaje}%; background: #64b5f6;"></div></div>
-                                    <span class="bar-value">${m.total}</span>
-                                </div>`;
-                        });
-                    }
+        document.addEventListener("click", (e) => {
+            const buscadorContainer = document.querySelector(".admin-section");
+            const contenedorResultados = document.getElementById("listaCoincidencias");
+            if (buscadorContainer && !buscadorContainer.contains(e.target)) {
+                if(contenedorResultados) contenedorResultados.style.display = "none";
+            }
+        });
+
+        async function seleccionarUsuarioPorId(id) {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/usuarios/${id}/detalle`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                
+                if(res.ok) {
+                    const data = await res.json();
+                    usuarioSeleccionadoActual = data.usuario;
+
+                    document.getElementById("detNombre").innerText = data.usuario.nombre || "Sin nombre";
+                    document.getElementById("detCorreo").innerText = data.usuario.correo || "Sin correo";
+                    document.getElementById("detRacha").innerText = `${data.usuario.racha_dias || 0} días`;
+                    document.getElementById("detSaldo").innerText = `$${Number(data.usuario.saldo || 0).toFixed(2)}`;
+                    document.getElementById("detGastos").innerText = `$${Number(data.estadisticas?.sumaGastos || 0).toFixed(2)}`;
+                    document.getElementById("detRol").innerText = (data.usuario.rol || "usuario").toUpperCase();
+                    document.getElementById("detTotalMetas").innerText = data.estadisticas?.totalMetas || 0;
+                    document.getElementById("detTotalMov").innerText = data.estadisticas?.totalMovimientos || 0;
+
+                    const tarjeta = document.getElementById("tarjetaPerfilDetalle");
+                    tarjeta.style.display = "flex";
+                    tarjeta.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                } else {
+                    alert("No se pudo obtener el detalle del usuario.");
+                }
+            } catch(e) { 
+                console.error("Error al obtener detalle del usuario:", e); 
+            }
+        }
+
+        function cerrarPerfilDetalle() {
+            document.getElementById("tarjetaPerfilDetalle").style.display = "none";
+            usuarioSeleccionadoActual = null;
+        }
+
+        function abrirModalEdicionDesdePerfil() {
+            if(!usuarioSeleccionadoActual) return;
+            
+            document.getElementById("editUserId").value = usuarioSeleccionadoActual.id || usuarioSeleccionadoActual.usuario_id;
+            document.getElementById("editUserNombre").value = usuarioSeleccionadoActual.nombre;
+            document.getElementById("editUserCorreo").value = usuarioSeleccionadoActual.correo;
+            document.getElementById("editUserSaldo").value = usuarioSeleccionadoActual.saldo;
+            document.getElementById("editUserRol").value = usuarioSeleccionadoActual.rol;
+            document.getElementById("modalEditarUsuario").style.display = "flex";
+        }
+
+        function cerrarModalEdicion() { 
+            document.getElementById("modalEditarUsuario").style.display = "none"; 
+        }
+
+        async function guardarCambiosUsuario() {
+            const id = document.getElementById("editUserId").value;
+            const nombre = document.getElementById("editUserNombre").value;
+            const correo = document.getElementById("editUserCorreo").value;
+            const saldo = document.getElementById("editUserSaldo").value;
+            const rol = document.getElementById("editUserRol").value;
+
+            try {
+                const res = await fetch(`${API_URL}/api/admin/usuarios/${id}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+                    body: JSON.stringify({ nombre, correo, saldo, rol })
+                });
+                
+                if(res.ok) {
+                    alert("¡Perfil actualizado con éxito!");
+                    cerrarModalEdicion();
+                    cerrarPerfilDetalle();
+                    cargarDatosAdministrador();
+                } else {
+                    const data = await res.json();
+                    alert(data.error || "Ocurrió un error al guardar los cambios.");
                 }
             } catch(e) {
-                console.error("Error al obtener estadísticas:", e);
+                console.error("Error al actualizar usuario:", e);
+                alert("Ocurrió un error en la conexión al servidor.");
             }
+        }
+
+        function abrirModalNotificacion() {
+            if(!usuarioSeleccionadoActual) return;
+            document.getElementById("notifTitulo").value = "";
+            document.getElementById("notifMensaje").value = "";
+            document.getElementById("modalNotificacion").style.display = "flex";
+        }
+        function cerrarModalNotificacion() { document.getElementById("modalNotificacion").style.display = "none"; }
+
+        async function enviarNotificacionUsuario() {
+            if(!usuarioSeleccionadoActual) return;
+            
+            const userId = usuarioSeleccionadoActual.id || usuarioSeleccionadoActual.usuario_id;
+            const titulo = document.getElementById("notifTitulo").value.trim();
+            const mensaje = document.getElementById("notifMensaje").value.trim();
+
+            if(!titulo || !mensaje) { 
+                alert("Por favor completa el título y el mensaje."); 
+                return; 
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/api/admin/usuarios/${userId}/notificar`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+                    body: JSON.stringify({ titulo, mensaje })
+                });
+                
+                if(res.ok) {
+                    alert("Notificación enviada con éxito.");
+                    cerrarModalNotificacion();
+                } else {
+                    const data = await res.json();
+                    alert(data.error || "No se pudo enviar la notificación.");
+                }
+            } catch (error) { console.error("Error:", error); }
+        }
+
+        async function enviarNotificacionGlobal() {
+            const titulo = document.getElementById("notifGlobalTitulo").value.trim();
+            const mensaje = document.getElementById("notifGlobalMensaje").value.trim();
+
+            if (!titulo || !mensaje) {
+                alert("Por favor, escribe un título y un mensaje antes de enviar.");
+                return;
+            }
+
+            if (!confirm(`¿Estás seguro de que deseas enviar esta notificación a TODOS los usuarios registrados (${todosLosUsuariosBD.length} usuarios)?`)) {
+                return;
+            }
+
+            let enviados = 0;
+            let fallidos = 0;
+
+            for (const usuario of todosLosUsuariosBD) {
+                const userId = usuario.id || usuario.usuario_id;
+                try {
+                    const res = await fetch(`${API_URL}/api/admin/usuarios/${userId}/notificar`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+                        body: JSON.stringify({ titulo, mensaje })
+                    });
+                    if (res.ok) enviados++; else fallidos++;
+                } catch (e) { fallidos++; }
+            }
+
+            alert(`Proceso finalizado.\n\nNotificaciones enviadas: ${enviados}\nFallidas: ${fallidos}`);
+            
+            document.getElementById("notifGlobalTitulo").value = "";
+            document.getElementById("notifGlobalMensaje").value = "";
+        }
+
+        async function cargarEstadisticasReales() {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/estadisticas`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if(res.ok) {
+                    const data = await res.json();
+                    
+                    const ctxRachas = document.getElementById('graficaRachasCanvas').getContext('2d');
+                    if(chartRachasInstance) chartRachasInstance.destroy();
+                    chartRachasInstance = new Chart(ctxRachas, {
+                        type: 'bar',
+                        data: {
+                            labels: data.distribucionRachas.map(r => `${r.racha_dias} días`),
+                            datasets: [{ data: data.distribucionRachas.map(r => r.cantidad), backgroundColor: '#81c784', borderRadius: 6 }]
+                        },
+                        options: { responsive: true, plugins: { legend: { display: false } } }
+                    });
+
+                    const ctxUso = document.getElementById('graficaUsoCanvas').getContext('2d');
+                    if(chartUsoInstance) chartUsoInstance.destroy();
+                    chartUsoInstance = new Chart(ctxUso, {
+                        type: 'doughnut',
+                        data: {
+                            labels: data.usoMovimientos.map(m => m.categoria),
+                            datasets: [{ data: data.usoMovimientos.map(m => m.total), backgroundColor: ['#81c784', '#42A5F5', '#AB47BC', '#FFA726', '#26A69A'] }]
+                        },
+                        options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#ccc' } } } }
+                    });
+                }
+            } catch(e) { console.error(e); }
         }
 
         async function registrarSubAdmin(e) {
@@ -532,37 +828,234 @@
             const correo = document.getElementById("adminCorreo").value;
             const password = document.getElementById("adminPassword").value;
 
-            try {
-                const res = await fetch("/api/admin/crear-subadmin", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-                    body: JSON.stringify({ nombre, correo, password })
-                });
-
-                const data = await res.json();
-                alert(data.message || data.error);
-                if(res.ok) {
-                    document.getElementById("formCrearAdmin").reset();
-                    cargarDatosAdministrador();
-                    cambiarTab('generalTab');
-                }
-            } catch(err) {
-                alert("Error al crear sub-administrador.");
+            const res = await fetch(`${API_URL}/api/admin/crear-subadmin`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+                body: JSON.stringify({ nombre, correo, password })
+            });
+            const data = await res.json();
+            alert(data.message || data.error);
+            if(res.ok) {
+                document.getElementById("formCrearAdmin").reset();
+                cargarDatosAdministrador();
+                cambiarTab('generalTab');
             }
         }
 
-        async function eliminarUsuarioAdmin(idUsuario) {
-            if(!confirm("¿Estás seguro de eliminar este usuario?")) return;
+        async function eliminarUsuarioAdmin(id) {
+            if(!confirm("¿Seguro que deseas eliminar este usuario? (Esta acción no se puede deshacer)")) return;
+            const res = await fetch(`${API_URL}/api/admin/usuarios/${id}`, {
+                method: 'DELETE', headers: { "Authorization": `Bearer ${token}` }
+            });
+            if(res.ok) { alert("Usuario eliminado correctamente."); cargarDatosAdministrador(); }
+        }
+
+        async function crearNuevaMision(e) {
+            e.preventDefault();
+            const titulo = document.getElementById("misionTituloNueva").value;
+            const inputPremioValor = document.getElementById("misionPremioNueva").value.trim();
+            const recompensa = inputPremioValor.toLowerCase().startsWith("avatar:") 
+                ? inputPremioValor 
+                : `avatar: ${inputPremioValor}`;
+
+            const descripcion = document.getElementById("misionDescNueva").value;
+            const tipo_condicion = document.getElementById("misionTipoCondicion").value;
+            const cantidad_objetivo = document.getElementById("misionCantidadObjetivo").value;
+
+            const archivoGris = document.getElementById("misionArchivoGris").files[0];
+            const archivoColor = document.getElementById("misionArchivoColor").files[0];
+
+            const formData = new FormData();
+            formData.append("titulo", titulo);
+            formData.append("recompensa", recompensa);
+            formData.append("descripcion", descripcion);
+            formData.append("tipo_condicion", tipo_condicion);
+            formData.append("cantidad_objetivo", cantidad_objetivo);
+            
+            if (archivoGris) formData.append("archivoGris", archivoGris);
+            if (archivoColor) formData.append("archivoColor", archivoColor);
+
             try {
-                const res = await fetch(`/api/admin/usuarios/${idUsuario}`, {
-                    method: 'DELETE',
+                const res = await fetch(`${API_URL}/api/admin/misiones`, {
+                    method: "POST",
+                    headers: { "Authorization": `Bearer ${token}` },
+                    body: formData
+                });
+                
+                const data = await res.json();
+                if(res.ok) {
+                    alert("Misión, requisitos y archivos publicados con éxito.");
+                    document.getElementById("formCrearMision").reset();
+                    cargarMisionesAdmin();
+                    cargarHistorialPremios();
+                } else {
+                    alert(data.error || "Error al publicar la misión.");
+                }
+            } catch (error) {
+                console.error("Error al crear misión:", error);
+                alert("Error de conexión al servidor.");
+            }
+        }
+
+        // CRUD: Cargar misiones
+        async function cargarMisionesAdmin() {
+            try {
+                const res = await fetch(`${API_URL}/api/misiones`, {
                     headers: { "Authorization": `Bearer ${token}` }
                 });
-                if(res.ok) { alert("Usuario eliminado."); cargarDatosAdministrador(); }
-            } catch(e) { console.error(e); }
+                
+                if (res.ok) {
+                    const misiones = await res.json();
+                    const tbody = document.getElementById("tablaMisionesAdminBody");
+                    tbody.innerHTML = "";
+
+                    if (misiones.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #888; padding: 25px;">No hay misiones creadas todavía.</td></tr>`;
+                        return;
+                    }
+
+                    misiones.forEach(m => {
+                        const imgGris = m.imagen_gris ? `<img src="${m.imagen_gris}" alt="Gris" style="width: 32px; height: 32px; object-fit: contain; border-radius: 6px; background: #222; padding: 2px; border: 1px solid rgba(255,255,255,0.1);" title="Versión Gris (Bloqueada)">` : '<span style="color:#777; font-size:11px;">Sin gris</span>';
+                        const imgColor = m.imagen_color ? `<img src="${m.imagen_color}" alt="Color" style="width: 32px; height: 32px; object-fit: contain; border-radius: 6px; background: #222; padding: 2px; border: 1px solid rgba(129,199,132,0.3);" title="Versión Color (Desbloqueada)">` : '<span style="color:#777; font-size:11px;">Sin color</span>';
+
+                        const tr = document.createElement("tr");
+                        tr.innerHTML = `
+                            <td>#${m.id}</td>
+                            <td>
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <div style="display: flex; gap: 4px;" title="Gris vs Color">
+                                        ${imgGris}
+                                        ${imgColor}
+                                    </div>
+                                    <div>
+                                        <strong style="color: #fff;">${m.titulo}</strong><br>
+                                        <small style="color:#aaa;">${m.descripcion || ''}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="color: #81c784;">${m.recompensa}</td>
+                            <td><span class="badge-admin">${m.tipo_condicion || 'racha'}</span> (${m.cantidad_objetivo || 1})</td>
+                            <td>
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="btn-editar" onclick="abrirModalEditarMision(${m.id}, '${m.titulo}', '${m.recompensa}', '${m.tipo_condicion || 'racha'}', ${m.cantidad_objetivo || 1}, '${m.descripcion || ''}')">Editar</button>
+                                    <button class="btn-accion" onclick="eliminarMision(${m.id})">Eliminar</button>
+                                </div>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+            } catch (error) {
+                console.error("Error al cargar misiones en admin:", error);
+            }
+        }
+
+        function abrirModalEditarMision(id, titulo, recompensa, tipoCondicion, cantidadObjetivo, descripcion) {
+            document.getElementById("editMisionId").value = id;
+            document.getElementById("editMisionTitulo").value = titulo;
+            document.getElementById("editMisionPremio").value = recompensa.replace('avatar: ', '');
+            document.getElementById("editMisionTipoCondicion").value = tipoCondicion;
+            document.getElementById("editMisionCantidadObjetivo").value = cantidadObjetivo;
+            document.getElementById("editMisionDesc").value = descripcion;
+            document.getElementById("modalEditarMision").style.display = "flex";
+        }
+
+        function cerrarModalEditarMision() {
+            document.getElementById("modalEditarMision").style.display = "none";
+        }
+
+        async function guardarCambiosMision() {
+            const id = document.getElementById("editMisionId").value;
+            const titulo = document.getElementById("editMisionTitulo").value;
+            const inputPremioValor = document.getElementById("editMisionPremio").value.trim();
+            const recompensa = inputPremioValor.toLowerCase().startsWith("avatar:") 
+                ? inputPremioValor 
+                : `avatar: ${inputPremioValor}`;
+            const tipo_condicion = document.getElementById("editMisionTipoCondicion").value;
+            const cantidad_objetivo = document.getElementById("editMisionCantidadObjetivo").value;
+            const descripcion = document.getElementById("editMisionDesc").value;
+
+            const formData = new FormData();
+            formData.append("titulo", titulo);
+            formData.append("recompensa", recompensa);
+            formData.append("tipo_condicion", tipo_condicion);
+            formData.append("cantidad_objetivo", cantidad_objetivo);
+            formData.append("descripcion", descripcion);
+
+            try {
+                const res = await fetch(`${API_URL}/api/admin/misiones/${id}`, {
+                    method: "PUT",
+                    headers: { "Authorization": `Bearer ${token}` },
+                    body: formData
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    alert("¡Misión actualizada con éxito!");
+                    cerrarModalEditarMision();
+                    cargarMisionesAdmin();
+                } else {
+                    alert(data.error || "No se pudo actualizar la misión.");
+                }
+            } catch (error) {
+                console.error("Error al actualizar misión:", error);
+            }
+        }
+
+        async function eliminarMision(id) {
+            if (!confirm("¿Estás seguro de que deseas eliminar esta misión?")) return;
+
+            try {
+                const res = await fetch(`${API_URL}/api/admin/misiones/${id}`, {
+                    method: "DELETE",
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    alert("Misión eliminada con éxito.");
+                    cargarMisionesAdmin();
+                } else {
+                    alert(data.error || "No se pudo eliminar la misión.");
+                }
+            } catch (error) {
+                console.error("Error al borrar misión:", error);
+            }
+        }
+
+        async function cargarHistorialPremios() {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/premios-reclamados`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                
+                if (res.ok) {
+                    const premios = await res.json();
+                    const tbody = document.getElementById("tablaPremiosBody");
+                    tbody.innerHTML = "";
+
+                    if(premios.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #888; padding: 25px;">Aún no hay premios reclamados por los usuarios.</td></tr>`;
+                        return;
+                    }
+
+                    premios.forEach(p => {
+                        const tr = document.createElement("tr");
+                        tr.innerHTML = `
+                            <td><strong style="color: #fff;">${p.nombre}</strong></td>
+                            <td style="color: #a0a0a0;">${p.correo}</td>
+                            <td style="color: #ffb74d;">${p.mision_titulo}</td>
+                            <td style="color: #81c784; font-weight: 600;">${p.premio_reclamado}</td>
+                            <td style="color: #ccc;">${p.fecha}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+            } catch (error) {
+                console.error("Error al cargar historial de premios:", error);
+            }
         }
     </script>
     <script src="/admin-control.js" defer></script>
-
 </body>
 </html>
