@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ConSiente</title>
+    <title>ConSiente - Metas</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { margin:0; padding:0; box-sizing:border-box; font-family:"Segoe UI",sans-serif; }
@@ -18,18 +18,9 @@
 
         /* NAVBAR */
         .navbar { 
-            position:fixed; 
-            top:0; 
-            left: 0;
-            width:100%; 
-            height:65px; 
-            background:#0d0d0d; 
-            display:flex; 
-            justify-content:space-between; 
-            align-items:center; 
-            padding:0 25px; 
-            z-index:1000; 
-            border-bottom: 1px solid rgba(129, 199, 132, 0.25); 
+            position:fixed; top:0; left: 0; width:100%; height:65px; background:#0d0d0d; 
+            display:flex; justify-content:space-between; align-items:center; padding:0 25px; 
+            z-index:2000; border-bottom: 1px solid rgba(129, 199, 132, 0.25); 
         }
         .logo-nombre { display:flex; align-items:center; gap:10px; }
         .titulo { font-size:20px; font-weight:bold; color:#ffffff; letter-spacing: 0.5px; }
@@ -54,8 +45,9 @@
         .notif-dropdown {
             position: absolute; right: 0; top: 50px; width: 340px; background: rgba(18, 22, 19, 0.98);
             backdrop-filter: blur(15px); border-radius: 16px; border: 1px solid rgba(129, 199, 132, 0.25);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.7); display: none; flex-direction: column; z-index: 1200; overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.7); display: none; flex-direction: column; z-index: 2500; overflow: hidden;
         }
+        .notif-dropdown.show { display: flex !important; }
         .notif-header {
             padding: 14px 18px; background: rgba(255, 255, 255, 0.03);
             border-bottom: 1px solid rgba(255, 255, 255, 0.08); display: flex; justify-content: space-between; align-items: center;
@@ -69,7 +61,6 @@
         }
         .notif-item:hover { background: rgba(46, 125, 50, 0.2); padding-left: 20px; }
         .notif-item.unread { background: rgba(129, 199, 132, 0.08); border-left: 3px solid #81c784; }
-        .notif-icon { font-size: 20px; margin-top: 2px; }
         .notif-detalles { flex: 1; }
         .notif-titulo-item { font-size: 13px; font-weight: 700; color: #81c784; margin-bottom: 2px; }
         .notif-texto { font-size: 12px; color: #cccccc; line-height: 1.4; }
@@ -77,21 +68,17 @@
 
         /* MENÚ USUARIO */
         .user-menu { position: relative; display: flex; align-items: center; }
-        .user-icon {
-            width: 38px; height: 38px; border-radius: 50%; cursor: pointer;
-            border: 1.5px solid rgba(129, 199, 132, 0.5); transition: 0.3s ease;
-        }
+        .user-icon { width: 38px; height: 38px; border-radius: 50%; cursor: pointer; border: 1.5px solid rgba(129, 199, 132, 0.5); transition: 0.3s ease; object-fit: cover; }
         .user-icon:hover { border-color: #81c784; box-shadow: 0 0 10px rgba(129, 199, 132, 0.4); }
         .dropdown {
             position: absolute; right: 0; top: 50px; background: rgba(20, 20, 20, 0.98);
             backdrop-filter: blur(10px); border-radius: 12px; border: 1px solid rgba(129, 199, 132, 0.2);
             box-shadow: 0 10px 25px rgba(0,0,0,0.6); display: none; flex-direction: column;
-            min-width: 160px; overflow: hidden; z-index: 1100;
+            min-width: 160px; overflow: hidden; z-index: 2500;
         }
-        .dropdown a { padding: 12px 18px; text-decoration: none; color: #ffffff; font-size: 14px; transition: 0.2s ease; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .dropdown a:last-child { border-bottom: none; }
+        .dropdown a { padding: 12px 18px; text-decoration: none; color: #ffffff; font-size: 14px; transition: 0.2s ease; border-bottom: 1px solid rgba(255,255,255,0.05); display: block; }
         .dropdown a:hover { background: rgba(46, 125, 50, 0.3); color: #81c784; }
-        .show { display: flex; }
+        .dropdown.show { display: flex !important; }
 
         /* LAYOUT PRINCIPAL */
         .main-layout { display: flex; margin-top: 65px; min-height: calc(100vh - 65px); width: 100%; }
@@ -106,7 +93,7 @@
             background:#1b1b1b; color:#ffffff; font-size:15px; cursor:pointer; text-align:left; 
             border-bottom:1px solid rgba(130,199,132,0.2); transition: 0.3s ease; 
         }
-        .sidebar button:hover { background:#1c2d20; color: #81c784; border-bottom:1px solid rgba(130,199,132,0.5); padding-left: 22px; }
+        .sidebar button:hover, .sidebar button.btn-active { background:#1c2d20; color: #81c784; border-bottom:1px solid rgba(130,199,132,0.5); padding-left: 22px; }
         .footer-privacidad { padding-top: 15px; text-align: center; }
         .footer-privacidad a { color: rgba(255, 255, 255, 0.5); text-decoration: none; font-size: 13px; font-weight: 500; transition: 0.3s ease; }
         .footer-privacidad a:hover { color: #81c784; }
@@ -116,7 +103,7 @@
         .box { 
             background: rgba(22, 22, 22, 0.85); backdrop-filter: blur(10px); 
             border-radius: 20px; padding: 30px; border: 1px solid rgba(255, 255, 255, 0.1); 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
         }
         .box-formulario { flex: 1; }
         .box-lista { flex: 1.8; position: relative; min-height: 520px; }
@@ -129,14 +116,7 @@
         }
         .formulario input:focus, .formulario select:focus { outline: none; border-color: rgba(129, 199, 132, 0.7); background: #222222; box-shadow: 0 0 8px rgba(129, 199, 132, 0.2); }
         
-        .nota-aclaratoria {
-            display: block;
-            margin-top: 6px;
-            font-size: 11.5px;
-            color: #81c784;
-            font-style: italic;
-        }
-
+        .nota-aclaratoria { display: block; margin-top: 6px; font-size: 11.5px; color: #81c784; font-style: italic; }
         .resumen-calculo {
             background: rgba(46, 125, 50, 0.15); border: 1px solid rgba(129, 199, 132, 0.25);
             border-radius: 12px; padding: 12px 16px; margin-top: 15px; font-size: 13px; color: #81c784;
@@ -148,36 +128,19 @@
             border-radius: 12px; color: #ffffff; font-weight: 600; font-size: 15px; cursor: pointer; transition: 0.3s ease; 
             box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3); 
         }
-        .btn-crear:hover { background: #388e3c; box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4); }
-        
+        .btn-crear:hover { background: #388e3c; }
         h2 { color: #81c784; font-weight: 600; margin-bottom: 20px; }
 
-        /* TARJETAS DE METAS HORIZONTALES */
+        /* TARJETAS DE METAS */
         .meta-card {
             background: linear-gradient(135deg, rgba(30, 35, 31, 0.9) 0%, rgba(18, 22, 19, 0.95) 100%);
-            border: 1px solid rgba(129, 199, 132, 0.25);
-            border-radius: 18px; padding: 22px; margin-bottom: 18px;
-            cursor: pointer; transition: all 0.3s ease;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-            display: flex;
-            align-items: center;
-            gap: 22px;
-            position: relative;
-            overflow: hidden;
+            border: 1px solid rgba(129, 199, 132, 0.25); border-radius: 18px; padding: 22px; margin-bottom: 18px;
+            cursor: pointer; transition: all 0.3s ease; box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            display: flex; align-items: center; gap: 22px; position: relative;
         }
-        .meta-card:hover { 
-            border-color: #81c784; 
-            transform: translateY(-2px);
-            box-shadow: 0 12px 35px rgba(46, 125, 50, 0.35); 
-        }
-
-        .meta-card.completada {
-            border-color: #81c784;
-            background: linear-gradient(135deg, rgba(35, 55, 40, 0.9) 0%, rgba(15, 25, 18, 0.95) 100%);
-            cursor: default;
-        }
-        .meta-card.completada:hover { transform: none; box-shadow: 0 8px 25px rgba(0,0,0,0.4); }
-
+        .meta-card:hover { border-color: #81c784; transform: translateY(-2px); box-shadow: 0 12px 35px rgba(46, 125, 50, 0.35); }
+        .meta-card.completada { border-color: #81c784; background: linear-gradient(135deg, rgba(35, 55, 40, 0.9) 0%, rgba(15, 25, 18, 0.95) 100%); cursor: default; }
+        
         .meta-content-wrapper { flex: 1; min-width: 0; }
         .meta-acciones { display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
         .btn-meta-accion {
@@ -187,166 +150,51 @@
         .btn-meta-accion:hover { background:#2e7d32; color:#fff; }
         .btn-meta-eliminar { border-color:rgba(239,83,80,.45); color:#ffaaa8; background:#281817; }
         .btn-meta-eliminar:hover { background:#b71c1c; color:#fff; }
-        .modal-eliminar-contenido {
-            background:linear-gradient(145deg, #161c18, #0c100d); border:1px solid rgba(129,199,132,.4);
-            border-radius:20px; padding:28px; width:90%; max-width:460px;
-            box-shadow:0 25px 60px rgba(0,0,0,.85);
-        }
-        .opcion-eliminar {
-            display:block; width:100%; text-align:left; padding:14px; margin-top:10px;
-            border:1px solid rgba(129,199,132,.35); border-radius:12px; background:#18211a;
-            color:#fff; cursor:pointer; line-height:1.5;
-        }
-        .opcion-eliminar:hover { border-color:#81c784; background:#203324; }
-        .opcion-eliminar small { display:block; color:#b8c7b9; margin-top:4px; }
-        .texto-eliminar { color:#bbb; font-size:13px; line-height:1.5; margin:10px 0 16px; }
 
         .meta-header-card { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-        .meta-titulo { font-size: 17px; font-weight: 700; color: #ffffff; letter-spacing: 0.3px; }
+        .meta-titulo { font-size: 17px; font-weight: 700; color: #ffffff; }
         .meta-monto-txt { font-size: 14px; color: #81c784; font-weight: 700; }
         .meta-detalles-txt { font-size: 12px; color: #aaaaaa; margin-bottom: 12px; }
+        .badge-completada { background: rgba(129, 199, 132, 0.2); color: #81c784; border: 1px solid rgba(129, 199, 132, 0.5); padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; display: inline-flex; margin-bottom: 8px; }
 
-        .badge-completada {
-            background: rgba(129, 199, 132, 0.2);
-            color: #81c784;
-            border: 1px solid rgba(129, 199, 132, 0.5);
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 700;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            margin-bottom: 8px;
-        }
+        .progress-bar-container { width: 100%; height: 9px; background: rgba(255, 255, 255, 0.07); border-radius: 10px; overflow: hidden; margin-bottom: 8px; }
+        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #2e7d32 0%, #81c784 100%); border-radius: 10px; transition: width 0.6s ease; }
+        .progress-info { display: flex; justify-content: space-between; font-size: 11px; color: #888888; font-weight: 600; }
 
-        .progress-bar-container {
-            width: 100%;
-            height: 9px;
-            background: rgba(255, 255, 255, 0.07);
-            border-radius: 10px;
-            overflow: hidden;
-            margin-bottom: 8px;
-        }
-        .progress-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #2e7d32 0%, #81c784 100%);
-            border-radius: 10px;
-            transition: width 0.6s ease;
-            box-shadow: 0 0 10px rgba(129, 199, 132, 0.5);
-        }
-        .progress-info {
-            display: flex;
-            justify-content: space-between;
-            font-size: 11px;
-            color: #888888;
-            font-weight: 600;
-        }
-
-        /* CONTENEDOR DE LA CARITA DEL CERDITO */
-        .cerdito-badge-container {
-            width: 82px;
-            height: 82px;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(15, 20, 17, 0.9);
-            border-radius: 20px;
-            border: 1px solid rgba(129, 199, 132, 0.3);
-            box-shadow: inset 0 2px 6px rgba(0,0,0,0.6);
-            position: relative;
-        }
-        .cerdito-svg-card {
-            width: 72px;
-            height: 72px;
-        }
-        .pct-cerdito-txt {
-            position: absolute;
-            bottom: 2px;
-            font-size: 10px;
-            font-weight: 800;
-            color: #ffffff;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.9);
-            letter-spacing: 0.2px;
-        }
+        .cerdito-badge-container { width: 82px; height: 82px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: rgba(15, 20, 17, 0.9); border-radius: 20px; border: 1px solid rgba(129, 199, 132, 0.3); position: relative; }
+        .cerdito-svg-card { width: 72px; height: 72px; }
+        .pct-cerdito-txt { position: absolute; bottom: 2px; font-size: 10px; font-weight: 800; color: #ffffff; text-shadow: 0 1px 3px rgba(0,0,0,0.9); }
 
         /* MODALES */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(12px); display: none;
-            justify-content: center; align-items: center; z-index: 3000;
-        }
-        .modal-abono {
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(12px); display: none; justify-content: center; align-items: center; z-index: 3000; }
+        .modal-abono, .modal-eliminar-contenido {
             background: linear-gradient(145deg, rgba(22, 28, 24, 0.98) 0%, rgba(12, 16, 13, 0.99) 100%);
-            border: 1px solid rgba(129, 199, 132, 0.4); border-radius: 22px; padding: 30px;
-            width: 90%; max-width: 440px; box-shadow: 0 25px 60px rgba(0,0,0,0.85);
-            animation: modalFadeIn 0.3s ease;
-        }
-        @keyframes modalFadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
+            border: 1px solid rgba(129, 199, 132, 0.4); border-radius: 22px; padding: 30px; width: 90%; max-width: 440px; box-shadow: 0 25px 60px rgba(0,0,0,0.85);
         }
         .modal-title { font-size: 20px; font-weight: 700; color: #ffffff; margin-bottom: 6px; }
         .modal-subtitle { font-size: 15px; color: #81c784; font-weight: 700; margin-bottom: 6px; }
-        .modal-desc { font-size: 12px; color: #aaaaaa; line-height: 1.5; margin-bottom: 22px; }
+        .modal-desc, .texto-eliminar { font-size: 12px; color: #aaaaaa; line-height: 1.5; margin-bottom: 22px; }
         
-        .btn-cuota-sugerida {
-            width: 100%; padding: 14px; background: rgba(46, 125, 50, 0.25);
-            border: 1px solid rgba(129, 199, 132, 0.5); border-radius: 12px; color: #81c784;
-            font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.3s ease;
-            text-align: center; margin-bottom: 18px; box-shadow: 0 4px 15px rgba(46, 125, 50, 0.2);
-        }
-        .btn-cuota-sugerida:hover { background: rgba(46, 125, 50, 0.4); border-color: #81c784; }
-
-        .modal-divider {
-            text-align: center; color: #666666; font-size: 11px; font-weight: 700;
-            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 18px; position: relative;
-        }
-        .modal-divider::before, .modal-divider::after {
-            content: ""; position: absolute; top: 50%; width: 35%; height: 1px; background: rgba(255,255,255,0.1);
-        }
-        .modal-divider::before { left: 0; }
-        .modal-divider::after { right: 0; }
-
-        .modal-label-custom { font-size: 11px; text-transform: uppercase; color: #81c784; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 6px; display: block; }
-        .modal-input-custom {
-            width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2);
-            background: #151916; color: #ffffff; font-size: 15px; font-weight: 600; margin-bottom: 22px;
-        }
-        .modal-input-custom:focus { outline: none; border-color: #81c784; box-shadow: 0 0 10px rgba(129, 199, 132, 0.3); }
-
+        .btn-cuota-sugerida { width: 100%; padding: 14px; background: rgba(46, 125, 50, 0.25); border: 1px solid rgba(129, 199, 132, 0.5); border-radius: 12px; color: #81c784; font-size: 15px; font-weight: 700; cursor: pointer; text-align: center; margin-bottom: 18px; }
+        .btn-cuota-sugerida:hover { background: rgba(46, 125, 50, 0.4); }
+        .modal-divider { text-align: center; color: #666; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 18px; position: relative; }
+        
+        .modal-label-custom { font-size: 11px; text-transform: uppercase; color: #81c784; font-weight: 700; margin-bottom: 6px; display: block; }
+        .modal-input-custom { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: #151916; color: #ffffff; font-size: 15px; font-weight: 600; margin-bottom: 22px; }
+        
         .modal-buttons { display: flex; gap: 12px; }
-        .btn-modal-cancel {
-            flex: 1; padding: 12px; background: #1f2421; border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px; color: #cccccc; font-weight: 600; font-size: 14px; cursor: pointer; transition: 0.2s;
-        }
-        .btn-modal-cancel:hover { background: #2a302c; color: white; }
-        .btn-modal-submit {
-            flex: 1; padding: 12px; background: #2e7d32; border: none; border-radius: 12px;
-            color: #ffffff; font-weight: 700; font-size: 14px; cursor: pointer; transition: 0.2s;
-            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.4);
-        }
+        .btn-modal-cancel { flex: 1; padding: 12px; background: #1f2421; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #cccccc; font-weight: 600; cursor: pointer; }
+        .btn-modal-submit { flex: 1; padding: 12px; background: #2e7d32; border: none; border-radius: 12px; color: #ffffff; font-weight: 700; cursor: pointer; }
         .btn-modal-submit:hover { background: #388e3c; }
 
-        .modal-bienvenida {
-            background: linear-gradient(135deg, rgba(20, 26, 22, 0.95) 0%, rgba(12, 16, 13, 0.98) 100%);
-            border: 1px solid rgba(129, 199, 132, 0.35); border-radius: 24px; padding: 35px 30px;
-            width: 90%; max-width: 480px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-        }
-        .bienvenida-icon { font-size: 48px; margin-bottom: 15px; }
-        .bienvenida-titulo { font-size: 22px; font-weight: 800; color: #ffffff; margin-bottom: 12px; }
-        .bienvenida-texto { font-size: 14px; color: #d1e7dd; line-height: 1.6; margin-bottom: 25px; }
-        .btn-empezar {
-            width: 100%; padding: 15px; background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
-            border: 1px solid rgba(129, 199, 132, 0.4); border-radius: 14px; color: #ffffff;
-            font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s ease;
-        }
+        .opcion-eliminar { display:block; width:100%; text-align:left; padding:14px; margin-top:10px; border:1px solid rgba(129,199,132,.35); border-radius:12px; background:#18211a; color:#fff; cursor:pointer; }
+        .opcion-eliminar:hover { border-color:#81c784; background:#203324; }
+        .opcion-eliminar small { display:block; color:#b8c7b9; margin-top:4px; }
 
         @media (max-width: 900px) {
             .main-layout { flex-direction: column; }
-            .sidebar { width: 100%; min-width: 100%; height: auto; border-right: none; border-bottom: 1px solid rgba(129, 199, 132, 0.15); }
-            .container { flex-direction: column; padding: 20px; width: 100%; }
+            .sidebar { width: 100%; min-width: 100%; height: auto; }
+            .container { flex-direction: column; padding: 20px; }
             .box { width: 100%; }
             .meta-card { flex-direction: column; align-items: stretch; }
         }
@@ -368,7 +216,7 @@
                 <div class="notif-dropdown" id="notifDropdown">
                     <div class="notif-header">
                         <h4>Notificaciones</h4>
-                        <span onclick="marcarTodasLeidas()">Marcar leídas</span>
+                        <span id="marcarTodasLeidasBtn">Marcar leídas</span>
                     </div>
                     <div class="notif-list" id="notifList"></div>
                 </div>
@@ -382,22 +230,22 @@
                 <img src="imagenes/usuario.png" class="user-icon" id="userBtn" alt="Usuario">
                 <div class="dropdown" id="dropdownMenu">
                     <a href="config.html">Configuración</a>
-                    <a href="index.html" onclick="cerrarSesion()">Cerrar sesión</a>
+                    <a href="#" onclick="cerrarSesion()">Cerrar sesión</a>
                 </div>
             </div>
         </div>
     </div>
 
     <div class="main-layout">
-        
+        <!-- SIDEBAR ACTUALIZADO CON TODOS LOS APARTADOS -->
         <div class="sidebar">
             <div class="sidebar-menu">
-                <button onclick="window.location.href='menu.html'"><span>📊</span> Estadísticas</button>
-                <button onclick="window.location.href='agregar.html'"><span>➕</span> Agregar</button>
+                <button onclick="window.location.href='menu.html'"><span>📊</span> Mis Estadísticas</button>
+                <button onclick="window.location.href='agregar.html'"><span>➕</span> Agregar gasto</button>
                 <button onclick="window.location.href='historial.html'"><span>📅</span> Historial</button>
-                <button onclick="window.location.href='semaforo.html'"><span>🚦</span> Semáforo</button>
-                <button onclick="window.location.href='metas.html'">🎯 Metas</button>
-                <button onclick="window.location.href='racha.html'">🔥 Misiones</button>
+                <button onclick="window.location.href='semaforo.html'"><span>🚦</span> Semáforo Financiero</button>
+                <button onclick="window.location.href='metas.html'" class="btn-active"><span>🎯</span> Metas</button>
+                <button onclick="window.location.href='racha.html'"><span>🔥</span> Racha</button>
                 <button onclick="window.location.href='consejos.html'"><span>💡</span> Consejos</button>
             </div>
             <div class="footer-privacidad">
@@ -406,8 +254,6 @@
         </div>
 
         <div class="container">
-            
-            <!-- FORMULARIO CREAR META -->
             <div class="box box-formulario">
                 <h2 id="tituloFormulario">Nueva Meta de Ahorro</h2>
                 
@@ -420,7 +266,6 @@
 
                     <label>Fecha Límite</label>
                     <input type="date" id="fechaLimite" onchange="calcularCuotaMetas()">
-                    <!-- NOTA ACLARATORIA AÑADIDA AQUÍ -->
                     <span class="nota-aclaratoria">* Nota: Solo puedes seleccionar fechas de hoy en adelante.</span>
 
                     <label>Frecuencia de Abono</label>
@@ -448,17 +293,14 @@
                 </div>
             </div>
 
-            <!-- LISTA DE METAS ACTIVAS -->
             <div class="box box-lista">
                 <h2>Mis Metas Activas</h2>
                 <div id="listaMetas" style="margin-top: 20px;"></div>
             </div>
-
         </div>
-
     </div>
 
-    <!-- MODAL DE ABONO INTERACTIVO -->
+    <!-- MODAL DE ABONO -->
     <div class="modal-overlay" id="modalAbono">
         <div class="modal-abono">
             <div class="modal-title">Abonar a Meta</div>
@@ -481,7 +323,7 @@
         </div>
     </div>
 
-    <!-- MODAL PARA CONFIRMAR ELIMINACIÓN DE META -->
+    <!-- MODAL ELIMINAR META -->
     <div class="modal-overlay" id="modalEliminarMeta">
         <div class="modal-eliminar-contenido">
             <div class="modal-title">Eliminar meta de ahorro</div>
@@ -501,80 +343,129 @@
         </div>
     </div>
 
-    <!-- MODAL DE BIENVENIDA -->
-    <div class="modal-overlay" id="modalBienvenida">
-        <div class="modal-bienvenida">
-            <div class="bienvenida-icon">🌿</div>
-            <h3 class="bienvenida-titulo">¡Bienvenido a ConSiente!</h3>
-            <p class="bienvenida-texto">
-                Estamos felices de acompañarte en tu camino hacia la libertad y el orden financiero. ConSiente está diseñado para ayudarte a tomar decisiones inteligentes con tu dinero día a día.
-            </p>
-            <button class="btn-empezar" onclick="irAlInicio()">🚀 ¡Empezar ahora!</button>
-        </div>
-    </div>
-
     <script>
-        let notificacionesEstado = [];
+        // CONFIGURACIÓN DINÁMICA DE LA API (Abierta para local y producción en Render)
+        const API_URL = "";
+
+        let metasActuales = [];
         let metaSeleccionadaId = null;
         let cuotaActualMeta = 0;
         let metaEditandoId = null;
         let metaPendienteEliminar = null;
-        let metasActuales = [];
 
-        function obtenerIDsLeidos() {
-            return JSON.parse(localStorage.getItem("notificaciones_leidas")) || [];
-        }
+        document.addEventListener("DOMContentLoaded", () => {
+            const userBtn = document.getElementById("userBtn");
+            const dropdownMenu = document.getElementById("dropdownMenu");
+            const notifBtn = document.getElementById("notifBtn");
+            const notifDropdown = document.getElementById("notifDropdown");
 
-        function guardarIDLeido(id) {
-            let leidos = obtenerIDsLeidos();
-            if (!leidos.includes(id)) {
-                leidos.push(id);
-                localStorage.setItem("notificaciones_leidas", JSON.stringify(leidos));
+            if (userBtn && dropdownMenu) {
+                userBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    if (notifDropdown) notifDropdown.classList.remove("show");
+                    dropdownMenu.classList.toggle("show");
+                });
+            }
+
+            if (notifBtn && notifDropdown) {
+                notifBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    if (dropdownMenu) dropdownMenu.classList.remove("show");
+                    notifDropdown.classList.toggle("show");
+                });
+            }
+
+            window.addEventListener("click", (e) => {
+                if (dropdownMenu && userBtn && !userBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                    dropdownMenu.classList.remove("show");
+                }
+                if (notifDropdown && notifBtn && !notifBtn.contains(e.target) && !notifDropdown.contains(e.target)) {
+                    notifDropdown.classList.remove("show");
+                }
+            });
+
+            cargarPerfilUsuario();
+            cargarNotificacionesLocales();
+
+            const inputFecha = document.getElementById("fechaLimite");
+            const hoy = new Date();
+            const anio = hoy.getFullYear();
+            const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+            const dia = String(hoy.getDate()).padStart(2, '0');
+            inputFecha.min = `${anio}-${mes}-${dia}`;
+
+            cambiarFrecuencia();
+            obtenerMetas();
+        });
+
+        async function cargarPerfilUsuario() {
+            const token = localStorage.getItem("token");
+            if (!token) return;
+
+            try {
+                const response = await fetch(`${API_URL}/api/perfil`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    const perfil = await response.json();
+                    if (perfil.avatar) {
+                        const imgUser = document.getElementById("userBtn");
+                        if (imgUser) imgUser.src = perfil.avatar;
+                    }
+                }
+            } catch (e) {
+                console.error("Error al cargar foto de perfil:", e);
             }
         }
 
-        // MENÚS DROPDOWN
-        const btn = document.getElementById("userBtn");
-        const menu = document.getElementById("dropdownMenu");
+        async function cargarNotificacionesLocales() {
+            const token = localStorage.getItem("token");
+            if (!token) return;
+            try {
+                const res = await fetch(`${API_URL}/api/notificaciones`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const notificaciones = await res.json();
+                    const lista = document.getElementById("notifList");
+                    const badge = document.getElementById("notifBadge");
+                    lista.innerHTML = "";
+                    
+                    let noLeidas = 0;
+                    if (notificaciones.length === 0) {
+                        lista.innerHTML = `<div style="padding: 20px; text-align: center; color: #888; font-size: 13px;">No hay notificaciones</div>`;
+                    } else {
+                        notificaciones.forEach(n => {
+                            if (!n.leida) noLeidas++;
+                            lista.innerHTML += `
+                                <div class="notif-item ${n.leida ? '' : 'unread'}">
+                                    <div class="notif-detalles">
+                                        <div class="notif-titulo-item">${n.titulo}</div>
+                                        <div class="notif-texto">${n.mensaje}</div>
+                                        <div class="notif-fecha">${n.fecha}</div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
 
-        btn.onclick = (e) => {
-            e.stopPropagation();
-            menu.classList.toggle("show");
-            if (notifDropdown) notifDropdown.style.display = "none";
-        };
-
-        const notifBtn = document.getElementById("notifBtn");
-        const notifDropdown = document.getElementById("notifDropdown");
-
-        if (notifBtn) {
-            notifBtn.onclick = (e) => {
-                e.stopPropagation();
-                notifDropdown.style.display = (notifDropdown.style.display === "flex") ? "none" : "flex";
-                menu.classList.remove("show");
-            };
-        }
-
-        window.onclick = (e) => {
-            if (!e.target.matches('#userBtn')) menu.classList.remove("show");
-            if (!e.target.closest('.notif-wrapper')) {
-                if (notifDropdown) notifDropdown.style.display = "none";
+                    if (noLeidas > 0) {
+                        badge.style.display = "flex";
+                        badge.innerText = noLeidas;
+                    } else {
+                        badge.style.display = "none";
+                    }
+                }
+            } catch (e) {
+                console.error("Error al cargar notificaciones:", e);
             }
-        };
+        }
 
         function cerrarSesion(){
-            sessionStorage.removeItem("sesionActiva");
             localStorage.removeItem("token");
             window.location.href = "index.html";
         }
 
-        function irAlInicio() { window.location.href = "menu.html"; }
-
-        function mostrarModalBienvenida() {
-            document.getElementById("modalBienvenida").style.display = "flex";
-            if (notifDropdown) notifDropdown.style.display = "none";
-        }
-
-        // CONTROL DE FORMULARIO DINÁMICO
         function cambiarFrecuencia() {
             const frec = document.getElementById("frecuenciaAbono").value;
             const selectDia = document.getElementById("diaPago");
@@ -610,7 +501,6 @@
             } else {
                 grupoDia.style.display = "none";
             }
-
             calcularCuotaMetas();
         }
 
@@ -630,7 +520,6 @@
             const fechaFin = new Date(fechaStr + "T00:00:00");
             const diffDias = Math.ceil((fechaFin - hoy) / (1000 * 60 * 60 * 24));
 
-            // Validación de fecha estricta (no permite días en el pasado)
             if (diffDias < 0) {
                 resumen.style.display = "block";
                 resumen.innerHTML = "⚠️ La fecha límite no puede estar en el pasado.";
@@ -644,147 +533,10 @@
             else if (frec === "Mensual") numAbonos = Math.max(1, Math.ceil(diffDias / 30));
 
             const cuota = (monto / numAbonos).toFixed(2);
-
             resumen.style.display = "block";
             resumen.innerHTML = `💡 Necesitas realizar <strong>${numAbonos} abonos</strong> (${frec.toLowerCase()}) de <strong>$${cuota}</strong> para alcanzar tu meta a tiempo.`;
         }
 
-        // CARGAR NOTIFICACIONES
-        async function cargarNotificaciones() {
-            notificacionesEstado = [];
-            const idsLeidos = obtenerIDsLeidos();
-
-            notificacionesEstado.push({
-                id: "bienvenida",
-                icono: "👋",
-                titulo: "¡Bienvenido a ConSiente!",
-                texto: "Haz clic aquí para ver tu mensaje de bienvenida y comenzar.",
-                fecha: "Hoy",
-                leida: idsLeidos.includes("bienvenida"),
-                destino: "modal_bienvenida"
-            });
-
-            notificacionesEstado.push({
-                id: "racha_diaria",
-                icono: "🔥",
-                titulo: "¡Mantén tu racha activa!",
-                texto: "Registra tus movimientos de hoy para mantener tu racha financiera.",
-                fecha: "Hoy",
-                leida: idsLeidos.includes("racha_diaria"),
-                destino: "racha"
-            });
-
-            try {
-                const token = localStorage.getItem("token");
-                if (token) {
-                    const res = await fetch("/api/metas", {
-                        headers: { "Authorization": `Bearer ${token}` }
-                    });
-
-                    if (res.ok) {
-                        const metas = await res.json();
-                        const hoy = new Date();
-                        const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-                        const diaHoyNombre = diasSemana[hoy.getDay()];
-                        const diaMesHoy = hoy.getDate();
-
-                        metas.forEach(meta => {
-                            if (Number(meta.monto_ahorrado) < Number(meta.monto_target)) {
-                                const frec = meta.frecuencia;
-                                const diaConfig = meta.dia_pago || "Viernes";
-                                let correspondeHoy = false;
-
-                                if (frec === "Diario") {
-                                    correspondeHoy = true;
-                                } else if (frec === "Semanal") {
-                                    if (diaConfig === diaHoyNombre) correspondeHoy = true;
-                                } else if (frec === "Quincenal") {
-                                    if ((diaConfig.includes("15") && (diaMesHoy === 15 || diaMesHoy === 30)) ||
-                                        (diaConfig.includes("1") && (diaMesHoy === 1 || diaMesHoy === 16))) {
-                                        correspondeHoy = true;
-                                    }
-                                } else if (frec === "Mensual") {
-                                    if ((diaConfig.includes("1") && diaMesHoy === 1) ||
-                                        (diaConfig.includes("15") && diaMesHoy === 15) ||
-                                        (diaConfig.includes("30") && diaMesHoy === 30)) {
-                                        correspondeHoy = true;
-                                    }
-                                }
-
-                                const idNotif = `meta_${correspondeHoy ? 'hoy' : 'plan'}_${meta.id}`;
-                                notificacionesEstado.push({
-                                    id: idNotif,
-                                    icono: correspondeHoy ? "🎯" : "⏰",
-                                    titulo: `Meta: ${meta.nombre}`,
-                                    texto: correspondeHoy ? `¡Hoy toca abono! Cuota (${frec.toLowerCase()}) de $${Number(meta.cuota || 0).toFixed(2)}.` : `Recuerda tu cuota programada (${frec.toLowerCase()}) de $${Number(meta.cuota || 0).toFixed(2)}.`,
-                                    fecha: correspondeHoy ? "Hoy" : "Próximo pago",
-                                    leida: idsLeidos.includes(idNotif),
-                                    destino: "metas"
-                                });
-                            }
-                        });
-                    }
-                }
-            } catch (e) {
-                console.error("Error al sincronizar notificaciones:", e);
-            }
-
-            renderizarNotificaciones();
-        }
-
-        function renderizarNotificaciones() {
-            const contenedor = document.getElementById("notifList");
-            const badge = document.getElementById("notifBadge");
-            if (!contenedor) return;
-
-            contenedor.innerHTML = "";
-            let noLeidas = notificacionesEstado.filter(n => !n.leida).length;
-
-            if (noLeidas > 0) {
-                badge.innerText = noLeidas;
-                badge.style.display = "flex";
-            } else {
-                badge.style.display = "none";
-            }
-
-            notificacionesEstado.forEach(n => {
-                const item = document.createElement("div");
-                item.className = `notif-item ${n.leida ? '' : 'unread'}`;
-                item.onclick = () => procesarClickNotificacion(n.id);
-                item.innerHTML = `
-                    <div class="notif-icon">${n.icono}</div>
-                    <div class="notif-detalles">
-                        <div class="notif-titulo-item">${n.titulo}</div>
-                        <div class="notif-texto">${n.texto}</div>
-                        <div class="notif-fecha">${n.fecha}</div>
-                    </div>
-                `;
-                contenedor.appendChild(item);
-            });
-        }
-
-        function procesarClickNotificacion(id) {
-            const notif = notificacionesEstado.find(n => n.id === id);
-            if (!notif) return;
-
-            notif.leida = true;
-            guardarIDLeido(id);
-            renderizarNotificaciones();
-
-            if (notif.destino === "modal_bienvenida") mostrarModalBienvenida();
-            else if (notif.destino === "racha") window.location.href = "agregar.html";
-            else if (notifDropdown) notifDropdown.style.display = "none";
-        }
-
-        function marcarTodasLeidas() {
-            notificacionesEstado.forEach(n => {
-                n.leida = true;
-                guardarIDLeido(n.id);
-            });
-            renderizarNotificaciones();
-        }
-
-        // CARITA DE CERDITO REDONDITA, LIMPIA Y TIERNA CON LLENADO LÍQUIDO VERDE
         function generarCerditoSVG(porcentaje) {
             const pct = Math.min(100, Math.max(0, porcentaje));
             const yPos = 85 - (pct * 0.7);
@@ -802,16 +554,12 @@
                                 <stop offset="100%" stop-color="#81c784" />
                             </linearGradient>
                         </defs>
-
                         <path d="M30 28L22 14L38 22Z" fill="#1b5e20" stroke="#81c784" stroke-width="1.2" stroke-linejoin="round"/>
                         <path d="M70 28L78 14L62 22Z" fill="#1b5e20" stroke="#81c784" stroke-width="1.2" stroke-linejoin="round"/>
-
                         <circle cx="50" cy="50" r="32" fill="rgba(255,255,255,0.04)" stroke="rgba(129, 199, 132, 0.5)" stroke-width="2.5"/>
                         <rect x="0" y="${yPos}" width="100" height="100" fill="url(#gradPigFace_${uniqueId})" mask="url(#mask_${uniqueId})" />
-
                         <circle cx="39" cy="44" r="3" fill="#ffffff"/>
                         <circle cx="61" cy="44" r="3" fill="#ffffff"/>
-
                         <rect x="42" y="53" width="16" height="11" rx="5.5" fill="#1b5e20" stroke="#81c784" stroke-width="1.5"/>
                         <circle cx="47" cy="58.5" r="1.5" fill="#ffffff"/>
                         <circle cx="53" cy="58.5" r="1.5" fill="#ffffff"/>
@@ -821,11 +569,10 @@
             `;
         }
 
-        // CARGAR Y RENDERIZAR METAS
         async function obtenerMetas() {
             try {
                 const token = localStorage.getItem("token");
-                const res = await fetch("/api/metas", {
+                const res = await fetch(`${API_URL}/api/metas`, {
                     headers: { "Authorization": `Bearer ${token}` }
                 });
 
@@ -868,8 +615,8 @@
                                 <span>${pct}% ${completada ? '(Completada)' : '(En proceso)'}</span>
                             </div>
                             <div class="meta-acciones">
-                                <button type="button" class="btn-meta-accion" data-accion="editar"> Editar</button>
-                                <button type="button" class="btn-meta-accion btn-meta-eliminar" data-accion="eliminar"> Eliminar</button>
+                                <button type="button" class="btn-meta-accion" data-accion="editar">Editar</button>
+                                <button type="button" class="btn-meta-accion btn-meta-eliminar" data-accion="eliminar">Eliminar</button>
                             </div>
                         </div>
                         ${generarCerditoSVG(pct)}
@@ -888,16 +635,13 @@
             } catch(e) {
                 console.error("Error al cargar metas:", e);
                 document.getElementById("listaMetas").innerHTML =
-                    `<p style="color:#ffaaa8;text-align:center;padding:20px;">No fue posible cargar las metas. Verifica que el servidor esté activo.</p>`;
+                    `<p style="color:#ffaaa8;text-align:center;padding:20px;">No fue posible cargar las metas.</p>`;
             }
         }
 
         function editarMeta(id) {
             const meta = metasActuales.find(m => String(m.id) === String(id));
-            if (!meta) {
-                alert("No se encontró la meta seleccionada.");
-                return;
-            }
+            if (!meta) return;
 
             metaEditandoId = meta.id;
             document.getElementById("nombreMeta").value = meta.nombre || "";
@@ -934,13 +678,10 @@
 
         function abrirConfirmacionEliminar(id) {
             const meta = metasActuales.find(m => String(m.id) === String(id));
-            if (!meta) {
-                alert("No se encontró la meta seleccionada.");
-                return;
-            }
+            if (!meta) return;
             metaPendienteEliminar = meta;
             document.getElementById("textoEliminarMeta").textContent =
-                `Vas a eliminar "${meta.nombre}". Tiene $${Number(meta.monto_ahorrado || 0).toFixed(2)} ahorrados. Esta acción también debe eliminar del historial el movimiento asociado a esta meta.`;
+                `Vas a eliminar "${meta.nombre}". Tiene $${Number(meta.monto_ahorrado || 0).toFixed(2)} ahorrados.`;
             document.getElementById("modalEliminarMeta").style.display = "flex";
         }
 
@@ -951,12 +692,11 @@
 
         async function confirmarEliminarMeta(devolverSaldo) {
             if (!metaPendienteEliminar) return;
-
             const id = metaPendienteEliminar.id;
             const token = localStorage.getItem("token");
 
             try {
-                const res = await fetch(`/api/metas/${encodeURIComponent(id)}`, {
+                const res = await fetch(`${API_URL}/api/metas/${encodeURIComponent(id)}`, {
                     method: "DELETE",
                     headers: {
                         "Content-Type": "application/json",
@@ -965,25 +705,18 @@
                     body: JSON.stringify({ devolverSaldo })
                 });
 
-                const data = await res.json().catch(() => ({}));
-                if (!res.ok) {
-                    throw new Error(data.mensaje || data.error || "El servidor no pudo eliminar la meta.");
-                }
+                if (!res.ok) throw new Error("Error al eliminar la meta.");
 
                 cerrarModalEliminar();
                 if (String(metaEditandoId) === String(id)) cancelarEdicion();
-                alert(devolverSaldo
-                    ? "Meta eliminada. El servidor confirmó la devolución del dinero."
-                    : "Meta eliminada sin devolver el dinero al saldo mensual.");
+                alert("Meta eliminada correctamente.");
                 await obtenerMetas();
-                await cargarNotificaciones();
             } catch (error) {
                 console.error("Error al eliminar meta:", error);
-                alert(`No se pudo eliminar la meta: ${error.message}\n\nVerifica que el backend tenga implementada la ruta DELETE /api/metas/:id y que elimine también el movimiento relacionado.`);
+                alert("No se pudo eliminar la meta.");
             }
         }
 
-        // MODAL DE ABONO INTERACTIVO
         function abrirModalAbono(id, nombre, cuota) {
             metaSeleccionadaId = id;
             cuotaActualMeta = parseFloat(cuota);
@@ -1011,7 +744,7 @@
         }
 
         async function enviarAbonoServidor(monto) {
-            const res = await fetch(`/api/metas/${metaSeleccionadaId}/abonar`, {
+            const res = await fetch(`${API_URL}/api/metas/${metaSeleccionadaId}/abonar`, {
                 method: "POST",
                 headers: { 
                     "Content-Type": "application/json",
@@ -1021,7 +754,7 @@
             });
 
             if (res.ok) {
-                alert("✅ ¡Abono registrado con éxito y descontado de tu disponibilidad!");
+                alert("¡Abono registrado con éxito!");
                 cerrarModalAbono();
                 obtenerMetas();
             } else {
@@ -1037,7 +770,7 @@
             const dia_pago = document.getElementById("diaPago").value || "General";
 
             if (!nombre || !Number.isFinite(monto_target) || monto_target <= 0 || !fecha_limite) {
-                alert("⚠️ Completa los campos e ingresa un monto objetivo válido.");
+                alert("⚠️ Completa los campos correctamente.");
                 return;
             }
 
@@ -1046,7 +779,6 @@
             const fechaFin = new Date(fecha_limite + "T00:00:00");
             const diffDias = Math.ceil((fechaFin - hoy) / (1000 * 60 * 60 * 24));
             
-            // Verificación del lado del guardado
             if (diffDias < 0) {
                 alert("⚠️ La fecha límite debe ser de hoy en adelante.");
                 return;
@@ -1061,8 +793,8 @@
 
             const editando = metaEditandoId !== null;
             const url = editando
-                ? `/api/metas/${encodeURIComponent(metaEditandoId)}`
-                : "/api/metas";
+                ? `${API_URL}/api/metas/${encodeURIComponent(metaEditandoId)}`
+                : `${API_URL}/api/metas`;
 
             try {
                 const res = await fetch(url, {
@@ -1074,42 +806,16 @@
                     body: JSON.stringify({ nombre, monto_target, fecha_limite, frecuencia, dia_pago, cuota })
                 });
 
-                const data = await res.json().catch(() => ({}));
-                if (!res.ok) {
-                    throw new Error(data.mensaje || data.error ||
-                        (editando ? "El servidor no pudo actualizar la meta." : "El servidor no pudo crear la meta."));
-                }
+                if (!res.ok) throw new Error("Error en el servidor al guardar la meta.");
 
                 alert(editando ? "✏️ ¡Meta actualizada exitosamente!" : "🎯 ¡Meta creada exitosamente!");
                 cancelarEdicion();
                 await obtenerMetas();
-                await cargarNotificaciones();
             } catch (error) {
                 console.error("Error al guardar meta:", error);
-                alert(`No se pudo ${editando ? "actualizar" : "crear"} la meta: ${error.message}\n\nPara editar, el backend debe tener implementada la ruta PUT /api/metas/:id.`);
+                alert("No se pudo guardar la meta.");
             }
         }
-
-        async function crearMeta() {
-            await guardarMeta();
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            const inputFecha = document.getElementById("fechaLimite");
-            
-            // Esto bloquea físicamente en el calendario que el usuario elija fechas pasadas
-            const hoy = new Date();
-            // Ajuste seguro de zona horaria local para el atributo 'min'
-            const anio = hoy.getFullYear();
-            const mes = String(hoy.getMonth() + 1).padStart(2, '0');
-            const dia = String(hoy.getDate()).padStart(2, '0');
-            inputFecha.min = `${anio}-${mes}-${dia}`;
-
-            cambiarFrecuencia();
-            cargarNotificaciones();
-            obtenerMetas();
-        });
     </script>
-    <script src="/global-notificaciones" defer></script>
 </body>
 </html>
