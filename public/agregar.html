@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ConSiente</title>
+    <title>ConSiente - Agregar</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { margin:0; padding:0; box-sizing:border-box; font-family:"Segoe UI",sans-serif; }
@@ -505,7 +505,7 @@
                 <div class="notif-dropdown" id="notifDropdown">
                     <div class="notif-header">
                         <h4>Notificaciones</h4>
-                        <span onclick="marcarTodasLeidas()">Marcar leídas</span>
+                        <span id="marcarTodasLeidasBtn">Marcar leídas</span>
                     </div>
                     <div class="notif-list" id="notifList">
                         <!-- Se inyectan notificaciones dinámicamente -->
@@ -536,7 +536,7 @@
                 <button onclick="window.location.href='historial.html'"><span>📅</span> Historial</button>
                 <button onclick="window.location.href='semaforo.html'"><span>🚦</span> Semáforo</button>
                 <button onclick="window.location.href='metas.html'">🎯 Metas</button>
-                <button onclick="window.location.href='racha.html'">🔥 Misiones</button>
+                <button onclick="window.location.href='racha.html'">🔥 Racha</button>
                 <button onclick="window.location.href='consejos.html'"><span>💡</span> Consejos</button>
             </div>
             <div class="footer-privacidad">
@@ -613,49 +613,8 @@
     </div>
 
     <script>
-        // ESTADO GLOBAL DE NOTIFICACIONES CON PERSISTENCIA (localStorage)
-        let notificacionesEstado = [];
-
-        function obtenerIDsLeidos() {
-            return JSON.parse(localStorage.getItem("notificaciones_leidas")) || [];
-        }
-
-        function guardarIDLeido(id) {
-            let leidos = obtenerIDsLeidos();
-            if (!leidos.includes(id)) {
-                leidos.push(id);
-                localStorage.setItem("notificaciones_leidas", JSON.stringify(leidos));
-            }
-        }
-
-        // DECLARACIÓN DE VARIABLES DEL DOM AL INICIO PARA EVITAR ERRORES DE REFERENCIA
-        const btn = document.getElementById("userBtn");
-        const menu = document.getElementById("dropdownMenu");
-        const notifBtn = document.getElementById("notifBtn");
-        const notifDropdown = document.getElementById("notifDropdown");
-
-        btn.onclick = (e) => {
-            e.stopPropagation();
-            menu.classList.toggle("show");
-            if (notifDropdown) notifDropdown.style.display = "none";
-        };
-
-        if (notifBtn) {
-            notifBtn.onclick = (e) => {
-                e.stopPropagation();
-                notifDropdown.style.display = (notifDropdown.style.display === "flex") ? "none" : "flex";
-                menu.classList.remove("show");
-            };
-        }
-
-        window.onclick = (e) => {
-            if (!e.target.matches('#userBtn')) {
-                menu.classList.remove("show");
-            }
-            if (!e.target.closest('.notif-wrapper')) {
-                if (notifDropdown) notifDropdown.style.display = "none";
-            }
-        };
+        // CONFIGURACIÓN DINÁMICA DE LA API (Abierta para local y producción en Render)
+        const API_URL = "";
 
         function cerrarSesion(){
             sessionStorage.removeItem("sesionActiva");
@@ -665,131 +624,6 @@
 
         function irAlInicio() {
             window.location.href = "menu.html";
-        }
-
-        function mostrarModalBienvenida() {
-            document.getElementById("modalBienvenida").style.display = "flex";
-            if (notifDropdown) notifDropdown.style.display = "none";
-        }
-
-        // Cargar Notificaciones e integrar filtro con localStorage
-        async function cargarNotificaciones() {
-            notificacionesEstado = [];
-            const idsLeidos = obtenerIDsLeidos();
-
-            notificacionesEstado.push({
-                id: "bienvenida",
-                icono: "👋",
-                titulo: "¡Bienvenido a ConSiente!",
-                texto: "Haz clic aquí para ver tu mensaje de bienvenida y comenzar.",
-                fecha: "Hoy",
-                leida: idsLeidos.includes("bienvenida"),
-                destino: "modal_bienvenida"
-            });
-
-            notificacionesEstado.push({
-                id: "racha_diaria",
-                icono: "🔥",
-                titulo: "¡Mantén tu racha activa!",
-                texto: "Registra tus movimientos de hoy para mantener tu racha financiera.",
-                fecha: "Hoy",
-                leida: idsLeidos.includes("racha_diaria"),
-                destino: "racha"
-            });
-
-            try {
-                const token = localStorage.getItem("token");
-                if (token) {
-                    const res = await fetch("/api/metas", {
-                        headers: { "Authorization": `Bearer ${token}` }
-                    });
-
-                    if (res.ok) {
-                        const metas = await res.json();
-                        metas.forEach(meta => {
-                            if (Number(meta.monto_ahorrado) < Number(meta.monto_target)) {
-                                const frec = meta.frecuencia;
-                                const metaIdNotif = `meta_${meta.id}`;
-                                notificacionesEstado.push({
-                                    id: metaIdNotif,
-                                    icono: "🎯",
-                                    titulo: `Abono de Meta: ${meta.nombre}`,
-                                    texto: `Recuerda abonar tu cuota (${frec.toLowerCase()}) de <strong>$${Number(meta.cuota).toFixed(2)}</strong>.`,
-                                    fecha: "Hoy",
-                                    leida: idsLeidos.includes(metaIdNotif),
-                                    destino: "metas"
-                                });
-                            }
-                        });
-                    }
-                }
-            } catch (e) {
-                console.error("Error al obtener metas para notificaciones:", e);
-            }
-
-            renderizarNotificaciones();
-        }
-
-        function renderizarNotificaciones() {
-            const contenedor = document.getElementById("notifList");
-            const badge = document.getElementById("notifBadge");
-            if (!contenedor) return;
-
-            contenedor.innerHTML = "";
-            let noLeidas = notificacionesEstado.filter(n => !n.leida).length;
-
-            if (noLeidas > 0) {
-                badge.innerText = noLeidas;
-                badge.style.display = "flex";
-            } else {
-                badge.style.display = "none";
-            }
-
-            if (notificacionesEstado.length === 0) {
-                contenedor.innerHTML = `<p style="padding:20px; text-align:center; color:#777; font-size:12px;">No tienes notificaciones por el momento.</p>`;
-                return;
-            }
-
-            notificacionesEstado.forEach(n => {
-                const item = document.createElement("div");
-                item.className = `notif-item ${n.leida ? '' : 'unread'}`;
-                item.onclick = () => procesarClickNotificacion(n.id);
-                item.innerHTML = `
-                    <div class="notif-icon">${n.icono}</div>
-                    <div class="notif-detalles">
-                        <div class="notif-titulo-item">${n.titulo}</div>
-                        <div class="notif-texto">${n.texto}</div>
-                        <div class="notif-fecha">${n.fecha}</div>
-                    </div>
-                `;
-                contenedor.appendChild(item);
-            });
-        }
-
-        function procesarClickNotificacion(id) {
-            const notif = notificacionesEstado.find(n => n.id === id);
-            if (!notif) return;
-
-            notif.leida = true;
-            guardarIDLeido(id);
-            renderizarNotificaciones();
-
-            if (notif.destino === "modal_bienvenida") {
-                mostrarModalBienvenida();
-            } else if (notif.destino === "metas") {
-                window.location.href = "metas.html";
-            } else if (notif.destino === "racha") {
-                if (notifDropdown) notifDropdown.style.display = "none";
-                document.getElementById("tipoGasto").focus();
-            }
-        }
-
-        function marcarTodasLeidas() {
-            notificacionesEstado.forEach(n => {
-                n.leida = true;
-                guardarIDLeido(n.id);
-            });
-            renderizarNotificaciones();
         }
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -803,16 +637,17 @@
 
             inputFecha.min = unAnoAtras.toISOString().split('T')[0];
             inputFecha.max = unMesFuturo.toISOString().split('T')[0];
-
-            cargarNotificaciones();
+            
+            renderizarGrafica();
         });
 
         async function renderizarGrafica() {
             try {
                 const token = localStorage.getItem("token");
-                const resGastos = await fetch("/api/lista-gastos", {
+                const resGastos = await fetch(`${API_URL}/api/lista-gastos`, {
                     headers: { "Authorization": `Bearer ${token}` }
                 });
+                if (!resGastos.ok) return;
                 const todosLosGastos = await resGastos.json();
                 
                 const hoy = new Date();
@@ -871,9 +706,7 @@
                 return;
             }
 
-            // SE CONVIERTE EL MONTO A NÚMERO (PARSE FLOAT)
             const monto = parseFloat(montoStr);
-
             const fechaSeleccionada = new Date(fechaStr + "T00:00:00");
             const hoy = new Date();
             hoy.setHours(0, 0, 0, 0);
@@ -895,7 +728,7 @@
             }
 
             try {
-                const response = await fetch("/api/gastos", {
+                const response = await fetch(`${API_URL}/api/gastos`, {
                     method: "POST",
                     headers: { 
                         "Content-Type": "application/json", 
@@ -905,12 +738,11 @@
                 });
 
                 if(response.ok) { 
-                    alert("✅ ¡Gasto registrado correctamente!"); 
+                    alert("¡Gasto registrado correctamente!"); 
                     document.getElementById('tipoGasto').value = '';
                     document.getElementById('cantidadGasto').value = '';
                     renderizarGrafica(); 
                 } else {
-                    // SI HAY ERROR 400, SE CAPTURA LA RESPUESTA PARA VERLA EN CONSOLA
                     const errorInfo = await response.json().catch(() => ({}));
                     console.error("Respuesta del Servidor al intentar guardar:", errorInfo);
                     alert("❌ Error al guardar el gasto. Abre la consola (F12) para ver los detalles.");
@@ -920,11 +752,9 @@
                 alert("❌ No se pudo conectar con el servidor.");
             }
         }
-        
-        renderizarGrafica();
     </script>
     
-    <!-- SE AGREGA LA EXTENSIÓN .JS PARA EVITAR EL ERROR DE MIME TYPE -->
+    <!-- SCRIPT GLOBAL DE NOTIFICACIONES -->
     <script src="/global-notificaciones.js" defer></script>
 
 </body>
