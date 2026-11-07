@@ -28,7 +28,7 @@
             justify-content:space-between; 
             align-items:center; 
             padding:0 25px; 
-            z-index:1000; 
+            z-index:2000; 
             border-bottom: 1px solid rgba(129, 199, 132, 0.25); 
         }
         .logo-nombre { display:flex; align-items:center; gap:10px; }
@@ -54,8 +54,9 @@
         .notif-dropdown {
             position: absolute; right: 0; top: 50px; width: 340px; background: rgba(18, 22, 19, 0.98);
             backdrop-filter: blur(15px); border-radius: 16px; border: 1px solid rgba(129, 199, 132, 0.25);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.7); display: none; flex-direction: column; z-index: 1200; overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.7); display: none; flex-direction: column; z-index: 2500; overflow: hidden;
         }
+        .notif-dropdown.show { display: flex !important; }
         .notif-header {
             padding: 14px 18px; background: rgba(255, 255, 255, 0.03);
             border-bottom: 1px solid rgba(255, 255, 255, 0.08); display: flex; justify-content: space-between; align-items: center;
@@ -69,7 +70,6 @@
         }
         .notif-item:hover { background: rgba(46, 125, 50, 0.2); padding-left: 20px; }
         .notif-item.unread { background: rgba(129, 199, 132, 0.08); border-left: 3px solid #81c784; }
-        .notif-icon { font-size: 20px; margin-top: 2px; }
         .notif-detalles { flex: 1; }
         .notif-titulo-item { font-size: 13px; font-weight: 700; color: #81c784; margin-bottom: 2px; }
         .notif-texto { font-size: 12px; color: #cccccc; line-height: 1.4; }
@@ -88,6 +88,7 @@
             cursor: pointer;
             border: 1.5px solid rgba(129, 199, 132, 0.5);
             transition: 0.3s ease;
+            object-fit: cover;
         }
         .user-icon:hover {
             border-color: #81c784;
@@ -106,7 +107,7 @@
             flex-direction: column;
             min-width: 160px;
             overflow: hidden;
-            z-index: 1100;
+            z-index: 2500;
         }
         .dropdown a {
             padding: 12px 18px;
@@ -115,13 +116,14 @@
             font-size: 14px;
             transition: 0.2s ease;
             border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: block;
         }
         .dropdown a:last-child { border-bottom: none; }
         .dropdown a:hover {
             background: rgba(46, 125, 50, 0.3);
             color: #81c784;
         }
-        .show { display: flex; }
+        .dropdown.show { display: flex !important; }
 
         /* CONTENEDOR ESTRUCTURAL (SIDEBAR + MAIN) */
         .main-layout {
@@ -300,7 +302,7 @@
                 <div class="notif-dropdown" id="notifDropdown">
                     <div class="notif-header">
                         <h4>Notificaciones</h4>
-                        <span onclick="marcarTodasLeidas()">Marcar leídas</span>
+                        <span id="marcarTodasLeidasBtn">Marcar leídas</span>
                     </div>
                     <div class="notif-list" id="notifList"></div>
                 </div>
@@ -314,7 +316,7 @@
                 <img src="imagenes/usuario.png" class="user-icon" id="userBtn" alt="Usuario">
                 <div class="dropdown" id="dropdownMenu">
                     <a href="config.html">Configuración</a>
-                    <a href="index.html" onclick="cerrarSesion()">Cerrar sesión</a>
+                    <a href="#" onclick="cerrarSesion()">Cerrar sesión</a>
                 </div>
             </div>
         </div>
@@ -324,12 +326,12 @@
         
         <div class="sidebar">
             <div class="sidebar-menu">
-            <button onclick="window.location.href='menu.html'"><span>📊</span> Estadísticas</button>
+                <button onclick="window.location.href='menu.html'"><span>📊</span> Estadísticas</button>
                 <button onclick="window.location.href='agregar.html'"><span>➕</span> Agregar</button>
                 <button onclick="window.location.href='historial.html'"><span>📅</span> Historial</button>
                 <button onclick="window.location.href='semaforo.html'"><span>🚦</span> Semáforo</button>
                 <button onclick="window.location.href='metas.html'">🎯 Metas</button>
-                <button onclick="window.location.href='racha.html'">🔥 Misiones</button>
+                <button onclick="window.location.href='racha.html'">🔥 Racha</button>
                 <button onclick="window.location.href='consejos.html'"><span>💡</span> Consejos</button>
             </div>
             <div class="footer-privacidad">
@@ -459,202 +461,123 @@
     </div>
 
     <script>
-        let notificacionesEstado = [];
+        // CONFIGURACIÓN DINÁMICA DE LA API (Abierta para local y producción en Render)
+        const API_URL = "";
 
-        function obtenerIDsLeidos() {
-            return JSON.parse(localStorage.getItem("notificaciones_leidas")) || [];
-        }
+        document.addEventListener("DOMContentLoaded", () => {
+            const userBtn = document.getElementById("userBtn");
+            const dropdownMenu = document.getElementById("dropdownMenu");
+            const notifBtn = document.getElementById("notifBtn");
+            const notifDropdown = document.getElementById("notifDropdown");
 
-        function guardarIDLeido(id) {
-            let leidos = obtenerIDsLeidos();
-            if (!leidos.includes(id)) {
-                leidos.push(id);
-                localStorage.setItem("notificaciones_leidas", JSON.stringify(leidos));
+            // 1. Control del menú de usuario (Configuración y Cerrar sesión)
+            if (userBtn && dropdownMenu) {
+                userBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    if (notifDropdown) notifDropdown.classList.remove("show");
+                    dropdownMenu.classList.toggle("show");
+                });
+            }
+
+            // 2. Control del menú de notificaciones
+            if (notifBtn && notifDropdown) {
+                notifBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    if (dropdownMenu) dropdownMenu.classList.remove("show");
+                    notifDropdown.classList.toggle("show");
+                });
+            }
+
+            // 3. Cerrar menús al hacer clic fuera de ellos
+            window.addEventListener("click", (e) => {
+                if (dropdownMenu && userBtn && !userBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                    dropdownMenu.classList.remove("show");
+                }
+                if (notifDropdown && notifBtn && !notifBtn.contains(e.target) && !notifDropdown.contains(e.target)) {
+                    notifDropdown.classList.remove("show");
+                }
+            });
+
+            // Sincronizar datos y notificaciones iniciales
+            cargarPerfilUsuario();
+            cargarNotificacionesLocales();
+        });
+
+        async function cargarPerfilUsuario() {
+            const token = localStorage.getItem("token");
+            if (!token) return;
+
+            try {
+                const response = await fetch(`${API_URL}/api/perfil`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    const perfil = await response.json();
+                    if (perfil.avatar) {
+                        const imgUser = document.getElementById("userBtn");
+                        if (imgUser) imgUser.src = perfil.avatar;
+                    }
+                }
+            } catch (e) {
+                console.error("Error al cargar foto de perfil:", e);
             }
         }
 
-        // MENÚS DROPDOWN (Usuario y Notificaciones)
-        const btn = document.getElementById("userBtn");
-        const menu = document.getElementById("dropdownMenu");
+        async function cargarNotificacionesLocales() {
+            const token = localStorage.getItem("token");
+            if (!token) return;
+            try {
+                const res = await fetch(`${API_URL}/api/notificaciones`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const notificaciones = await res.json();
+                    const lista = document.getElementById("notifList");
+                    const badge = document.getElementById("notifBadge");
+                    if (!lista) return;
+                    
+                    lista.innerHTML = "";
+                    let noLeidas = 0;
 
-        btn.onclick = (e) => {
-            e.stopPropagation();
-            menu.classList.toggle("show");
-            if (notifDropdown) notifDropdown.style.display = "none";
-        };
+                    if (notificaciones.length === 0) {
+                        lista.innerHTML = `<div style="padding: 20px; text-align: center; color: #888; font-size: 13px;">No hay notificaciones</div>`;
+                    } else {
+                        notificaciones.forEach(n => {
+                            if (!n.leida) noLeidas++;
+                            lista.innerHTML += `
+                                <div class="notif-item ${n.leida ? '' : 'unread'}">
+                                    <div class="notif-detalles">
+                                        <div class="notif-titulo-item">${n.titulo}</div>
+                                        <div class="notif-texto">${n.mensaje}</div>
+                                        <div class="notif-fecha">${n.fecha || ''}</div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
 
-        const notifBtn = document.getElementById("notifBtn");
-        const notifDropdown = document.getElementById("notifDropdown");
-
-        if (notifBtn) {
-            notifBtn.onclick = (e) => {
-                e.stopPropagation();
-                notifDropdown.style.display = (notifDropdown.style.display === "flex") ? "none" : "flex";
-                menu.classList.remove("show");
-            };
+                    if (badge) {
+                        if (noLeidas > 0) {
+                            badge.style.display = "flex";
+                            badge.innerText = noLeidas;
+                        } else {
+                            badge.style.display = "none";
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("Error al cargar notificaciones:", e);
+            }
         }
 
-        window.onclick = (e) => {
-            if (!e.target.matches('#userBtn')) menu.classList.remove("show");
-            if (!e.target.closest('.notif-wrapper')) {
-                if (notifDropdown) notifDropdown.style.display = "none";
-            }
-        };
-
-        function cerrarSesion(){
-            sessionStorage.removeItem("sesionActiva");
+        function cerrarSesion() {
             localStorage.removeItem("token");
             window.location.href = "index.html";
         }
 
-        function irAlInicio() { window.location.href = "menu.html"; }
-
-        function mostrarModalBienvenida() {
-            document.getElementById("modalBienvenida").style.display = "flex";
-            if (notifDropdown) notifDropdown.style.display = "none";
+        function irAlInicio() { 
+            window.location.href = "menu.html"; 
         }
-
-        // CARGAR NOTIFICACIONES
-        async function cargarNotificaciones() {
-            notificacionesEstado = [];
-            const idsLeidos = obtenerIDsLeidos();
-
-            notificacionesEstado.push({
-                id: "bienvenida",
-                icono: "👋",
-                titulo: "¡Bienvenido a ConSiente!",
-                texto: "Haz clic aquí para ver tu mensaje de bienvenida y comenzar.",
-                fecha: "Hoy",
-                leida: idsLeidos.includes("bienvenida"),
-                destino: "modal_bienvenida"
-            });
-
-            notificacionesEstado.push({
-                id: "racha_diaria",
-                icono: "🔥",
-                titulo: "¡Mantén tu racha activa!",
-                texto: "Registra tus movimientos de hoy para mantener tu racha financiera.",
-                fecha: "Hoy",
-                leida: idsLeidos.includes("racha_diaria"),
-                destino: "racha"
-            });
-
-            try {
-                const token = localStorage.getItem("token");
-                if (token) {
-                    const res = await fetch("/api/metas", {
-                        headers: { "Authorization": `Bearer ${token}` }
-                    });
-
-                    if (res.ok) {
-                        const metas = await res.json();
-                        const hoy = new Date();
-                        const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-                        const diaHoyNombre = diasSemana[hoy.getDay()];
-                        const diaMesHoy = hoy.getDate();
-
-                        metas.forEach(meta => {
-                            if (Number(meta.monto_ahorrado) < Number(meta.monto_target)) {
-                                const frec = meta.frecuencia;
-                                const diaConfig = meta.dia_pago || "Viernes";
-                                let correspondeHoy = false;
-
-                                if (frec === "Diario") {
-                                    correspondeHoy = true;
-                                } else if (frec === "Semanal") {
-                                    if (diaConfig === diaHoyNombre) correspondeHoy = true;
-                                } else if (frec === "Quincenal") {
-                                    if ((diaConfig.includes("15") && (diaMesHoy === 15 || diaMesHoy === 30)) ||
-                                        (diaConfig.includes("1") && (diaMesHoy === 1 || diaMesHoy === 16))) {
-                                        correspondeHoy = true;
-                                    }
-                                } else if (frec === "Mensual") {
-                                    if ((diaConfig.includes("1") && diaMesHoy === 1) ||
-                                        (diaConfig.includes("15") && diaMesHoy === 15) ||
-                                        (diaConfig.includes("30") && diaMesHoy === 30)) {
-                                        correspondeHoy = true;
-                                    }
-                                }
-
-                                const idNotif = `meta_${correspondeHoy ? 'hoy' : 'plan'}_${meta.id}`;
-                                notificacionesEstado.push({
-                                    id: idNotif,
-                                    icono: correspondeHoy ? "🎯" : "⏰",
-                                    titulo: `Meta: ${meta.nombre}`,
-                                    texto: correspondeHoy ? `¡Hoy toca abono! Cuota (${frec.toLowerCase()}) de $${Number(meta.cuota || 0).toFixed(2)}.` : `Recuerda tu cuota programada (${frec.toLowerCase()}) de $${Number(meta.cuota || 0).toFixed(2)}.`,
-                                    fecha: correspondeHoy ? "Hoy" : "Próximo pago",
-                                    leida: idsLeidos.includes(idNotif),
-                                    destino: "metas"
-                                });
-                            }
-                        });
-                    }
-                }
-            } catch (e) {
-                console.error("Error al sincronizar notificaciones:", e);
-            }
-
-            renderizarNotificaciones();
-        }
-
-        function renderizarNotificaciones() {
-            const contenedor = document.getElementById("notifList");
-            const badge = document.getElementById("notifBadge");
-            if (!contenedor) return;
-
-            contenedor.innerHTML = "";
-            let noLeidas = notificacionesEstado.filter(n => !n.leida).length;
-
-            if (noLeidas > 0) {
-                badge.innerText = noLeidas;
-                badge.style.display = "flex";
-            } else {
-                badge.style.display = "none";
-            }
-
-            notificacionesEstado.forEach(n => {
-                const item = document.createElement("div");
-                item.className = `notif-item ${n.leida ? '' : 'unread'}`;
-                item.onclick = () => procesarClickNotificacion(n.id);
-                item.innerHTML = `
-                    <div class="notif-icon">${n.icono}</div>
-                    <div class="notif-detalles">
-                        <div class="notif-titulo-item">${n.titulo}</div>
-                        <div class="notif-texto">${n.texto}</div>
-                        <div class="notif-fecha">${n.fecha}</div>
-                    </div>
-                `;
-                contenedor.appendChild(item);
-            });
-        }
-
-        function procesarClickNotificacion(id) {
-            const notif = notificacionesEstado.find(n => n.id === id);
-            if (!notif) return;
-
-            notif.leida = true;
-            guardarIDLeido(id);
-            renderizarNotificaciones();
-
-            if (notif.destino === "modal_bienvenida") mostrarModalBienvenida();
-            else if (notif.destino === "racha") window.location.href = "agregar.html";
-            else if (notif.destino === "metas") window.location.href = "metas.html";
-            else if (notifDropdown) notifDropdown.style.display = "none";
-        }
-
-        function marcarTodasLeidas() {
-            notificacionesEstado.forEach(n => {
-                n.leida = true;
-                guardarIDLeido(n.id);
-            });
-            renderizarNotificaciones();
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            cargarNotificaciones();
-        });
     </script>
-    <script src="/global-notificaciones" defer></script>
-
 </body>
 </html>
