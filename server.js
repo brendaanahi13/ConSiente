@@ -1,4 +1,3 @@
-
 const express = require("express");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -1390,7 +1389,7 @@ setInterval(verificarYEnviarAbonosHoy, 1000 * 60 * 60 * 24);
 setTimeout(verificarYEnviarAbonosHoy, 5000); 
 
 // ==========================================
-// OBTENER MISIONES PARA LA VISTA DE RACHA (CORREGIDO A ASC)
+// OBTENER MISIONES PARA LA VISTA DE RACHA
 // ==========================================
 app.get("/api/misiones", verificarToken, (req, res) => {
     db.query("SELECT * FROM misiones ORDER BY id ASC", (err, resultados) => {
@@ -1403,7 +1402,7 @@ app.get("/api/misiones", verificarToken, (req, res) => {
 });
 
 // ==========================================
-// MISIONES Y PREMIOS (CRUD Y REQUISITOS DINÁMICOS)
+// MISIONES Y PREMIOS
 // ==========================================
 app.post("/api/admin/misiones", verificarToken, upload.fields([{ name: 'archivoGris', maxCount: 1 }, { name: 'archivoColor', maxCount: 1 }]), (req, res) => {
     const { titulo, recompensa, descripcion, tipo_condicion, cantidad_objetivo } = req.body;
@@ -1436,7 +1435,6 @@ app.post("/api/admin/misiones", verificarToken, upload.fields([{ name: 'archivoG
     });
 });
 
-// Actualizar Misión (CRUD - Admin)
 app.put("/api/admin/misiones/:id", verificarToken, upload.fields([{ name: 'archivoGris', maxCount: 1 }, { name: 'archivoColor', maxCount: 1 }]), (req, res) => {
     const misionId = req.params.id;
     const { titulo, recompensa, descripcion, tipo_condicion, cantidad_objetivo } = req.body;
@@ -1471,7 +1469,6 @@ app.put("/api/admin/misiones/:id", verificarToken, upload.fields([{ name: 'archi
     });
 });
 
-// Eliminar Misión (CRUD - Admin)
 app.delete("/api/admin/misiones/:id", verificarToken, (req, res) => {
     const misionId = req.params.id;
 
@@ -1541,7 +1538,7 @@ app.post("/api/premios/reclamar", verificarToken, (req, res) => {
 });
 
 // ==========================================
-// INICIAR SERVIDOR (Soporte dinámico para puerto en producción/Render)
+// INICIAR SERVIDOR
 // ==========================================
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
