@@ -14,28 +14,29 @@
             color: #ffffff;
             display: flex;
             flex-direction: column;
+            overflow-x: hidden;
         }
 
         /* NAVBAR */
         .navbar { 
-            position:fixed; 
-            top:0; 
+            position: fixed; 
+            top: 0; 
             left: 0;
-            width:100%; 
-            height:65px; 
-            background:#0d0d0d; 
-            display:flex; 
-            justify-content:space-between; 
-            align-items:center; 
-            padding:0 25px; 
-            z-index:1000; 
+            width: 100%; 
+            height: 65px; 
+            background: #0d0d0d; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 0 25px; 
+            z-index: 2000; 
             border-bottom: 1px solid rgba(129, 199, 132, 0.25); 
         }
-        .logo-nombre { display:flex; align-items:center; gap:10px; }
-        .titulo { font-size:20px; font-weight:bold; color:#ffffff; letter-spacing: 0.5px; }
-        .logo { width:30px; }
-        .menu { display:flex; align-items:center; gap:25px; }
-        .menu a { text-decoration:none; color:#e0e0e0; font-size: 14px; transition: 0.3s ease; }
+        .logo-nombre { display: flex; align-items: center; gap: 10px; }
+        .titulo { font-size: 20px; font-weight: bold; color: #ffffff; letter-spacing: 0.5px; }
+        .logo { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; }
+        .menu { display: flex; align-items: center; gap: 20px; }
+        .menu a { text-decoration: none; color: #e0e0e0; font-size: 14px; transition: 0.3s ease; white-space: nowrap; }
         .menu a:hover { color: #81c784; }
 
         /* NOTIFICACIONES */
@@ -81,6 +82,7 @@
             right: 0;
             top: 50px;
             width: 340px;
+            max-width: 90vw;
             background: rgba(18, 22, 19, 0.98);
             backdrop-filter: blur(15px);
             border-radius: 16px;
@@ -88,7 +90,7 @@
             box-shadow: 0 15px 35px rgba(0,0,0,0.7);
             display: none;
             flex-direction: column;
-            z-index: 1200;
+            z-index: 2500;
             overflow: hidden;
         }
         .notif-header {
@@ -128,32 +130,53 @@
         .dropdown {
             position: absolute; right: 0; top: 50px; background: rgba(20, 20, 20, 0.98);
             backdrop-filter: blur(10px); border-radius: 12px; border: 1px solid rgba(129, 199, 132, 0.2);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.6); display: none; flex-direction: column; min-width: 160px; overflow: hidden; z-index: 1100;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6); display: none; flex-direction: column; min-width: 160px; overflow: hidden; z-index: 2500;
         }
         .dropdown a {
-            padding: 12px 18px; text-decoration: none; color: #ffffff; font-size: 14px; transition: 0.2s ease; border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding: 12px 18px; text-decoration: none; color: #ffffff; font-size: 14px; transition: 0.2s ease; border-bottom: 1px solid rgba(255,255,255,0.05); display: block;
         }
         .dropdown a:last-child { border-bottom: none; }
         .dropdown a:hover { background: rgba(46, 125, 50, 0.3); color: #81c784; }
-        .show { display: flex; }
+        .dropdown.show { display: flex !important; }
 
         /* ESTRUCTURA */
         .main-layout { display: flex; margin-top: 65px; min-height: calc(100vh - 65px); width: 100%; }
 
         /* SIDEBAR */
         .sidebar { 
-            width: 280px; min-width: 280px; height: calc(100vh - 65px); position: sticky; top: 65px;
-            background: #121212; border-right: 1px solid rgba(129, 199, 132, 0.15); padding: 25px 15px;
-            display: flex; flex-direction: column; justify-content: space-between; z-index: 90;
+            width: 280px; 
+            min-width: 280px;
+            background: #121212; 
+            border-right: 1px solid rgba(129, 199, 132, 0.15); 
+            padding: 25px 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
         .sidebar-menu { display: flex; flex-direction: column; }
         .sidebar button { 
-            width: 100%; padding: 16px; margin-bottom: 15px; border: none; border-radius: 12px; 
-            background: #1b1b1b; color: #ffffff; font-size: 15px; cursor: pointer; text-align: left; 
-            border-bottom: 1px solid rgba(130,199,132,0.2); transition: 0.3s ease;
+            width: 100%; 
+            padding: 16px; 
+            margin-bottom: 15px; 
+            border: none; 
+            border-radius: 12px; 
+            background: #1b1b1b; 
+            color: #ffffff; 
+            font-size: 15px; 
+            cursor: pointer; 
+            text-align: left; 
+            border-bottom: 1px solid rgba(130,199,132,0.2); 
+            transition: 0.3s ease;
         }
         .sidebar button:hover, .sidebar button.btn-active { 
-            background: #1c2d20; color: #81c784; border-bottom: 1px solid rgba(130,199,132,0.5); padding-left: 22px;
+            background: #1c2d20; 
+            color: #81c784; 
+            border-bottom: 1px solid rgba(130,199,132,0.5); 
+            padding-left: 22px;
+        }
+        .sidebar button.btn-active {
+            color: #81c784;
+            font-weight: bold;
         }
         .footer-privacidad { padding-top: 15px; text-align: center; }
         .footer-privacidad a { color: rgba(255, 255, 255, 0.5); text-decoration: none; font-size: 13px; font-weight: 500; transition: 0.3s ease; }
@@ -293,27 +316,69 @@
             color: #111412;
         }
 
-        /* RESPONSIVO MÓVIL */
+        /* DISEÑO RESPONSIVO MÓVIL (BARRA INFERIOR FLOTANTE) */
         @media (max-width: 900px) {
             .main-layout { flex-direction: column; margin-top: 65px; min-height: auto; }
             .container { padding: 20px 15px 100px 15px; width: 100%; }
             .grid-historial { grid-template-columns: 1fr; }
             
             .sidebar { 
-                position: fixed; bottom: 0; top: auto; left: 0; width: 100%; min-width: 100%; height: 72px; 
-                background: rgba(14, 14, 14, 0.97); backdrop-filter: blur(15px); border-right: none; 
-                border-top: 1px solid rgba(129, 199, 132, 0.3); padding: 0; flex-direction: row; 
-                justify-content: space-around; align-items: center; z-index: 1000;
+                position: fixed; 
+                bottom: 0; 
+                top: auto; 
+                left: 0; 
+                width: 100%; 
+                min-width: 100%; 
+                height: 72px; 
+                background: rgba(14, 14, 14, 0.97); 
+                backdrop-filter: blur(15px);
+                border-right: none; 
+                border-top: 1px solid rgba(129, 199, 132, 0.3); 
+                padding: 0; 
+                flex-direction: row; 
+                justify-content: space-around; 
+                align-items: center; 
+                z-index: 1000;
             }
-            .sidebar-menu { flex-direction: row; width: 100%; height: 100%; justify-content: space-around; align-items: center; }
+            .sidebar-menu { 
+                flex-direction: row; 
+                width: 100%; 
+                height: 100%; 
+                justify-content: space-around; 
+                align-items: center; 
+            }
             .sidebar button { 
-                width: auto; flex: 1; height: 100%; padding: 10px 2px; margin-bottom: 0; border: none; 
-                border-radius: 0; background: transparent; font-size: 11px; font-weight: 500; text-align: center; 
-                display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; color: #cccccc;
+                width: auto; 
+                flex: 1; 
+                height: 100%; 
+                padding: 10px 2px; 
+                margin-bottom: 0; 
+                border: none; 
+                border-radius: 0; 
+                background: transparent; 
+                font-size: 10px; 
+                font-weight: 500; 
+                text-align: center; 
+                display: flex; 
+                flex-direction: column; 
+                align-items: center; 
+                justify-content: center; 
+                gap: 3px; 
+                white-space: nowrap; 
+                color: #cccccc; 
             }
-            .sidebar button span { font-size: 18px; }
-            .sidebar button:hover, .sidebar button.btn-active { background: rgba(255, 255, 255, 0.03); color: #81c784; padding-left: 2px; }
-            .sidebar button.btn-active { color: #81c784; font-weight: bold; }
+            .sidebar button span { 
+                font-size: 16px; 
+            }
+            .sidebar button:hover, .sidebar button.btn-active { 
+                background: rgba(255, 255, 255, 0.03); 
+                color: #81c784; 
+                padding-left: 2px; 
+            }
+            .sidebar button.btn-active {
+                color: #81c784;
+                font-weight: bold;
+            }
             .footer-privacidad { display: none; }
         }
 
@@ -322,8 +387,8 @@
             .menu { gap: 12px; }
             .menu a { font-size: 13px; }
             .titulo { font-size: 18px; }
-            .sidebar button { font-size: 10px; } 
-            .sidebar button span { font-size: 16px; }
+            .sidebar button { font-size: 9px; } 
+            .sidebar button span { font-size: 15px; }
             .notif-dropdown { width: calc(100vw - 30px); right: -10px; max-height: 280px; }
         }
     </style>
@@ -367,15 +432,15 @@
 
     <div class="main-layout">
         
-        <!-- SIDEBAR / BARRA INFERIOR MÓVIL -->
+        <!-- SIDEBAR / BARRA INFERIOR FLOTANTE CON ÍCONOS ALINEADOS -->
         <div class="sidebar">
             <div class="sidebar-menu">
                 <button onclick="window.location.href='menu.html'"><span>📊</span> Estadísticas</button>
                 <button onclick="window.location.href='agregar.html'"><span>➕</span> Agregar</button>
                 <button onclick="window.location.href='historial.html'" class="btn-active"><span>📅</span> Historial</button>
                 <button onclick="window.location.href='semaforo.html'"><span>🚦</span> Semáforo</button>
-                <button onclick="window.location.href='metas.html'">🎯 Metas</button>
-                <button onclick="window.location.href='racha.html'">🔥 Racha</button>
+                <button onclick="window.location.href='metas.html'"><span>🎯</span> Metas</button>
+                <button onclick="window.location.href='racha.html'"><span>🔥</span> Racha</button>
                 <button onclick="window.location.href='consejos.html'"><span>💡</span> Consejos</button>
             </div>
             <div class="footer-privacidad">
@@ -430,7 +495,7 @@
     <script>
         const API_URL = "";
         let listaGastosGlobal = [];
-        let fechaCalendarioActiva = new Date(); // Controla el mes/año actual mostrado en el calendario
+        let fechaCalendarioActiva = new Date();
 
         function cerrarSesion(){
             sessionStorage.removeItem("sesionActiva");
@@ -444,6 +509,37 @@
                 window.location.href = "index.html";
                 return;
             }
+
+            // Manejo de dropdowns en navbar
+            const userBtn = document.getElementById("userBtn");
+            const dropdownMenu = document.getElementById("dropdownMenu");
+            const notifBtn = document.getElementById("notifBtn");
+            const notifDropdown = document.getElementById("notifDropdown");
+
+            if (userBtn && dropdownMenu) {
+                userBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    if (notifDropdown) notifDropdown.classList.remove("show");
+                    dropdownMenu.classList.toggle("show");
+                });
+            }
+
+            if (notifBtn && notifDropdown) {
+                notifBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    if (dropdownMenu) dropdownMenu.classList.remove("show");
+                    notifDropdown.classList.toggle("show");
+                });
+            }
+
+            window.addEventListener("click", (e) => {
+                if (dropdownMenu && userBtn && !userBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                    dropdownMenu.classList.remove("show");
+                }
+                if (notifDropdown && notifBtn && !notifBtn.contains(e.target) && !notifDropdown.contains(e.target)) {
+                    notifDropdown.classList.remove("show");
+                }
+            });
 
             try {
                 const res = await fetch(`${API_URL}/api/lista-gastos`, {
@@ -528,7 +624,6 @@
                 div.innerText = d;
                 div.title = `Filtrar gastos del ${d}`;
 
-                // --- EVENTO AL DAR CLIC EN LA FECHA ---
                 div.addEventListener('click', () => {
                     document.querySelectorAll('.cal-celda-dia').forEach(c => c.classList.remove('seleccionado'));
                     div.classList.add('seleccionado');
@@ -568,14 +663,14 @@
                 });
 
                 if (res.ok) {
-                    alert(" Gasto eliminado correctamente.");
+                    alert("Gasto eliminado correctamente.");
                     location.reload();
                 } else {
-                    alert(" No se pudo eliminar el gasto.");
+                    alert("No se pudo eliminar el gasto.");
                 }
             } catch (err) {
                 console.error("Error al eliminar:", err);
-                alert(" Error de red al intentar eliminar.");
+                alert("Error de red al intentar eliminar.");
             }
         }
     </script>
