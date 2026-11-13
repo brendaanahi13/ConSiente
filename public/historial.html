@@ -159,10 +159,18 @@
         .footer-privacidad a { color: rgba(255, 255, 255, 0.5); text-decoration: none; font-size: 13px; font-weight: 500; transition: 0.3s ease; }
         .footer-privacidad a:hover { color: #81c784; }
 
-        /* CONTENEDOR PRINCIPAL */
+        /* CONTENEDOR PRINCIPAL Y GRID */
         .container { 
             flex: 1; padding: 40px; display: flex; flex-direction: column; gap: 25px; 
             max-width: 1200px; margin: 0 auto; width: 100%;
+        }
+
+        .grid-historial {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+            width: 100%;
+            align-items: flex-start;
         }
 
         .box { 
@@ -171,9 +179,11 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08); 
         }
 
-        h2 { color: #81c784; font-weight: 600; font-size: 24px; margin-bottom: 20px; }
+        h2, h3 { color: #81c784; font-weight: 600; margin-bottom: 20px; }
+        h2 { font-size: 24px; }
+        h3 { font-size: 16px; margin-bottom: 15px; }
 
-        /* TABLA DE HISTORIAL */
+        /* TABLA DE MOVIMIENTOS */
         .table-responsive { width: 100%; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; text-align: left; }
         th { background: rgba(46, 125, 50, 0.2); color: #81c784; padding: 14px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -190,13 +200,57 @@
             border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold; transition: 0.3s ease;
         }
         .btn-eliminar:hover { background: #ef5350; color: white; }
-
         .sin-datos { text-align: center; padding: 30px; color: #888; font-style: italic; }
+
+        /* CALENDARIO ESTÁTICO */
+        .cal-estatico-box {
+            background: #1b1b1b;
+            border-radius: 14px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .cal-mes-titulo {
+            text-align: center;
+            font-weight: bold;
+            text-transform: capitalize;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #ffffff;
+        }
+        .cal-grid-estatico {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+        }
+        .cal-dia-lbl {
+            font-size: 11px;
+            color: #81c784;
+            text-align: center;
+            font-weight: bold;
+        }
+        .cal-celda-dia {
+            background: #0d0d0d;
+            border-radius: 6px;
+            padding: 8px 0;
+            text-align: center;
+            font-size: 12px;
+            color: #ffffff;
+        }
+        .cal-celda-dia.hoy {
+            background: #4caf50;
+            color: #ffffff;
+            font-weight: bold;
+        }
+        .cal-celda-dia.has-gasto {
+            box-shadow: inset 0 0 0 1px #81c784;
+            background: rgba(76, 175, 80, 0.15);
+        }
 
         /* RESPONSIVO MÓVIL */
         @media (max-width: 900px) {
             .main-layout { flex-direction: column; margin-top: 65px; min-height: auto; }
             .container { padding: 20px 15px 100px 15px; width: 100%; }
+            .grid-historial { grid-template-columns: 1fr; }
             
             .sidebar { 
                 position: fixed; bottom: 0; top: auto; left: 0; width: 100%; min-width: 100%; height: 72px; 
@@ -266,7 +320,7 @@
 
     <div class="main-layout">
         
-        <!-- SIDEBAR / BARRA INFERIOR MÓVIL (HISTORIAL ACTIVO) -->
+        <!-- SIDEBAR / BARRA INFERIOR MÓVIL -->
         <div class="sidebar">
             <div class="sidebar-menu">
                 <button onclick="window.location.href='menu.html'"><span>📊</span> Estadísticas</button>
@@ -283,24 +337,36 @@
         </div>
 
         <div class="container">
-            <div class="box">
-                <h2>Historial de Movimientos</h2>
-                <div class="table-responsive">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Fecha</th>
-                                <th>Categoría</th>
-                                <th>Monto</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tablaHistorial">
-                            <tr>
-                                <td colspan="4" class="sin-datos">Cargando movimientos...</td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <div class="grid-historial">
+                <!-- CAJA DE LA TABLA DE MOVIMIENTOS -->
+                <div class="box">
+                    <h2>Historial de Movimientos</h2>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Categoría</th>
+                                    <th>Monto</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaHistorial">
+                                <tr>
+                                    <td colspan="4" class="sin-datos">Cargando movimientos...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- CAJA DEL CALENDARIO ESTÁTICO RESTAURADA -->
+                <div class="box">
+                    <h3>Calendario de Actividad</h3>
+                    <div class="cal-estatico-box">
+                        <div class="cal-mes-titulo" id="calEstaticoMes"></div>
+                        <div class="cal-grid-estatico" id="calGridEstatico"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -335,22 +401,25 @@
 
                     if (gastos.length === 0) {
                         tbody.innerHTML = `<tr><td colspan="4" class="sin-datos">No hay movimientos registrados aún.</td></tr>`;
-                        return;
+                    } else {
+                        gastos.forEach(g => {
+                            const fechaFormateada = g.fecha ? g.fecha.split('T')[0] : 'Fecha no disponible';
+                            const montoNum = Number(g.monto || g.cantidad || 0).toFixed(2);
+                            
+                            const tr = document.createElement("tr");
+                            tr.innerHTML = `
+                                <td>${fechaFormateada}</td>
+                                <td><span class="badge-categoria">${g.categoria || g.tipo || 'General'}</span></td>
+                                <td class="monto-gasto">$ ${montoNum}</td>
+                                <td><button class="btn-eliminar" onclick="eliminarGasto(${g.id})">Eliminar</button></td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
                     }
 
-                    gastos.forEach(g => {
-                        const fechaFormateada = g.fecha ? g.fecha.split('T')[0] : 'Fecha no disponible';
-                        const montoNum = Number(g.monto || g.cantidad || 0).toFixed(2);
-                        
-                        const tr = document.createElement("tr");
-                        tr.innerHTML = `
-                            <td>${fechaFormateada}</td>
-                            <td><span class="badge-categoria">${g.categoria || g.tipo || 'General'}</span></td>
-                            <td class="monto-gasto">$ ${montoNum}</td>
-                            <td><button class="btn-eliminar" onclick="eliminarGasto(${g.id})">Eliminar</button></td>
-                        `;
-                        tbody.appendChild(tr);
-                    });
+                    // Generar el calendario estático con los datos cargados
+                    generarCalendarioEstatico(gastos);
+
                 } else {
                     document.getElementById("tablaHistorial").innerHTML = `<tr><td colspan="4" class="sin-datos">Error al cargar el historial.</td></tr>`;
                 }
@@ -359,6 +428,43 @@
                 document.getElementById("tablaHistorial").innerHTML = `<tr><td colspan="4" class="sin-datos">No se pudo conectar con el servidor.</td></tr>`;
             }
         });
+
+        function generarCalendarioEstatico(gastos) {
+            const grid = document.getElementById("calGridEstatico");
+            const hoy = new Date();
+            const mes = hoy.getMonth();
+            const anio = hoy.getFullYear();
+
+            document.getElementById("calEstaticoMes").innerText = hoy.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+            grid.innerHTML = '';
+
+            ['Do','Lu','Ma','Mi','Ju','Vi','Sá'].forEach(d => {
+                grid.innerHTML += `<div class="cal-dia-lbl">${d}</div>`;
+            });
+
+            const primerDiaMes = new Date(anio, mes, 1).getDay();
+            const totalDias = new Date(anio, mes + 1, 0).getDate();
+
+            for(let i = 0; i < primerDiaMes; i++) {
+                grid.appendChild(document.createElement('div'));
+            }
+
+            for(let d = 1; d <= totalDias; d++) {
+                const tieneGasto = gastos.some(g => {
+                    if (!g.fecha) return false;
+                    const partesFecha = String(g.fecha).split('T')[0].split('-');
+                    if (partesFecha.length < 3) return false;
+                    return parseInt(partesFecha[2], 10) === d && (parseInt(partesFecha[1], 10) - 1) === mes && parseInt(partesFecha[0], 10) === anio;
+                });
+
+                const esHoy = (d === hoy.getDate());
+                const div = document.createElement('div');
+                div.className = `cal-celda-dia ${esHoy ? 'hoy' : ''} ${tieneGasto ? 'has-gasto' : ''}`;
+                div.innerText = d;
+
+                grid.appendChild(div);
+            }
+        }
 
         async function eliminarGasto(id) {
             if (!confirm("¿Estás segura de que deseas eliminar este gasto?")) return;
