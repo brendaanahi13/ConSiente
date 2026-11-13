@@ -121,15 +121,93 @@
         .gasolina-tipo span { display: block; font-size: 9.5px; color: #aaa; text-transform: uppercase; margin-bottom: 2px; }
         .gasolina-tipo strong { font-size: 12px; color: #81c784; }
 
+        /* MENÚ RESPONSIVO MÓVIL (BARRA INFERIOR FLOTANTE) */
         @media (max-width: 900px) {
-            .main-layout { flex-direction: column; }
-            .sidebar { width: 100%; min-width: 100%; height: auto; border-right: none; border-bottom: 1px solid rgba(129, 199, 132, 0.15); padding: 15px; }
-            .sidebar-menu { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-            .sidebar button { margin-bottom: 0; padding: 10px 8px; font-size: 13px; text-align: center; }
-            .footer-privacidad { display: none; }
-            .scrollable-content { height: auto; padding: 15px; overflow-y: visible; }
+            .main-layout { flex-direction: column; margin-top: 65px; min-height: auto; }
+            
+            .scrollable-content { 
+                height: auto; 
+                padding: 20px 15px 100px 15px; 
+                overflow-y: visible; 
+            }
+
             .content-row { flex-direction: column; gap: 20px; }
             .box { padding: 20px; }
+
+            .sidebar { 
+                position: fixed; 
+                bottom: 0; 
+                top: auto; 
+                left: 0; 
+                width: 100%; 
+                min-width: 100%; 
+                height: 72px; 
+                background: rgba(14, 14, 14, 0.97); 
+                backdrop-filter: blur(15px);
+                border-right: none; 
+                border-top: 1px solid rgba(129, 199, 132, 0.3); 
+                padding: 0; 
+                flex-direction: row; 
+                justify-content: space-around; 
+                align-items: center; 
+                z-index: 1000;
+            }
+
+            .sidebar-menu { 
+                flex-direction: row; 
+                width: 100%; 
+                height: 100%; 
+                justify-content: space-around; 
+                align-items: center; 
+            }
+
+            .sidebar button { 
+                width: auto; 
+                flex: 1; 
+                height: 100%; 
+                padding: 10px 2px; 
+                margin-bottom: 0; 
+                border: none; 
+                border-radius: 0; 
+                background: transparent; 
+                font-size: 10px; 
+                font-weight: 500; 
+                text-align: center; 
+                display: flex; 
+                flex-direction: column; 
+                align-items: center; 
+                justify-content: center; 
+                gap: 3px; 
+                white-space: nowrap; 
+                color: #cccccc; 
+            }
+
+            .sidebar button span { 
+                font-size: 16px; 
+            }
+
+            .sidebar button:hover, .sidebar button.active { 
+                background: rgba(255, 255, 255, 0.03); 
+                color: #81c784; 
+                padding-left: 2px; 
+            }
+
+            .sidebar button.active {
+                color: #81c784;
+                font-weight: bold;
+            }
+
+            .footer-privacidad { display: none; }
+        }
+
+        @media (max-width: 600px) {
+            .navbar { padding: 0 15px; }
+            .menu { gap: 12px; }
+            .menu a { font-size: 13px; }
+            .titulo { font-size: 18px; }
+            .sidebar button { font-size: 9px; } 
+            .sidebar button span { font-size: 15px; }
+            .notif-dropdown { width: calc(100vw - 30px); right: -10px; max-height: 280px; }
         }
     </style>
 </head>
@@ -172,6 +250,7 @@
 
     <div class="main-layout">
         
+        <!-- SIDEBAR / BARRA INFERIOR FLOTANTE MÓVIL -->
         <div class="sidebar">
             <div class="sidebar-menu">
                 <button onclick="window.location.href='menu.html'"><span>📊</span> Mis Estadísticas</button>
@@ -179,7 +258,7 @@
                 <button onclick="window.location.href='historial.html'"><span>📅</span> Historial</button>
                 <button onclick="window.location.href='semaforo.html'" class="active"><span>🚦</span> Semáforo Financiero</button>
                 <button onclick="window.location.href='metas.html'"><span>🎯</span> Metas</button>
-                <button onclick="window.location.href='racha.html'"><span>🔥</span> Misiones</button>
+                <button onclick="window.location.href='racha.html'"><span>🔥</span> Racha</button>
                 <button onclick="window.location.href='consejos.html'"><span>💡</span> Consejos</button>
             </div>
             <div class="footer-privacidad">
@@ -271,10 +350,9 @@
     </div>
 
     <script>
-        // CONFIGURACIÓN DINÁMICA DE LA API (Abierta para local y producción en Render)
+        // CONFIGURACIÓN DINÁMICA DE LA API
         const API_URL = "";
 
-        // CONTROL ABSOLUTO Y DIRECTO DE MENÚS (Sin interferencias externas)
         document.addEventListener("DOMContentLoaded", () => {
             const userBtn = document.getElementById("userBtn");
             const dropdownMenu = document.getElementById("dropdownMenu");
@@ -304,7 +382,6 @@
 
             cargarPerfilUsuario();
             cargarTodoElSemaforo();
-            cargarNotificacionesLocales();
         });
 
         async function cargarPerfilUsuario() {
@@ -323,49 +400,6 @@
                 }
             } catch (e) {
                 console.error("Error al cargar foto de perfil:", e);
-            }
-        }
-
-        async function cargarNotificacionesLocales() {
-            const token = localStorage.getItem("token");
-            if (!token) return;
-            try {
-                const res = await fetch(`${API_URL}/api/notificaciones`, {
-                    headers: { "Authorization": `Bearer ${token}` }
-                });
-                if (res.ok) {
-                    const notificaciones = await res.json();
-                    const lista = document.getElementById("notifList");
-                    const badge = document.getElementById("notifBadge");
-                    lista.innerHTML = "";
-                    
-                    let noLeidas = 0;
-                    if (notificaciones.length === 0) {
-                        lista.innerHTML = `<div style="padding: 20px; text-align: center; color: #888; font-size: 13px;">No hay notificaciones</div>`;
-                    } else {
-                        notificaciones.forEach(n => {
-                            if (!n.leida) noLeidas++;
-                            lista.innerHTML += `
-                                <div class="notif-item ${n.leida ? '' : 'unread'}">
-                                    <div class="notif-detalles">
-                                        <div class="notif-titulo-item">${n.titulo}</div>
-                                        <div class="notif-texto">${n.mensaje}</div>
-                                        <div class="notif-fecha">${n.fecha}</div>
-                                    </div>
-                                </div>
-                            `;
-                        });
-                    }
-
-                    if (noLeidas > 0) {
-                        badge.style.display = "flex";
-                        badge.innerText = noLeidas;
-                    } else {
-                        badge.style.display = "none";
-                    }
-                }
-            } catch (e) {
-                console.error("Error al cargar notificaciones:", e);
             }
         }
 
@@ -528,5 +562,8 @@
             } catch(e) { console.error("Error cargando componentes del Semáforo:", e); }
         }
     </script>
+    
+    <!-- SCRIPT GLOBAL DE NOTIFICACIONES -->
+    <script src="/global-notificaciones.js" defer></script>
 </body>
 </html>
