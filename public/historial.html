@@ -389,7 +389,7 @@
                 <div class="box">
                     <h2>
                         <span id="tituloHistorialTxt">Historial de Movimientos</span>
-                        <button class="btn-ver-todos" id="btnVerTodos" onclick="mostrarTodosLosGastos()">🔄 Ver todos</button>
+                        <button class="btn-ver-todos" id="btnVerTodos" onclick="mostrarTodosLosGastos()">Ver todos</button>
                     </h2>
                     <div class="table-responsive">
                         <table>
@@ -568,14 +568,14 @@
                 });
 
                 if (res.ok) {
-                    alert("✅ Gasto eliminado correctamente.");
+                    alert(" Gasto eliminado correctamente.");
                     location.reload();
                 } else {
-                    alert("❌ No se pudo eliminar el gasto.");
+                    alert(" No se pudo eliminar el gasto.");
                 }
             } catch (err) {
                 console.error("Error al eliminar:", err);
-                alert("❌ Error de red al intentar eliminar.");
+                alert(" Error de red al intentar eliminar.");
             }
         }
     </script>
