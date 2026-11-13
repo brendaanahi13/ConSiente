@@ -38,7 +38,7 @@
         .menu a { text-decoration:none; color:#e0e0e0; font-size: 14px; transition: 0.3s ease; }
         .menu a:hover { color: #81c784; }
 
-        /* CONTENEDOR DE NOTIFICACIONES CON IMAGEN LOCAL */
+        /* CONTENEDOR DE NOTIFICACIONES RESPONSIVO */
         .notif-wrapper {
             position: relative;
             display: flex;
@@ -84,7 +84,7 @@
             position: absolute;
             right: 0;
             top: 50px;
-            width: 330px;
+            width: 340px;
             background: rgba(18, 22, 19, 0.98);
             backdrop-filter: blur(15px);
             border-radius: 16px;
@@ -143,11 +143,6 @@
             border-left: 3px solid #81c784;
         }
 
-        .notif-icon {
-            font-size: 20px;
-            margin-top: 2px;
-        }
-
         .notif-detalles {
             flex: 1;
         }
@@ -167,8 +162,9 @@
 
         .notif-fecha {
             font-size: 10px;
-            color: #777;
+            color: #888;
             margin-top: 4px;
+            font-weight: 600;
         }
 
         /* MENÚ DE USUARIO DESLIZABLE / DROPDOWN */
@@ -184,6 +180,7 @@
             cursor: pointer;
             border: 1.5px solid rgba(129, 199, 132, 0.5);
             transition: 0.3s ease;
+            object-fit: cover;
         }
         .user-icon:hover {
             border-color: #81c784;
@@ -227,16 +224,20 @@
             width: 100%;
         }
 
-        /* SIDEBAR */
+        /* SIDEBAR ESCRITORIO */
         .sidebar { 
             width: 280px; 
             min-width: 280px;
+            height: calc(100vh - 65px);
+            position: sticky;
+            top: 65px;
             background:#121212; 
             border-right: 1px solid rgba(129, 199, 132, 0.15); 
             padding: 25px 15px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            z-index: 90;
         }
         .sidebar-menu {
             display: flex;
@@ -256,7 +257,7 @@
             border-bottom:1px solid rgba(130,199,132,0.2); 
             transition: 0.3s ease;
         }
-        .sidebar button:hover { 
+        .sidebar button:hover, .sidebar button.btn-active { 
             background:#1c2d20; 
             color: #81c784;
             border-bottom:1px solid rgba(130,199,132,0.5); 
@@ -276,6 +277,7 @@
             max-width: 1200px;
             margin: 0 auto;
             align-items: flex-start;
+            width: 100%;
         }
         
         .box { 
@@ -480,11 +482,98 @@
             background: linear-gradient(135deg, #388e3c 0%, #2e7d32 100%);
         }
 
+        /* DISEÑO RESPONSIVO MÓVIL (BARRA INFERIOR + NOTIFICACIONES ADAPTADAS) */
         @media (max-width: 900px) {
-            .main-layout { flex-direction: column; }
-            .sidebar { width: 100%; min-width: 100%; height: auto; border-right: none; border-bottom: 1px solid rgba(129, 199, 132, 0.15); }
-            .container { flex-direction: column; padding: 20px; width: 100%; }
+            .main-layout { flex-direction: column; margin-top: 65px; min-height: auto; }
+            
+            .container { 
+                padding: 20px 15px 100px 15px; 
+                width: 100%; 
+                flex-direction: column;
+            }
+
             .box { width: 100%; }
+            
+            .sidebar { 
+                position: fixed;
+                bottom: 0;
+                top: auto;
+                left: 0;
+                width: 100%; 
+                min-width: 100%; 
+                height: 72px; 
+                background: rgba(14, 14, 14, 0.97); 
+                backdrop-filter: blur(15px);
+                border-right: none; 
+                border-top: 1px solid rgba(129, 199, 132, 0.3); 
+                padding: 0;
+                flex-direction: row;
+                justify-content: space-around;
+                align-items: center;
+                z-index: 1000;
+            }
+            
+            .sidebar-menu {
+                flex-direction: row;
+                width: 100%;
+                height: 100%;
+                justify-content: space-around;
+                align-items: center;
+            }
+
+            .sidebar button { 
+                width: auto; 
+                flex: 1;
+                height: 100%;
+                padding: 10px 2px; 
+                margin-bottom: 0; 
+                border: none; 
+                border-radius: 0;
+                background: transparent; 
+                font-size: 11px; 
+                font-weight: 500;
+                text-align: center; 
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 5px;
+                white-space: nowrap;
+                color: #cccccc;
+            }
+
+            .sidebar button span {
+                font-size: 18px; 
+            }
+
+            .sidebar button:hover, .sidebar button.btn-active { 
+                background: rgba(255, 255, 255, 0.03); 
+                color: #81c784;
+                padding-left: 2px; 
+            }
+
+            .sidebar button.btn-active {
+                color: #81c784;
+                font-weight: bold;
+            }
+
+            .footer-privacidad { display: none; }
+        }
+
+        @media (max-width: 600px) {
+            .navbar { padding: 0 15px; }
+            .menu { gap: 12px; }
+            .menu a { font-size: 13px; }
+            .titulo { font-size: 18px; }
+            .sidebar button { font-size: 10px; } 
+            .sidebar button span { font-size: 16px; }
+
+            /* Ajuste de notificaciones para pantallas móviles pequeñas */
+            .notif-dropdown {
+                width: calc(100vw - 30px);
+                right: -10px;
+                max-height: 280px;
+            }
         }
     </style>
 </head>
@@ -532,7 +621,7 @@
         <div class="sidebar">
             <div class="sidebar-menu">
                 <button onclick="window.location.href='menu.html'"><span>📊</span> Estadísticas</button>
-                <button onclick="window.location.href='agregar.html'"><span>➕</span> Agregar</button>
+                <button onclick="window.location.href='agregar.html'" class="btn-active"><span>➕</span> Agregar</button>
                 <button onclick="window.location.href='historial.html'"><span>📅</span> Historial</button>
                 <button onclick="window.location.href='semaforo.html'"><span>🚦</span> Semáforo</button>
                 <button onclick="window.location.href='metas.html'">🎯 Metas</button>
@@ -613,7 +702,7 @@
     </div>
 
     <script>
-        // CONFIGURACIÓN DINÁMICA DE LA API (Abierta para local y producción en Render)
+        // CONFIGURACIÓN DINÁMICA DE LA API (Rutas relativas seguras para local y Render)
         const API_URL = "";
 
         function cerrarSesion(){
