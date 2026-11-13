@@ -180,7 +180,7 @@
         }
 
         h2, h3 { color: #81c784; font-weight: 600; margin-bottom: 20px; }
-        h2 { font-size: 24px; }
+        h2 { font-size: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
         h3 { font-size: 16px; margin-bottom: 15px; }
 
         /* TABLA DE MOVIMIENTOS */
@@ -202,20 +202,39 @@
         .btn-eliminar:hover { background: #ef5350; color: white; }
         .sin-datos { text-align: center; padding: 30px; color: #888; font-style: italic; }
 
-        /* CALENDARIO ESTÁTICO */
+        /* CALENDARIO ESTÁTICO INTERACTIVO CON NAVEGACIÓN */
         .cal-estatico-box {
             background: #1b1b1b;
             border-radius: 14px;
             padding: 20px;
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
+        .cal-mes-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
         .cal-mes-titulo {
-            text-align: center;
             font-weight: bold;
             text-transform: capitalize;
-            margin-bottom: 15px;
             font-size: 14px;
             color: #ffffff;
+            margin: 0;
+        }
+        .btn-mes-nav {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(129, 199, 132, 0.3);
+            color: #81c784;
+            padding: 4px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s ease;
+        }
+        .btn-mes-nav:hover {
+            background: rgba(129, 199, 132, 0.2);
+            border-color: #81c784;
         }
         .cal-grid-estatico {
             display: grid;
@@ -235,6 +254,12 @@
             text-align: center;
             font-size: 12px;
             color: #ffffff;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+        .cal-celda-dia:hover {
+            background: rgba(129, 199, 132, 0.3);
+            border-color: #81c784;
         }
         .cal-celda-dia.hoy {
             background: #4caf50;
@@ -244,6 +269,28 @@
         .cal-celda-dia.has-gasto {
             box-shadow: inset 0 0 0 1px #81c784;
             background: rgba(76, 175, 80, 0.15);
+        }
+        .cal-celda-dia.seleccionado {
+            background: #81c784;
+            color: #111412;
+            font-weight: bold;
+        }
+
+        .btn-ver-todos {
+            background: rgba(129, 199, 132, 0.15);
+            color: #81c784;
+            border: 1px solid rgba(129, 199, 132, 0.3);
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            display: none;
+            transition: 0.3s ease;
+        }
+        .btn-ver-todos:hover {
+            background: #81c784;
+            color: #111412;
         }
 
         /* RESPONSIVO MÓVIL */
@@ -340,7 +387,10 @@
             <div class="grid-historial">
                 <!-- CAJA DE LA TABLA DE MOVIMIENTOS -->
                 <div class="box">
-                    <h2>Historial de Movimientos</h2>
+                    <h2>
+                        <span id="tituloHistorialTxt">Historial de Movimientos</span>
+                        <button class="btn-ver-todos" id="btnVerTodos" onclick="mostrarTodosLosGastos()">🔄 Ver todos</button>
+                    </h2>
                     <div class="table-responsive">
                         <table>
                             <thead>
@@ -360,11 +410,15 @@
                     </div>
                 </div>
 
-                <!-- CAJA DEL CALENDARIO ESTÁTICO RESTAURADA -->
+                <!-- CAJA DEL CALENDARIO CON NAVEGACIÓN DE MESES -->
                 <div class="box">
                     <h3>Calendario de Actividad</h3>
                     <div class="cal-estatico-box">
-                        <div class="cal-mes-titulo" id="calEstaticoMes"></div>
+                        <div class="cal-mes-header">
+                            <button class="btn-mes-nav" onclick="cambiarMes(-1)" title="Mes anterior">&lt;</button>
+                            <div class="cal-mes-titulo" id="calEstaticoMes"></div>
+                            <button class="btn-mes-nav" onclick="cambiarMes(1)" title="Mes siguiente">&gt;</button>
+                        </div>
                         <div class="cal-grid-estatico" id="calGridEstatico"></div>
                     </div>
                 </div>
@@ -375,6 +429,8 @@
 
     <script>
         const API_URL = "";
+        let listaGastosGlobal = [];
+        let fechaCalendarioActiva = new Date(); // Controla el mes/año actual mostrado en el calendario
 
         function cerrarSesion(){
             sessionStorage.removeItem("sesionActiva");
@@ -395,31 +451,9 @@
                 });
 
                 if (res.ok) {
-                    const gastos = await res.json();
-                    const tbody = document.getElementById("tablaHistorial");
-                    tbody.innerHTML = "";
-
-                    if (gastos.length === 0) {
-                        tbody.innerHTML = `<tr><td colspan="4" class="sin-datos">No hay movimientos registrados aún.</td></tr>`;
-                    } else {
-                        gastos.forEach(g => {
-                            const fechaFormateada = g.fecha ? g.fecha.split('T')[0] : 'Fecha no disponible';
-                            const montoNum = Number(g.monto || g.cantidad || 0).toFixed(2);
-                            
-                            const tr = document.createElement("tr");
-                            tr.innerHTML = `
-                                <td>${fechaFormateada}</td>
-                                <td><span class="badge-categoria">${g.categoria || g.tipo || 'General'}</span></td>
-                                <td class="monto-gasto">$ ${montoNum}</td>
-                                <td><button class="btn-eliminar" onclick="eliminarGasto(${g.id})">Eliminar</button></td>
-                            `;
-                            tbody.appendChild(tr);
-                        });
-                    }
-
-                    // Generar el calendario estático con los datos cargados
-                    generarCalendarioEstatico(gastos);
-
+                    listaGastosGlobal = await res.json();
+                    renderizarTabla(listaGastosGlobal);
+                    generarCalendarioEstatico(listaGastosGlobal);
                 } else {
                     document.getElementById("tablaHistorial").innerHTML = `<tr><td colspan="4" class="sin-datos">Error al cargar el historial.</td></tr>`;
                 }
@@ -429,13 +463,41 @@
             }
         });
 
+        function cambiarMes(delta) {
+            fechaCalendarioActiva.setMonth(fechaCalendarioActiva.getMonth() + delta);
+            generarCalendarioEstatico(listaGastosGlobal);
+        }
+
+        function renderizarTabla(gastos) {
+            const tbody = document.getElementById("tablaHistorial");
+            tbody.innerHTML = "";
+
+            if (gastos.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="sin-datos">No hay movimientos registrados.</td></tr>`;
+                return;
+            }
+
+            gastos.forEach(g => {
+                const fechaFormateada = g.fecha ? g.fecha.split('T')[0] : 'Fecha no disponible';
+                const montoNum = Number(g.monto || g.cantidad || 0).toFixed(2);
+                
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${fechaFormateada}</td>
+                    <td><span class="badge-categoria">${g.categoria || g.tipo || 'General'}</span></td>
+                    <td class="monto-gasto">$ ${montoNum}</td>
+                    <td><button class="btn-eliminar" onclick="eliminarGasto(${g.id})">Eliminar</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
         function generarCalendarioEstatico(gastos) {
             const grid = document.getElementById("calGridEstatico");
-            const hoy = new Date();
-            const mes = hoy.getMonth();
-            const anio = hoy.getFullYear();
+            const mes = fechaCalendarioActiva.getMonth();
+            const anio = fechaCalendarioActiva.getFullYear();
 
-            document.getElementById("calEstaticoMes").innerText = hoy.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+            document.getElementById("calEstaticoMes").innerText = fechaCalendarioActiva.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
             grid.innerHTML = '';
 
             ['Do','Lu','Ma','Mi','Ju','Vi','Sá'].forEach(d => {
@@ -450,20 +512,49 @@
             }
 
             for(let d = 1; d <= totalDias; d++) {
+                const mesStr = String(mes + 1).padStart(2, '0');
+                const diaStr = String(d).padStart(2, '0');
+                const fechaCelda = `${anio}-${mesStr}-${diaStr}`;
+
                 const tieneGasto = gastos.some(g => {
                     if (!g.fecha) return false;
-                    const partesFecha = String(g.fecha).split('T')[0].split('-');
-                    if (partesFecha.length < 3) return false;
-                    return parseInt(partesFecha[2], 10) === d && (parseInt(partesFecha[1], 10) - 1) === mes && parseInt(partesFecha[0], 10) === anio;
+                    return g.fecha.split('T')[0] === fechaCelda;
                 });
 
-                const esHoy = (d === hoy.getDate());
+                const hoy = new Date();
+                const esHoy = (d === hoy.getDate() && mes === hoy.getMonth() && anio === hoy.getFullYear());
                 const div = document.createElement('div');
                 div.className = `cal-celda-dia ${esHoy ? 'hoy' : ''} ${tieneGasto ? 'has-gasto' : ''}`;
                 div.innerText = d;
+                div.title = `Filtrar gastos del ${d}`;
+
+                // --- EVENTO AL DAR CLIC EN LA FECHA ---
+                div.addEventListener('click', () => {
+                    document.querySelectorAll('.cal-celda-dia').forEach(c => c.classList.remove('seleccionado'));
+                    div.classList.add('seleccionado');
+                    filtrarGastosPorFecha(fechaCelda, d);
+                });
 
                 grid.appendChild(div);
             }
+        }
+
+        function filtrarGastosPorFecha(fechaStr, diaNum) {
+            const filtrados = listaGastosGlobal.filter(g => {
+                if (!g.fecha) return false;
+                return g.fecha.split('T')[0] === fechaStr;
+            });
+
+            renderizarTabla(filtrados);
+            document.getElementById("tituloHistorialTxt").innerText = `Movimientos del día ${diaNum}`;
+            document.getElementById("btnVerTodos").style.display = "inline-block";
+        }
+
+        function mostrarTodosLosGastos() {
+            document.querySelectorAll('.cal-celda-dia').forEach(c => c.classList.remove('seleccionado'));
+            renderizarTabla(listaGastosGlobal);
+            document.getElementById("tituloHistorialTxt").innerText = "Historial de Movimientos";
+            document.getElementById("btnVerTodos").style.display = "none";
         }
 
         async function eliminarGasto(id) {
