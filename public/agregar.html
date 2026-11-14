@@ -39,7 +39,7 @@
         .menu a { text-decoration: none; color: #e0e0e0; font-size: 14px; transition: 0.3s ease; white-space: nowrap; }
         .menu a:hover { color: #81c784; }
 
-        /* NOTIFICACIONES */
+        /* NOTIFICACIONES PROFESIONALES Y 100% RESPONSIVAS */
         .notif-wrapper {
             position: relative;
             display: flex;
@@ -84,20 +84,21 @@
         .notif-dropdown {
             position: absolute;
             right: 0;
-            top: 50px;
-            width: 340px;
+            top: 55px;
+            width: 380px;
             max-width: 90vw;
-            background: rgba(18, 22, 19, 0.98);
-            backdrop-filter: blur(15px);
+            background: rgba(16, 20, 17, 0.98);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border-radius: 16px;
-            border: 1px solid rgba(129, 199, 132, 0.25);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.7);
+            border: 1px solid rgba(129, 199, 132, 0.3);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
             display: none;
             flex-direction: column;
             z-index: 2500;
             overflow: hidden;
         }
-        /* REGLA CORREGIDA PARA QUE ABRA LA LISTA DE NOTIFICACIONES */
+
         .notif-dropdown.show { display: flex !important; }
 
         .notif-header {
@@ -113,18 +114,25 @@
             color: #ffffff;
             font-size: 14px;
             font-weight: 700;
+            letter-spacing: 0.3px;
+            margin: 0;
         }
 
         .notif-header span {
             color: #81c784;
-            font-size: 11px;
+            font-size: 12px;
             cursor: pointer;
             font-weight: 600;
+            transition: color 0.2s;
         }
+        .notif-header span:hover { color: #a5d6a7; }
 
         .notif-list {
-            max-height: 320px;
+            max-height: 350px;
             overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(129, 199, 132, 0.4) transparent;
         }
 
         .notif-item {
@@ -137,11 +145,12 @@
             position: relative;
             z-index: 2501;
             transition: all 0.2s ease;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .notif-item:hover {
-            background: rgba(46, 125, 50, 0.2);
-            padding-left: 20px;
+            background: rgba(46, 125, 50, 0.18);
         }
 
         .notif-item.unread {
@@ -151,28 +160,33 @@
 
         .notif-detalles {
             flex: 1;
+            min-width: 0;
             cursor: pointer;
-            pointer-events: auto !important;
+            text-decoration: none;
         }
 
         .notif-titulo-item {
             font-size: 13px;
             font-weight: 700;
             color: #81c784;
-            margin-bottom: 2px;
+            margin-bottom: 3px;
+            word-break: break-word;
+            overflow-wrap: break-word;
         }
 
         .notif-texto {
             font-size: 12px;
-            color: #cccccc;
-            line-height: 1.4;
+            color: #d1d5db;
+            line-height: 1.45;
+            word-break: break-word;
+            overflow-wrap: break-word;
         }
 
         .notif-fecha {
-            font-size: 10px;
-            color: #888;
+            font-size: 11px;
+            color: #81c784;
             margin-top: 4px;
-            font-weight: 600;
+            font-weight: 500;
         }
 
         /* MENÚ DE USUARIO */
@@ -562,17 +576,16 @@
             .footer-privacidad { display: none; }
         }
 
-        @media (max-width: 600px) {
-            .navbar { padding: 0 15px; }
-            .menu { gap: 12px; }
-            .menu a { font-size: 13px; }
-            .titulo { font-size: 18px; }
-            .sidebar button { font-size: 9px; } 
-            .sidebar button span { font-size: 15px; }
+        /* MEDIA QUERY PARA CENTRAR NOTIFICACIONES EN MÓVILES */
+        @media (max-width: 768px) {
             .notif-dropdown {
-                width: calc(100vw - 30px);
-                right: -10px;
-                max-height: 280px;
+                position: fixed !important;
+                left: 50% !important;
+                right: auto !important;
+                transform: translateX(-50%) !important;
+                top: 70px !important;
+                width: 92vw !important;
+                max-width: 380px !important;
             }
         }
     </style>
@@ -718,7 +731,6 @@
                 return;
             }
 
-            // Cargar la foto de perfil personalizada del usuario
             cargarPerfilUsuario();
 
             const inputFecha = document.getElementById('fechaGasto');
@@ -868,7 +880,6 @@
         }
     </script>
     
-    <!-- SCRIPT GLOBAL DE NOTIFICACIONES -->
     <script src="global-notificaciones.js" defer></script>
 
 </body>
