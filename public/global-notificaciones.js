@@ -1,4 +1,3 @@
-// --- GLOBAL NOTIFICACIONES.JS (PROFESIONAL Y ANTIDUPLICADOS) ---
 
 if (typeof window.API_URL === 'undefined') {
     window.API_URL = "";
@@ -53,24 +52,22 @@ async function cargarNotificacionesSistema() {
         let noLeidasCount = 0;
 
         if (!notificaciones || notificaciones.length === 0) {
-            notifList.innerHTML = `<div class="notif-item"><div class="notif-detalles"><div class="notif-texto" style="padding: 12px; color: #888; text-align: center; font-size: 13px;">No hay notificaciones recientes.</div></div></div>`;
+            notifList.innerHTML = `<div class="notif-item"><div class="notif-detalles"><div class="notif-texto" style="padding: 15px; color: #888; text-align: center; font-size: 13px;">No hay notificaciones recientes.</div></div></div>`;
             notifBadge.style.display = "none";
             return;
         }
 
-        // 🛡️ FILTRO INTELIGENTE: Evitar que salgan repetidas el mismo día con el mismo título
+        // 🛡️ FILTRO INTELIGENTE: Mostrar solo una notificación por tipo/título cada día (evita duplicados)
         const unicasMap = new Map();
         notificaciones.forEach(notif => {
             const fechaDia = notif.fecha ? notif.fecha.split('T')[0] : '';
             const claveUnica = (notif.titulo || '').trim().toLowerCase() + '_' + fechaDia;
-            // Guardamos la más reciente o la única de ese día
             if (!unicasMap.has(claveUnica) || (notif.id > unicasMap.get(claveUnica).id)) {
                 unicasMap.set(claveUnica, notif);
             }
         });
         let notificacionesFiltradas = Array.from(unicasMap.values());
-
-        notificacionesFiltradas.sort((a, b) => (b.id || 0) - (a.id || 0));
+        notificacionesFiltradas.sort((a, b) => (b.id || b._id || 0) - (a.id || a._id || 0));
 
         notificacionesFiltradas.forEach(notif => {
             const idNotif = notif.id || notif._id;
@@ -82,7 +79,7 @@ async function cargarNotificacionesSistema() {
 
             const tiempoRelativo = obtenerTiempoRelativo(notif.fecha);
 
-            // Redirección inteligente según el contenido
+            // Redirección inteligente según el contenido del mensaje
             const textoCompleto = ((notif.titulo || "") + " " + (notif.mensaje || "")).toLowerCase();
             let destinoUrl = "agregar.html";
 
@@ -101,10 +98,10 @@ async function cargarNotificacionesSistema() {
             
             item.innerHTML = `
                 <div class="notif-icon" style="font-size: 20px; margin-top: 2px; flex-shrink: 0;">🌿</div>
-                <a href="${destinoUrl}" onclick="marcarUnaLeida('${idNotif}')" class="notif-detalles" style="flex: 1; text-decoration: none; color: inherit; cursor: pointer; display: block; min-width: 0;">
-                    <div class="notif-titulo-item" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${notif.titulo || 'Notificación'}</div>
-                    <div class="notif-texto" style="word-break: break-word; overflow-wrap: break-word;">${notif.mensaje || notif.texto || ''}</div>
-                    <div class="notif-fecha" style="font-size: 11px; color: #81c784; margin-top: 4px; font-weight: 500;">${tiempoRelativo}</div>
+                <a href="${destinoUrl}" onclick="marcarUnaLeida('${idNotif}')" class="notif-detalles" style="flex: 1; text-decoration: none; color: inherit; cursor: pointer; display: block; min-width: 0; white-space: normal;">
+                    <div class="notif-titulo-item" style="white-space: normal; word-break: break-word; color: #81c784; font-weight: 700; font-size: 13px; margin-bottom: 3px;">${notif.titulo || 'Notificación'}</div>
+                    <div class="notif-texto" style="white-space: pre-line; word-break: break-word; color: #d1d5db; font-size: 12px; line-height: 1.45;">${notif.mensaje || notif.texto || ''}</div>
+                    <div class="notif-fecha" style="font-size: 11px; color: #81c784; margin-top: 6px; font-weight: 500;">${tiempoRelativo}</div>
                 </a>
                 <button class="btn-eliminar-notif" title="Eliminar" style="background: transparent; border: none; color: #ffffff; cursor: pointer; font-size: 18px; padding: 4px 8px; font-weight: bold; opacity: 0.7; transition: 0.2s; flex-shrink: 0;">&times;</button>
             `;
@@ -196,7 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (marcarTodasBtn) {
-        marcarTodasBtn.addEventListener("click5" || "click", (e) => {
+        marcarTodasBtn.addEventListener("click", (e) => {
             e.stopPropagation();
             marcarTodasLeidas();
         });
