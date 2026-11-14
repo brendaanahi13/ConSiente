@@ -1,4 +1,4 @@
-// --- GLOBAL NOTIFICACIONES.JS CON REDIRECCIÓN INTELIGENTE ---
+// --- GLOBAL NOTIFICACIONES.JS COMPLETO Y OPTIMIZADO ---
 
 const API_URL = "";
 
@@ -6,7 +6,7 @@ function obtenerTokenNotif() {
     return localStorage.getItem("token");
 }
 
-// Función para formatear el tiempo de manera profesional y amigable
+// Función para formatear el tiempo de manera amigable
 function obtenerTiempoRelativo(fechaStr) {
     if (!fechaStr) return "Hace un momento";
     const fecha = new Date(fechaStr);
@@ -53,7 +53,7 @@ async function cargarNotificacionesSistema() {
         let noLeidasCount = 0;
 
         if (!notificaciones || notificaciones.length === 0) {
-            notifList.innerHTML = `<div class="notif-item"><div class="notif-detalles"><div class="notif-texto">No hay notificaciones recientes.</div></div></div>`;
+            notifList.innerHTML = `<div class="notif-item"><div class="notif-detalles"><div class="notif-texto" style="padding: 10px; color: #888; text-align: center;">No hay notificaciones recientes.</div></div></div>`;
             notifBadge.style.display = "none";
             return;
         }
@@ -66,7 +66,7 @@ async function cargarNotificacionesSistema() {
 
         notificaciones.forEach(notif => {
             const idNotif = notif.id || notif._id;
-            const esLeida = notif.leida === true || notif.leida === 1 || notif.leida === "1" || notif.leida === "true";
+            let esLeida = notif.leida === true || notif.leida === 1 || notif.leida === "1" || notif.leida === "true";
 
             if (!esLeida) {
                 noLeidasCount++;
@@ -77,7 +77,7 @@ async function cargarNotificacionesSistema() {
             const item = document.createElement("div");
             item.className = `notif-item ${esLeida ? '' : 'unread'}`;
             item.innerHTML = `
-                <div class="notif-icon">🌿</div>
+                <div class="notif-icon" style="font-size: 18px; margin-top: 2px;">🌿</div>
                 <div class="notif-detalles" style="cursor: pointer; flex: 1;">
                     <div class="notif-titulo-item">${notif.titulo || 'Notificación'}</div>
                     <div class="notif-texto">${notif.mensaje || notif.texto || ''}</div>
@@ -90,27 +90,42 @@ async function cargarNotificacionesSistema() {
             btnEliminar.addEventListener("mouseenter", () => { btnEliminar.style.opacity = "1"; btnEliminar.style.color = "#ef5350"; });
             btnEliminar.addEventListener("mouseleave", () => { btnEliminar.style.opacity = "0.7"; btnEliminar.style.color = "#ffffff"; });
 
-            // EVENTO AL HACER CLIC EN LA NOTIFICACIÓN (Marcar leída y Redirigir según el contenido)
+            // EVENTO AL HACER CLIC EN LA NOTIFICACIÓN
             const detallesDiv = item.querySelector(".notif-detalles");
             detallesDiv.addEventListener("click", async (e) => {
                 e.stopPropagation();
                 
-                // 1. Marcar como leída si no lo estaba
+                // 1. Marcar como leída de inmediato si no lo estaba
                 if (!esLeida) {
                     await marcarUnaLeida(idNotif);
+                    item.classList.remove("unread");
+                    esLeida = true;
+                    
+                    // Actualizar contador visual del badge al momento
+                    if (notifBadge) {
+                        let badgeCount = parseInt(notifBadge.innerText) || 1;
+                        badgeCount = Math.max(0, badgeCount - 1);
+                        if (badgeCount === 0) {
+                            notifBadge.style.display = "none";
+                        } else {
+                            notifBadge.innerText = badgeCount;
+                        }
+                    }
                 }
 
-                // 2. Determinar a qué página redirigir basándonos en el título o texto de la notificación
+                // 2. Redirección inteligente según el contenido
                 const textoCompleto = ((notif.titulo || "") + " " + (notif.mensaje || "")).toLowerCase();
                 
-                if (textoCompleto.includes("meta") || textoCompleto.includes("abono")) {
+                if (textoCompleto.includes("meta") || textoCompleto.includes("abono") || textoCompleto.includes("ahorro")) {
                     window.location.href = "metas.html";
-                } else if (textoCompleto.includes("racha") || textoCompleto.includes("avatar")) {
+                } else if (textoCompleto.includes("racha") || textoCompleto.includes("avatar") || textoCompleto.includes("puerquito")) {
                     window.location.href = "racha.html";
-                } else if (textoCompleto.includes("gasto") || textoCompleto.includes("movimiento")) {
+                } else if (textoCompleto.includes("gasto") || textoCompleto.includes("movimiento") || textoCompleto.includes("historial")) {
                     window.location.href = "historial.html";
-                } else if (textoCompleto.includes("semáforo") || textoCompleto.includes("economico")) {
+                } else if (textoCompleto.includes("semáforo") || textoCompleto.includes("economico") || textoCompleto.includes("finanzas")) {
                     window.location.href = "semaforo.html";
+                } else {
+                    cargarNotificacionesSistema();
                 }
             });
 
@@ -218,10 +233,18 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // Evitar que el menú se cierre al hacer clic dentro de él
+    if (notifDropdown) {
+        notifDropdown.addEventListener("click", (e) => {
+            e.stopPropagation();
+        });
+    }
+
     window.addEventListener("click", () => {
         if (notifDropdown) notifDropdown.classList.remove("show");
         if (dropdownMenu) dropdownMenu.classList.remove("show");
     });
 
+    // Cargar notificaciones automáticamente al abrir cualquier vista
     cargarNotificacionesSistema();
 });
