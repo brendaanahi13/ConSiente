@@ -143,7 +143,7 @@
         .cal-date.has-gasto { border-color: rgba(129, 199, 132, 0.4); background: rgba(76, 175, 80, 0.15); color: #81c784; font-weight: 500; }
         .cal-date.selected { background: #81c784; color: #111412; font-weight: bold; }
 
-        /* MODAL */
+        /* MODALES */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 5000; padding: 15px; }
         .modal-content { background: #161616; border: 1px solid rgba(255,255,255,0.15); border-radius: 20px; padding: 25px; width: 100%; max-width: 380px; color: white; box-shadow: 0 15px 40px rgba(0,0,0,0.8); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
@@ -159,6 +159,18 @@
         .btn-guardar:hover { background: #388e3c; }
         .btn-eliminar-modal { background: #951b1b; color: #ffdfda; }
         .btn-eliminar-modal:hover { background: #b71c1c; }
+
+        /* MODAL ELIMINAR GASTO DE AHORRO / META */
+        .modal-eliminar-contenido {
+            background: linear-gradient(145deg, rgba(22, 28, 24, 0.98) 0%, rgba(12, 16, 13, 0.99) 100%);
+            border: 1px solid rgba(129, 199, 132, 0.4); border-radius: 22px; padding: 30px; width: 90%; max-width: 440px; box-shadow: 0 25px 60px rgba(0,0,0,0.85); color: #fff;
+        }
+        .texto-eliminar { font-size: 12px; color: #aaaaaa; line-height: 1.5; margin-bottom: 15px; }
+        .opcion-eliminar { display:block; width:100%; text-align:left; padding:14px; margin-top:10px; border:1px solid rgba(129,199,132,.35); border-radius:12px; background:#18211a; color:#fff; cursor:pointer; transition: 0.2s; }
+        .opcion-eliminar:hover { border-color:#81c784; background:#203324; }
+        .opcion-eliminar small { display:block; color:#b8c7b9; margin-top:4px; }
+        .btn-modal-cancel { flex: 1; padding: 12px; background: #1f2421; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #cccccc; font-weight: 600; cursor: pointer; text-align: center; }
+        .btn-modal-cancel:hover { background: #2a322d; color: #fff; }
 
         /* DISEÑO RESPONSIVO MÓVIL (BARRA INFERIOR FLOTANTE) */
         @media (max-width: 900px) {
@@ -391,10 +403,31 @@
         </div>
     </div>
 
+    <!-- MODAL ELIMINAR GASTO DE AHORRO / META -->
+    <div class="modal-overlay" id="modalEliminarGastoAhorro">
+        <div class="modal-eliminar-contenido">
+            <div class="modal-title">Eliminar movimiento de ahorro</div>
+            <p class="texto-eliminar" id="textoEliminarGastoAhorro">Este movimiento está relacionado con un ahorro o meta.</p>
+            <p style="color:#81c784;font-weight:700;margin-bottom:8px;">¿Qué deseas hacer con el dinero?</p>
+            <button class="opcion-eliminar" onclick="ejecutarEliminarGastoAhorro(true)">
+                Devolver el dinero al saldo general
+                <small>Se reintegra el monto a tu saldo disponible y se elimina el registro.</small>
+            </button>
+            <button class="opcion-eliminar" onclick="ejecutarEliminarGastoAhorro(false)">
+                No devolver el dinero
+                <small>Se elimina el movimiento sin modificar tu saldo general.</small>
+            </button>
+            <div style="margin-top:16px;">
+                <button class="btn-modal-cancel" style="width:100%;" onclick="cerrarModalEliminarGastoAhorro()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const API_URL = "";
         let todosLosGastos = [];
         let fechaActualVista = new Date();
+        let gastoPendienteEliminar = null;
 
         document.addEventListener("DOMContentLoaded", () => {
             const token = localStorage.getItem("token");
@@ -408,7 +441,6 @@
             const notifBtn = document.getElementById("notifBtn");
             const notifDropdown = document.getElementById("notifDropdown");
 
-            // Control robusto para abrir/cerrar menú de usuario (Configuración / Cerrar sesión)
             if (userBtn && dropdownMenu) {
                 userBtn.addEventListener("click", (e) => {
                     e.stopPropagation();
@@ -417,7 +449,6 @@
                 });
             }
 
-            // Control robusto para abrir/cerrar notificaciones
             if (notifBtn && notifDropdown) {
                 notifBtn.addEventListener("click", (e) => {
                     e.stopPropagation();
@@ -426,7 +457,6 @@
                 });
             }
 
-            // Cerrar menús al hacer clic fuera de ellos
             window.addEventListener("click", (e) => {
                 if (dropdownMenu && userBtn && !userBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
                     dropdownMenu.classList.remove("show");
@@ -688,21 +718,49 @@
             } catch(e) { console.error("Error al actualizar:", e); }
         }
 
-        async function eliminarGasto() {
+        function eliminarGasto() {
             const id = document.getElementById("editGastoId").value;
-            const token = localStorage.getItem("token");
             const gasto = todosLosGastos.find(g => (g.id == id || g._id == id));
 
-            let regresarSaldo = false;
-            let metaId = gasto ? (gasto.meta_id || gasto.metaId) : null;
-            let monto = gasto ? Number(gasto.monto || gasto.cantidad || 0) : 0;
-
-            if (metaId && metaId !== null && metaId !== 'null' && metaId !== undefined) {
-                regresarSaldo = confirm("¿Quieres que se regrese ese dinero al saldo general?");
-            } else {
-                if(!confirm("¿Deseas eliminar este movimiento?")) return;
+            if (!gasto) {
+                alert("No se encontró el movimiento.");
+                return;
             }
 
+            const categoria = (gasto.categoria || "").toLowerCase();
+            const metaId = gasto.meta_id || gasto.metaId;
+            const esAhorroMeta = categoria.includes("ahorro") || categoria.includes("meta") || (metaId && metaId !== null && metaId !== 'null' && metaId !== undefined);
+
+            if (esAhorroMeta) {
+                cerrarModal();
+                gastoPendienteEliminar = gasto;
+                const monto = Number(gasto.monto || gasto.cantidad || 0);
+                document.getElementById("textoEliminarGastoAhorro").textContent =
+                    `Vas a eliminar "${gasto.categoria || 'Ahorro / Meta'}" por un monto de $${monto.toFixed(2)}.`;
+                document.getElementById("modalEliminarGastoAhorro").style.display = "flex";
+            } else {
+                if(!confirm("¿Deseas eliminar este movimiento?")) return;
+                ejecutarEliminarGastoAPI(id, false, null, 0);
+            }
+        }
+
+        function cerrarModalEliminarGastoAhorro() {
+            document.getElementById("modalEliminarGastoAhorro").style.display = "none";
+            gastoPendienteEliminar = null;
+        }
+
+        async function ejecutarEliminarGastoAhorro(regresarSaldo) {
+            if (!gastoPendienteEliminar) return;
+            const id = gastoPendienteEliminar.id || gastoPendienteEliminar._id;
+            const metaId = gastoPendienteEliminar.meta_id || gastoPendienteEliminar.metaId || null;
+            const monto = Number(gastoPendienteEliminar.monto || gastoPendienteEliminar.cantidad || 0);
+
+            cerrarModalEliminarGastoAhorro();
+            await ejecutarEliminarGastoAPI(id, regresarSaldo, metaId, monto);
+        }
+
+        async function ejecutarEliminarGastoAPI(id, regresarSaldo, metaId, monto) {
+            const token = localStorage.getItem("token");
             try {
                 const response = await fetch(`${API_URL}/api/lista-gastos/${id}`, {
                     method: "DELETE",
@@ -725,7 +783,10 @@
                     const data = await response.json().catch(() => ({}));
                     alert(data.error || "No se pudo eliminar el movimiento.");
                 }
-            } catch(e) { console.error("Error al eliminar:", e); }
+            } catch(e) { 
+                console.error("Error al eliminar:", e);
+                alert("Error de conexión al eliminar el movimiento.");
+            }
         }
 
         document.getElementById('mes-anterior').addEventListener('click', () => {
