@@ -1,1082 +1,1106 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ConSiente - Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConSiente - Dashboard</title>
 
-  <style>
-    * { margin:0; padding:0; box-sizing:border-box; font-family:"Segoe UI",sans-serif; }
-    
-    body { 
-        background: radial-gradient(circle at 50% 50%, #27312a 0%, #111412 100%); 
-        min-height: 100vh; 
-        color: #ffffff;
-        display: flex;
-        flex-direction: column;
-    }
-
-    /* NAVBAR */
-    .navbar { 
-        position:fixed; 
-        top:0; 
-        left: 0;
-        width:100%; 
-        height:65px; 
-        background:#0d0d0d; 
-        display:flex; 
-        justify-content:space-between; 
-        align-items:center; 
-        padding:0 25px; 
-        z-index:1000; 
-        border-bottom: 1px solid rgba(129, 199, 132, 0.25); 
-    }
-    .logo-nombre { display:flex; align-items:center; gap:10px; }
-    .titulo { font-size:20px; font-weight:bold; color:#ffffff; letter-spacing: 0.5px; }
-    .logo { width:30px; }
-    .menu { display:flex; align-items:center; gap:25px; }
-    .menu a { text-decoration:none; color:#e0e0e0; font-size: 14px; transition: 0.3s ease; }
-    .menu a:hover { color: #81c784; }
-
-    /* NOTIFICACIONES */
-    .notif-wrapper { position: relative; display: flex; align-items: center; }
-    .notif-icon-img {
-        width: 38px; height: 38px; border-radius: 50%; cursor: pointer;
-        border: 1.5px solid rgba(129, 199, 132, 0.5); padding: 6px; object-fit: contain;
-        background: rgba(255, 255, 255, 0.05); transition: 0.3s ease;
-    }
-    .notif-icon-img:hover { border-color: #81c784; background: rgba(129, 199, 132, 0.15); box-shadow: 0 0 10px rgba(129, 199, 132, 0.4); }
-    .notif-badge {
-        position: absolute; top: -2px; right: -2px; background: #ef5350; color: white;
-        font-size: 10px; font-weight: 800; width: 18px; height: 18px; border-radius: 50%;
-        display: flex; align-items: center; justify-content: center; border: 2px solid #0d0d0d;
-    }
-    .notif-dropdown {
-        position: absolute; right: 0; top: 50px; width: 340px; background: rgba(18, 22, 19, 0.98);
-        backdrop-filter: blur(15px); border-radius: 16px; border: 1px solid rgba(129, 199, 132, 0.25);
-        box-shadow: 0 15px 35px rgba(0,0,0,0.7); display: none; flex-direction: column; z-index: 1200; overflow: hidden;
-    }
-    .notif-header {
-        padding: 14px 18px; background: rgba(255, 255, 255, 0.03);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08); display: flex; justify-content: space-between; align-items: center;
-    }
-    .notif-header h4 { color: #ffffff; font-size: 14px; font-weight: 700; margin: 0; }
-    .notif-header span { color: #81c784; font-size: 11px; cursor: pointer; font-weight: 600; }
-    .notif-list { max-height: 320px; overflow-y: auto; }
-    .notif-item {
-        padding: 14px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-        display: flex; gap: 12px; align-items: flex-start; cursor: pointer; transition: all 0.2s ease;
-    }
-    .notif-item:hover { background: rgba(46, 125, 50, 0.2); padding-left: 20px; }
-    .notif-item.unread { background: rgba(129, 199, 132, 0.08); border-left: 3px solid #81c784; }
-    .notif-detalles { flex: 1; }
-    .notif-titulo-item { font-size: 13px; font-weight: 700; color: #81c784; margin-bottom: 2px; }
-    .notif-texto { font-size: 12px; color: #cccccc; line-height: 1.4; }
-    .notif-fecha { font-size: 10px; color: #888; margin-top: 4px; font-weight: 600; }
-
-    /* MENÚ DE USUARIO DESLIZABLE / DROPDOWN */
-    .user-menu {
-        position: relative;
-        display: flex;
-        align-items: center;
-    }
-    .user-icon {
-        width: 38px;
-        height: 38px;
-        border-radius: 50%;
-        cursor: pointer;
-        border: 1.5px solid rgba(129, 199, 132, 0.5);
-        transition: 0.3s ease;
-        object-fit: cover;
-    }
-    .user-icon:hover {
-        border-color: #81c784;
-        box-shadow: 0 0 10px rgba(129, 199, 132, 0.4);
-    }
-    .dropdown {
-        position: absolute;
-        right: 0;
-        top: 50px;
-        background: rgba(20, 20, 20, 0.98);
-        backdrop-filter: blur(10px);
-        border-radius: 12px;
-        border: 1px solid rgba(129, 199, 132, 0.2);
-        box-shadow: 0 10px 25px rgba(0,0,0,0.6);
-        display: none;
-        flex-direction: column;
-        min-width: 160px;
-        overflow: hidden;
-        z-index: 1100;
-    }
-    .dropdown a {
-        padding: 12px 18px;
-        text-decoration: none;
-        color: #ffffff;
-        font-size: 14px;
-        transition: 0.2s ease;
-        border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
-    .dropdown a:last-child { border-bottom: none; }
-    .dropdown a:hover {
-        background: rgba(46, 125, 50, 0.3);
-        color: #81c784;
-    }
-    .show { display: flex; }
-
-    /* CONTENEDOR ESTRUCTURAL */
-    .main-layout {
-        display: flex;
-        margin-top: 65px; 
-        min-height: calc(100vh - 65px);
-        width: 100%;
-    }
-
-    /* SIDEBAR ESCRITORIO */
-    .sidebar { 
-        width: 280px; 
-        min-width: 280px;
-        height: calc(100vh - 65px);
-        position: sticky;
-        top: 65px;
-        background:#121212; 
-        border-right: 1px solid rgba(129, 199, 132, 0.15); 
-        padding: 25px 15px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between; 
-        z-index: 90;
-    }
-    .sidebar-menu {
-        display: flex;
-        flex-direction: column;
-    }
-    .sidebar button { 
-        width:100%; 
-        padding:16px; 
-        margin-bottom:15px; 
-        border:none; 
-        border-radius:12px; 
-        background:#1b1b1b; 
-        color:#ffffff;
-        font-size:15px; 
-        cursor:pointer; 
-        text-align:left; 
-        border-bottom:1px solid rgba(130,199,132,0.2); 
-        transition: 0.3s ease;
-    }
-    .sidebar button:hover, .sidebar button.btn-active { 
-        background:#1c2d20; 
-        color: #81c784;
-        border-bottom:1px solid rgba(130,199,132,0.5); 
-        padding-left: 22px;
-    }
-
-    .footer-privacidad { padding-top: 15px; text-align: center; }
-    .footer-privacidad a { color: rgba(255, 255, 255, 0.5); text-decoration: none; font-size: 13px; font-weight: 500; transition: 0.3s ease; }
-    .footer-privacidad a:hover { color: #81c784; }
-
-    /* CONTENEDOR PRINCIPAL */
-    .container { 
-        flex: 1;
-        padding: 40px; 
-        display: flex; 
-        flex-direction: column;
-        gap: 30px; 
-        max-width: 1200px;
-        margin: 0 auto; 
-        width: 100%;
-    }
-
-    .card-dashboard {
-        background: rgba(22, 22, 22, 0.85);
-        backdrop-filter: blur(10px);
-        border-radius: 22px; 
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 15px 35px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
-        padding: 35px 35px 30px 35px;
-        display: flex;
-        flex-wrap: wrap;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 25px;
-        width: 100%;
-    }
-
-    .card-dashboard .info {
-        flex: 1;
-        min-width: 300px;
-    }
-
-    .card-dashboard h2 {
-        color: #ffffff;
-        font-weight: 600;
-        font-size: 26px;
-        margin-bottom: 5px;
-    }
-
-    .balance-box {
-        background: #1b1b1b; 
-        padding: 20px 25px; 
-        border-radius: 12px; 
-        margin-top: 15px; 
-        border-bottom: 1px solid rgba(130,199,132,0.2); 
-        display: inline-block;
-        min-width: 260px;
-    }
-
-    .balance-box p {
-        font-size: 12px; 
-        color: #a0a0a0; 
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 5px;
-    }
-
-    .balance-box h1 {
-        color: #81c784; 
-        font-size: 34px; 
-        font-weight: bold;
-    }
-
-    .subtitulo {
-        color: #a0a0a0;
-        font-size: 13px;
-        margin-top: 15px;
-        margin-bottom: 15px;
-    }
-
-    /* FUEGUITOS SEMANALES CON LETRAS */
-    .racha-container {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        background: rgba(18, 28, 20, 0.9);
-        border: 1px solid rgba(129, 199, 132, 0.3);
-        border-radius: 14px;
-        padding: 14px 18px;
-        margin-top: 15px;
-        margin-bottom: 10px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-        max-width: 480px;
-    }
-    .fuegos-fila { display: flex; gap: 8px; }
-    .dia-racha-box {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
-    }
-    .dia-letra {
-        font-size: 10px;
-        font-weight: 700;
-        color: #888;
-    }
-    .fuego-icono {
-        font-size: 18px;
-        filter: grayscale(100%) opacity(0.25);
-        transition: 0.3s ease;
-    }
-    .dia-racha-box.activo .fuego-icono {
-        filter: grayscale(0%) opacity(1);
-        transform: scale(1.15);
-        text-shadow: 0 0 10px rgba(255, 145, 0, 0.8);
-    }
-    .dia-racha-box.activo .dia-letra {
-        color: #81c784;
-    }
-
-    .racha-contador-txt {
-        display: flex;
-        flex-direction: column;
-        text-align: right;
-        border-left: 1px solid rgba(255,255,255,0.1);
-        padding-left: 12px;
-    }
-    .racha-contador-txt span:first-child { font-size: 10px; color: #a0a0a0; text-transform: uppercase; font-weight: 600; }
-    .racha-contador-txt span:last-child { font-size: 16px; font-weight: bold; color: #81c784; }
-
-    .bar-chart-box {
-        background: #1b1b1b;
-        border-radius: 14px;
-        padding: 22px;
-        width: 350px;
-        border: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    .bar-chart-box h3 {
-        margin-bottom: 4px;
-        font-size: 16px;
-        color: #81c784;
-    }
-    
-    .subtitulo-grafica-3meses {
-        font-size: 11px;
-        color: #888;
-        margin-bottom: 16px;
-        border-bottom: 1px solid rgba(255,255,255,0.06);
-        padding-bottom: 8px;
-    }
-
-    .chart-donut-box {
-        background: #1b1b1b;
-        border-radius: 14px;
-        padding: 22px;
-        width: 270px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    .barra-divisoria-contenedor-padre {
-        width: 100%;
-        margin-top: 25px;
-        padding-top: 15px;
-        border-top: 1px solid rgba(255, 255, 255, 0.06);
-    }
-    .barra-divisoria-contenedor {
-        width: 100%;
-        height: 7px;
-        background: rgba(255, 255, 255, 0.08);
-        border-radius: 4px;
-        margin-top: 6px;
-        overflow: hidden;
-        position: relative;
-    }
-    .barra-divisoria-relleno {
-        height: 100%;
-        background: linear-gradient(90deg, #2e7d32 0%, #81c784 100%);
-        border-radius: 4px;
-        width: 100%;
-        transition: width 0.6s ease;
-    }
-    .barra-divisoria-relleno.alerta-roja {
-        background: linear-gradient(90deg, #c62828 0%, #ef5350 100%);
-    }
-
-    .grid-doble {
-        display: grid;
-        grid-template-columns: 1fr 1fr; 
-        gap: 30px;
-        width: 100%;
-    }
-
-    .col-box {
-        background: rgba(22, 22, 22, 0.85);
-        backdrop-filter: blur(10px);
-        border-radius: 22px; 
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 15px 35px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
-        padding: 30px;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .col-box h3 {
-        margin-bottom: 6px;
-        color: #81c784;
-        font-size: 16px;
-        font-weight: 600;
-    }
-    
-    .texto-explicativo-esquema {
-        font-size: 12px;
-        color: #a0a0a0;
-        margin-bottom: 18px;
-        line-height: 1.4;
-    }
-
-    .chart-monthly-box {
-        background: #1b1b1b;
-        border-radius: 14px;
-        padding: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        width: 100%;
-    }
-
-    .chart-bar-wrapper {
-        position: relative; 
-        width: 100%; 
-        height: 240px;
-    }
-
-    .bar-item {
-        margin-bottom: 16px;
-    }
-    .bar-item:last-child {
-        margin-bottom: 4px;
-    }
-    .bar {
-        width: 100%;
-        height: 10px;
-        background: #0d0d0d; 
-        border-radius: 6px;
-        margin-top: 6px;
-        overflow: hidden;
-    }
-    .bar div {
-        height: 100%;
-        background: #4caf50;
-        border-radius: 6px;
-    }
-
-    .cal-estatico-box {
-        background: #1b1b1b;
-        border-radius: 14px;
-        padding: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        cursor: pointer;
-        transition: 0.3s ease;
-    }
-    .cal-estatico-box:hover {
-        border-color: rgba(129, 199, 132, 0.4);
-        background: #1c2d20;
-    }
-    .cal-mes-titulo {
-        text-align: center;
-        font-weight: bold;
-        text-transform: capitalize;
-        margin-bottom: 15px;
-        font-size: 14px;
-        color: #ffffff;
-    }
-    .cal-grid-estatico {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        gap: 8px;
-    }
-    .cal-dia-lbl {
-        font-size: 11px;
-        color: #81c784;
-        text-align: center;
-        font-weight: bold;
-    }
-    .cal-celda-dia {
-        background: #0d0d0d;
-        border-radius: 6px;
-        padding: 9px 0;
-        text-align: center;
-        font-size: 12px;
-        color: #ffffff;
-    }
-    .cal-celda-dia.hoy {
-        background: #4caf50;
-        color: #ffffff;
-        font-weight: bold;
-    }
-    .cal-celda-dia.has-gasto {
-        box-shadow: inset 0 0 0 1px #81c784;
-        background: rgba(76, 175, 80, 0.1);
-    }
-
-    /* MODAL BIENVENIDA */
-    .modal-overlay {
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(12px); display: none;
-        justify-content: center; align-items: center; z-index: 3000;
-    }
-    .modal-bienvenida {
-        background: linear-gradient(135deg, rgba(20, 26, 22, 0.95) 0%, rgba(12, 16, 13, 0.98) 100%);
-        border: 1px solid rgba(129, 199, 132, 0.35); border-radius: 24px; padding: 35px 30px;
-        width: 90%; max-width: 480px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-    }
-    .bienvenida-icon { font-size: 48px; margin-bottom: 15px; }
-    .bienvenida-titulo { font-size: 22px; font-weight: 800; color: #ffffff; margin-bottom: 12px; }
-    .bienvenida-texto { font-size: 14px; color: #d1e7dd; line-height: 1.6; margin-bottom: 25px; }
-    .btn-empezar {
-        width: 100%; padding: 15px; background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
-        border: 1px solid rgba(129, 199, 132, 0.4); border-radius: 14px; color: #ffffff;
-        font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s ease;
-    }
-
-    @media (max-width: 1200px) {
-        .card-dashboard { flex-direction: column; align-items: stretch; gap: 25px; }
-        .bar-chart-box, .chart-donut-box { width: 100%; }
-        .grid-doble { grid-template-columns: 1fr; }
-    }
-    
-    @media (max-width: 900px) {
-        .main-layout { flex-direction: column; margin-top: 65px; min-height: auto; }
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:"Segoe UI",sans-serif; }
         
+        body { 
+            background: radial-gradient(circle at 50% 50%, #27312a 0%, #111412 100%); 
+            min-height: 100vh; 
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* NAVBAR */
+        .navbar { 
+            position:fixed; 
+            top:0; 
+            left: 0;
+            width:100%; 
+            height:65px; 
+            background:#0d0d0d; 
+            display:flex; 
+            justify-content:space-between; 
+            align-items:center; 
+            padding:0 25px; 
+            z-index:1000; 
+            border-bottom: 1px solid rgba(129, 199, 132, 0.25); 
+        }
+        .logo-nombre { display:flex; align-items:center; gap:10px; }
+        .titulo { font-size:20px; font-weight:bold; color:#ffffff; letter-spacing: 0.5px; }
+        .logo { width:30px; height: 30px; border-radius: 50%; object-fit: cover; }
+        .menu { display:flex; align-items:center; gap:25px; }
+        .menu a { text-decoration:none; color:#e0e0e0; font-size: 14px; transition: 0.3s ease; }
+        .menu a:hover { color: #81c784; }
+
+        /* NOTIFICACIONES */
+        .notif-wrapper { position: relative; display: flex; align-items: center; }
+        .notif-icon-img {
+            width: 38px; height: 38px; border-radius: 50%; cursor: pointer;
+            border: 1.5px solid rgba(129, 199, 132, 0.5); padding: 6px; object-fit: contain;
+            background: rgba(255, 255, 255, 0.05); transition: 0.3s ease;
+        }
+        .notif-icon-img:hover { border-color: #81c784; background: rgba(129, 199, 132, 0.15); box-shadow: 0 0 10px rgba(129, 199, 132, 0.4); }
+        .notif-badge {
+            position: absolute; top: -2px; right: -2px; background: #ef5350; color: white;
+            font-size: 10px; font-weight: 800; width: 18px; height: 18px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; border: 2px solid #0d0d0d;
+        }
+        .notif-dropdown {
+            position: absolute; right: 0; top: 50px; width: 340px; background: rgba(18, 22, 19, 0.98);
+            backdrop-filter: blur(15px); border-radius: 16px; border: 1px solid rgba(129, 199, 132, 0.25);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.7); display: none; flex-direction: column; z-index: 1200; overflow: hidden;
+        }
+        .notif-header {
+            padding: 14px 18px; background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08); display: flex; justify-content: space-between; align-items: center;
+        }
+        .notif-header h4 { color: #ffffff; font-size: 14px; font-weight: 700; margin: 0; }
+        .notif-header span { color: #81c784; font-size: 11px; cursor: pointer; font-weight: 600; }
+        .notif-list { max-height: 320px; overflow-y: auto; }
+        .notif-item {
+            padding: 14px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            display: flex; gap: 12px; align-items: flex-start; cursor: pointer; transition: all 0.2s ease;
+        }
+        .notif-item:hover { background: rgba(46, 125, 50, 0.2); padding-left: 20px; }
+        .notif-item.unread { background: rgba(129, 199, 132, 0.08); border-left: 3px solid #81c784; }
+        .notif-detalles { flex: 1; }
+        .notif-titulo-item { font-size: 13px; font-weight: 700; color: #81c784; margin-bottom: 2px; }
+        .notif-texto { font-size: 12px; color: #cccccc; line-height: 1.4; }
+        .notif-fecha { font-size: 10px; color: #888; margin-top: 4px; font-weight: 600; }
+
+        /* MENÚ DE USUARIO */
+        .user-menu {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .user-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 1.5px solid rgba(129, 199, 132, 0.5);
+            transition: 0.3s ease;
+            object-fit: cover;
+        }
+        .user-icon:hover {
+            border-color: #81c784;
+            box-shadow: 0 0 10px rgba(129, 199, 132, 0.4);
+        }
+        .dropdown {
+            position: absolute;
+            right: 0;
+            top: 50px;
+            background: rgba(20, 20, 20, 0.98);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            border: 1px solid rgba(129, 199, 132, 0.2);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            display: none;
+            flex-direction: column;
+            min-width: 160px;
+            overflow: hidden;
+            z-index: 1100;
+        }
+        .dropdown a {
+            padding: 12px 18px;
+            text-decoration: none;
+            color: #ffffff;
+            font-size: 14px;
+            transition: 0.2s ease;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: block;
+        }
+        .dropdown a:last-child { border-bottom: none; }
+        .dropdown a:hover {
+            background: rgba(46, 125, 50, 0.3);
+            color: #81c784;
+        }
+        .dropdown.show { display: flex !important; }
+
+        /* CONTENEDOR ESTRUCTURAL */
+        .main-layout {
+            display: flex;
+            margin-top: 65px; 
+            min-height: calc(100vh - 65px);
+            width: 100%;
+        }
+
+        /* SIDEBAR ESCRITORIO */
+        .sidebar { 
+            width: 280px; 
+            min-width: 280px;
+            height: calc(100vh - 65px);
+            position: sticky;
+            top: 65px;
+            background:#121212; 
+            border-right: 1px solid rgba(129, 199, 132, 0.15); 
+            padding: 25px 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; 
+            z-index: 90;
+        }
+        .sidebar-menu {
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar button { 
+            width:100%; 
+            padding:16px; 
+            margin-bottom:15px; 
+            border:none; 
+            border-radius:12px; 
+            background:#1b1b1b; 
+            color:#ffffff;
+            font-size:15px; 
+            cursor:pointer; 
+            text-align:left; 
+            border-bottom:1px solid rgba(130,199,132,0.2); 
+            transition: 0.3s ease;
+        }
+        .sidebar button:hover, .sidebar button.btn-active { 
+            background:#1c2d20; 
+            color: #81c784;
+            border-bottom:1px solid rgba(130,199,132,0.5); 
+            padding-left: 22px;
+        }
+        .sidebar button.btn-active {
+            color: #81c784;
+            font-weight: bold;
+        }
+
+        .footer-privacidad { padding-top: 15px; text-align: center; }
+        .footer-privacidad a { color: rgba(255, 255, 255, 0.5); text-decoration: none; font-size: 13px; font-weight: 500; transition: 0.3s ease; }
+        .footer-privacidad a:hover { color: #81c784; }
+
+        /* CONTENEDOR PRINCIPAL */
         .container { 
-            padding: 20px 15px 100px 15px; 
-            width: 100%; 
+            flex: 1;
+            padding: 40px; 
+            display: flex; 
+            flex-direction: column;
+            gap: 30px; 
+            max-width: 1200px;
+            margin: 0 auto; 
+            width: 100%;
         }
 
         .card-dashboard {
-            flex-direction: column;
-            align-items: stretch;
-            padding: 25px;
-            gap: 20px;
-        }
-        .balance-box {
-            display: block;
+            background: rgba(22, 22, 22, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 22px; 
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+            padding: 35px 35px 30px 35px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 25px;
             width: 100%;
-            min-width: unset;
-        }
-        
-        .sidebar { 
-            position: fixed;
-            bottom: 0;
-            top: auto;
-            left: 0;
-            width: 100%; 
-            min-width: 100%; 
-            height: 72px; 
-            background: rgba(14, 14, 14, 0.97); 
-            backdrop-filter: blur(15px);
-            border-right: none; 
-            border-top: 1px solid rgba(129, 199, 132, 0.3); 
-            padding: 0;
-            flex-direction: row;
-            justify-content: space-around;
-            align-items: center;
-            z-index: 1000;
-        }
-        
-        .sidebar-menu {
-            flex-direction: row;
-            width: 100%;
-            height: 100%;
-            justify-content: space-around;
-            align-items: center;
         }
 
-        .sidebar button { 
-            width: auto; 
+        .card-dashboard .info {
             flex: 1;
-            height: 100%;
-            padding: 10px 2px; 
-            margin-bottom: 0; 
-            border: none; 
-            border-radius: 0;
-            background: transparent; 
+            min-width: 300px;
+        }
+
+        .card-dashboard h2 {
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 26px;
+            margin-bottom: 5px;
+        }
+
+        .balance-box {
+            background: #1b1b1b; 
+            padding: 20px 25px; 
+            border-radius: 12px; 
+            margin-top: 15px; 
+            border-bottom: 1px solid rgba(130,199,132,0.2); 
+            display: inline-block;
+            min-width: 260px;
+        }
+
+        .balance-box p {
             font-size: 12px; 
-            font-weight: 500;
-            text-align: center; 
+            color: #a0a0a0; 
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        .balance-box h1 {
+            color: #81c784; 
+            font-size: 34px; 
+            font-weight: bold;
+        }
+
+        .subtitulo {
+            color: #a0a0a0;
+            font-size: 13px;
+            margin-top: 15px;
+            margin-bottom: 15px;
+        }
+
+        /* RACHA DE FUEGUITOS SEMANALES 🔥 */
+        .racha-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(18, 28, 20, 0.9);
+            border: 1px solid rgba(129, 199, 132, 0.3);
+            border-radius: 14px;
+            padding: 14px 18px;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            max-width: 480px;
+        }
+        .fuegos-fila { display: flex; gap: 8px; }
+        .dia-racha-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        .dia-letra {
+            font-size: 10px;
+            font-weight: 700;
+            color: #888;
+        }
+        .fuego-icono {
+            font-size: 18px;
+            filter: grayscale(100%) opacity(0.25);
+            transition: 0.3s ease;
+        }
+        .dia-racha-box.activo .fuego-icono {
+            filter: grayscale(0%) opacity(1);
+            transform: scale(1.15);
+            text-shadow: 0 0 10px rgba(255, 145, 0, 0.8);
+        }
+        .dia-racha-box.activo .dia-letra {
+            color: #81c784;
+        }
+
+        .racha-contador-txt {
+            display: flex;
+            flex-direction: column;
+            text-align: right;
+            border-left: 1px solid rgba(255,255,255,0.1);
+            padding-left: 12px;
+        }
+        .racha-contador-txt span:first-child { font-size: 10px; color: #a0a0a0; text-transform: uppercase; font-weight: 600; }
+        .racha-contador-txt span:last-child { font-size: 16px; font-weight: bold; color: #81c784; }
+
+        .bar-chart-box {
+            background: #1b1b1b;
+            border-radius: 14px;
+            padding: 22px;
+            width: 350px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .bar-chart-box h3 {
+            margin-bottom: 4px;
+            font-size: 16px;
+            color: #81c784;
+        }
+        
+        .subtitulo-grafica-3meses {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            padding-bottom: 8px;
+        }
+
+        .chart-donut-box {
+            background: #1b1b1b;
+            border-radius: 14px;
+            padding: 22px;
+            width: 270px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 6px;
-            white-space: nowrap;
-            color: #cccccc;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .sidebar button span {
-            font-size: 20px; 
+        .barra-divisoria-contenedor-padre {
+            width: 100%;
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .barra-divisoria-contenedor {
+            width: 100%;
+            height: 7px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+            margin-top: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+        .barra-divisoria-relleno {
+            height: 100%;
+            background: linear-gradient(90deg, #2e7d32 0%, #81c784 100%);
+            border-radius: 4px;
+            width: 100%;
+            transition: width 0.6s ease;
+        }
+        .barra-divisoria-relleno.alerta-roja {
+            background: linear-gradient(90deg, #c62828 0%, #ef5350 100%);
         }
 
-        .sidebar button:hover { 
-            background: rgba(255, 255, 255, 0.03); 
+        .grid-doble {
+            display: grid;
+            grid-template-columns: 1fr 1fr; 
+            gap: 30px;
+            width: 100%;
+        }
+
+        .col-box {
+            background: rgba(22, 22, 22, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 22px; 
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .col-box h3 {
+            margin-bottom: 6px;
             color: #81c784;
-            padding-left: 2px; 
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .texto-explicativo-esquema {
+            font-size: 12px;
+            color: #a0a0a0;
+            margin-bottom: 18px;
+            line-height: 1.4;
         }
 
-        .footer-privacidad { display: none; }
-    }
+        .chart-monthly-box {
+            background: #1b1b1b;
+            border-radius: 14px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            width: 100%;
+        }
 
-    @media (max-width: 600px) {
-        .navbar { padding: 0 15px; }
-        .menu { gap: 12px; }
-        .menu a { font-size: 13px; }
-        .titulo { font-size: 18px; }
-        .sidebar button { font-size: 10.5px; } 
-        .sidebar button span { font-size: 18px; }
-    }
-  </style>
+        .chart-bar-wrapper {
+            position: relative; 
+            width: 100%; 
+            height: 240px;
+        }
+
+        .bar-item {
+            margin-bottom: 16px;
+        }
+        .bar-item:last-child {
+            margin-bottom: 4px;
+        }
+        .bar {
+            width: 100%;
+            height: 10px;
+            background: #0d0d0d; 
+            border-radius: 6px;
+            margin-top: 6px;
+            overflow: hidden;
+        }
+        .bar div {
+            height: 100%;
+            background: #4caf50;
+            border-radius: 6px;
+        }
+
+        .cal-estatico-box {
+            background: #1b1b1b;
+            border-radius: 14px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            transition: 0.3s ease;
+        }
+        .cal-estatico-box:hover {
+            border-color: rgba(129, 199, 132, 0.4);
+            background: #1c2d20;
+        }
+        .cal-mes-titulo {
+            text-align: center;
+            font-weight: bold;
+            text-transform: capitalize;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #ffffff;
+        }
+        .cal-grid-estatico {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+        .cal-dia-lbl {
+            font-size: 11px;
+            color: #81c784;
+            text-align: center;
+            font-weight: bold;
+        }
+        .cal-celda-dia {
+            background: #0d0d0d;
+            border-radius: 6px;
+            padding: 9px 0;
+            text-align: center;
+            font-size: 12px;
+            color: #ffffff;
+        }
+        .cal-celda-dia.hoy {
+            background: #4caf50;
+            color: #ffffff;
+            font-weight: bold;
+        }
+        .cal-celda-dia.has-gasto {
+            box-shadow: inset 0 0 0 1px #81c784;
+            background: rgba(76, 175, 80, 0.1);
+        }
+
+        /* MODAL BIENVENIDA */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(12px); display: none;
+            justify-content: center; align-items: center; z-index: 3000;
+        }
+        .modal-bienvenida {
+            background: linear-gradient(135deg, rgba(20, 26, 22, 0.95) 0%, rgba(12, 16, 13, 0.98) 100%);
+            border: 1px solid rgba(129, 199, 132, 0.35); border-radius: 24px; padding: 35px 30px;
+            width: 90%; max-width: 480px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+        }
+        .bienvenida-icon { font-size: 48px; margin-bottom: 15px; }
+        .bienvenida-titulo { font-size: 22px; font-weight: 800; color: #ffffff; margin-bottom: 12px; }
+        .bienvenida-texto { font-size: 14px; color: #d1e7dd; line-height: 1.6; margin-bottom: 25px; }
+        .btn-empezar {
+            width: 100%; padding: 15px; background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+            border: 1px solid rgba(129, 199, 132, 0.4); border-radius: 14px; color: #ffffff;
+            font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s ease;
+        }
+
+        @media (max-width: 1200px) {
+            .card-dashboard { flex-direction: column; align-items: stretch; gap: 25px; }
+            .bar-chart-box, .chart-donut-box { width: 100%; }
+            .grid-doble { grid-template-columns: 1fr; }
+        }
+        
+        @media (max-width: 900px) {
+            .main-layout { flex-direction: column; margin-top: 65px; min-height: auto; }
+            
+            .container { 
+                padding: 20px 15px 100px 15px; 
+                width: 100%; 
+            }
+
+            .card-dashboard {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 25px;
+                gap: 20px;
+            }
+            .balance-box {
+                display: block;
+                width: 100%;
+                min-width: unset;
+            }
+            
+            .sidebar { 
+                position: fixed;
+                bottom: 0;
+                top: auto;
+                left: 0;
+                width: 100%; 
+                min-width: 100%; 
+                height: 72px; 
+                background: rgba(14, 14, 14, 0.97); 
+                backdrop-filter: blur(15px);
+                border-right: none; 
+                border-top: 1px solid rgba(129, 199, 132, 0.3); 
+                padding: 0;
+                flex-direction: row;
+                justify-content: space-around;
+                align-items: center;
+                z-index: 1000;
+            }
+            
+            .sidebar-menu {
+                flex-direction: row;
+                width: 100%;
+                height: 100%;
+                justify-content: space-around;
+                align-items: center;
+            }
+
+            .sidebar button { 
+                width: auto; 
+                flex: 1;
+                height: 100%;
+                padding: 10px 2px; 
+                margin-bottom: 0; 
+                border: none; 
+                border-radius: 0;
+                background: transparent; 
+                font-size: 12px; 
+                font-weight: 500;
+                text-align: center; 
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 6px;
+                white-space: nowrap;
+                color: #cccccc;
+            }
+
+            .sidebar button span {
+                font-size: 20px; 
+            }
+
+            .sidebar button:hover { 
+                background: rgba(255, 255, 255, 0.03); 
+                color: #81c784;
+                padding-left: 2px; 
+            }
+
+            .footer-privacidad { display: none; }
+        }
+
+        @media (max-width: 600px) {
+            .navbar { padding: 0 15px; }
+            .menu { gap: 12px; }
+            .menu a { font-size: 13px; }
+            .titulo { font-size: 18px; }
+            .sidebar button { font-size: 10.5px; } 
+            .sidebar button span { font-size: 18px; }
+        }
+    </style>
 </head>
 <body>
 
-  <div class="navbar">
-      <div class="logo-nombre">
-          <span class="titulo">ConSiente</span>
-          <img src="imagenes/logo.png" class="logo" alt="Logo">
-      </div>
-      <div class="menu">
-          <!-- NOTIFICACIONES -->
-          <div class="notif-wrapper">
-              <img src="imagenes/notificacion.png" class="notif-icon-img" id="notifBtn" alt="Notificaciones" title="Notificaciones">
-              <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
-
-              <div class="notif-dropdown" id="notifDropdown">
-                  <div class="notif-header">
-                      <h4>Notificaciones</h4>
-                      <span onclick="marcarTodasLeidas()">Marcar leídas</span>
-                  </div>
-                  <div class="notif-list" id="notifList"></div>
-              </div>
-          </div>
-
-          <a href="menu.html">Home</a>
-          <a href="nosotros.html">Sobre nosotros</a>
-          <a href="ODS.html">ODS</a>
-          
-          <div class="user-menu">
-              <img src="imagenes/usuario.png" class="user-icon" id="userBtn" alt="Usuario">
-              <div class="dropdown" id="dropdownMenu">
-                  <a href="config.html">Configuración</a>
-                  <a href="index.html" onclick="cerrarSesion()">Cerrar sesión</a>
-              </div>
-          </div>
-      </div>
-  </div>
-
-  <div class="main-layout">
-      
-      <div class="sidebar">
-          <div class="sidebar-menu">
-              <button onclick="window.location.href='menu.html'" class="btn-active"><span>📊</span> Estadísticas</button>
-              <button onclick="window.location.href='agregar.html'"><span>➕</span> Agregar</button>
-              <button onclick="window.location.href='historial.html'"><span>📅</span> Historial</button>
-              <button onclick="window.location.href='semaforo.html'"><span>🚦</span> Semáforo</button>
-              <button onclick="window.location.href='metas.html'">🎯 Metas</button>
-              <button onclick="window.location.href='racha.html'">🔥 Racha</button>
-              <button onclick="window.location.href='consejos.html'"><span>💡</span> Consejos</button>
-          </div>
-          <div class="footer-privacidad">
-              <a href="privacidadentro.html">Políticas de Privacidad</a>
-          </div>
-      </div>
-
-      <div class="container">
-          
-          <div class="card-dashboard">
-              <div class="info">
-                  <h2>Hola, <span id="nombreUsuario" style="color: #81c784;">Cargando...</span></h2>
-                  
-                  <div class="balance-box">
-                      <p id="labelSaldoDisponible">Saldo Disponible (Mes Actual)</p>
-                      <h1 id="saldoDisponible">$ 0.00</h1>
-                  </div>
-                  <p class="subtitulo">Resumen analítico de tus movimientos mensuales.</p>
-
-                  <!-- RACHA DE FUEGUITOS SEMANALES 🔥 -->
-                  <div class="racha-container">
-                      <div class="fuegos-fila" id="fuegosRachaHeader">
-                          <div class="dia-racha-box" data-js-dia="1"><span class="dia-letra">L</span><span class="fuego-icono">🔥</span></div>
-                          <div class="dia-racha-box" data-js-dia="2"><span class="dia-letra">M</span><span class="fuego-icono">🔥</span></div>
-                          <div class="dia-racha-box" data-js-dia="3"><span class="dia-letra">Mi</span><span class="fuego-icono">🔥</span></div>
-                          <div class="dia-racha-box" data-js-dia="4"><span class="dia-letra">J</span><span class="fuego-icono">🔥</span></div>
-                          <div class="dia-racha-box" data-js-dia="5"><span class="dia-letra">V</span><span class="fuego-icono">🔥</span></div>
-                          <div class="dia-racha-box" data-js-dia="6"><span class="dia-letra">S</span><span class="fuego-icono">🔥</span></div>
-                          <div class="dia-racha-box" data-js-dia="0"><span class="dia-letra">D</span><span class="fuego-icono">🔥</span></div>
-                      </div>
-                      <div class="racha-contador-txt">
-                          <span>Racha Actual</span>
-                          <span id="txtRachaDiasHeader">0 días</span>
-                      </div>
-                  </div>
-              </div>
-
-              <div class="bar-chart-box" id="contenedorBarras">
-                  <h3>¿En qué gasto más?</h3>
-                  <div class="subtitulo-grafica-3meses">Acumulado de los últimos 3 meses</div>
-              </div>
-
-              <div class="chart-donut-box">
-                  <canvas id="graficaGastos" width="180" height="180"></canvas>
-              </div>
-
-              <div class="barra-divisoria-contenedor-padre">
-                  <div style="font-size: 11px; color: #888; margin-bottom: 6px; display: flex; justify-content: space-between;">
-                      <span>Presupuesto mensual consumido</span>
-                      <span id="txtPorcentajePresupuesto">0%</span>
-                  </div>
-                  <div class="barra-divisoria-contenedor">
-                      <div class="barra-divisoria-relleno" id="barraDivisoriaRelleno"></div>
-                  </div>
-              </div>
-          </div>
-
-          <div class="grid-doble">
-              
-              <div class="col-box">
-                  <h3>Tendencia de Gastos (Últimos 3 Meses)</h3>
-                  <p class="texto-explicativo-esquema">Análisis comparativo automático del mes actual y los 2 meses anteriores. El esquema se actualiza y reinicia al avanzar de periodo.</p>
-                  <div class="chart-monthly-box">
-                      <div class="chart-bar-wrapper">
-                          <canvas id="graficaBarrasMensual"></canvas>
-                      </div>
-                  </div>
-              </div>
-
-              <div class="col-box">
-                  <h3>Resumen del Mes</h3>
-                  <div class="cal-estatico-box" onclick="window.location.href='historial.html'" title="Haz clic para abrir el Historial Completo">
-                      <div class="cal-mes-titulo" id="calEstaticoMes"></div>
-                      <div class="cal-grid-estatico" id="calGridEstatico"></div>
-                  </div>
-              </div>
-
-          </div>
-
-      </div>
-  </div>
-
-  <!-- MODAL BIENVENIDA -->
-  <div class="modal-overlay" id="modalBienvenida">
-      <div class="modal-bienvenida">
-          <div class="bienvenida-icon">🌿</div>
-          <h3 class="bienvenida-titulo">¡Bienvenido a ConSiente!</h3>
-          <p class="bienvenida-texto">
-              Estamos felices de acompañarte en tu camino hacia la libertad y el orden financiero. ConSiente está diseñado para ayudarte a tomar decisiones inteligentes con tu dinero día a día.
-          </p>
-          <button class="btn-empezar" onclick="cerrarModalBienvenida()">🚀 ¡Empezar ahora!</button>
-      </div>
-  </div>
-
-  <script>
-      // CONFIGURACIÓN DINÁMICA DE LA API (Abierta para local y producción en Render)
-      const API_URL = "";
-
-      function cerrarSesion(){
-          sessionStorage.removeItem("sesionActiva");
-          localStorage.removeItem("token");
-          window.location.href = "index.html";
-      }
-
-      function cerrarModalBienvenida() {
-          document.getElementById("modalBienvenida").style.display = "none";
-      }
-
-      function mostrarModalBienvenida() {
-          document.getElementById("modalBienvenida").style.display = "flex";
-      }
-
-      // --- CÁLCULO DE RACHA EXACTO Y FUEGUITOS BASADOS EN DÍAS DESDE EL ÚLTIMO ACCESO ---
-      function calcularRachaYRenderizar(gastos, perfil) {
-          let diasRacha = Number(perfil.racha_dias || 0);
-          let ultimoAcceso = perfil.ultima_actividad || perfil.fecha_actualizacion || null;
-
-          if (!ultimoAcceso && gastos && gastos.length > 0) {
-              ultimoAcceso = gastos[0].fecha || gastos[gastos.length - 1].fecha;
-          }
-
-          if (diasRacha === 0 && gastos && gastos.length > 0) {
-              diasRacha = 1;
-          } else if (diasRacha === 0) {
-              diasRacha = 0;
-          }
-
-          document.getElementById("txtRachaDiasHeader").innerText = diasRacha + " días";
-
-          const cajasDias = document.querySelectorAll("#fuegosRachaHeader .dia-racha-box");
-          cajasDias.forEach(caja => caja.classList.remove("activo"));
-
-          if (diasRacha > 0) {
-              let fechaBase = ultimoAcceso ? new Date(ultimoAcceso) : new Date();
-              if (isNaN(fechaBase.getTime())) {
-                  fechaBase = new Date();
-              }
-
-              const diasActivosIndices = new Set();
-              for (let i = 0; i < Math.min(diasRacha, 7); i++) {
-                  let dTemp = new Date(fechaBase);
-                  dTemp.setDate(fechaBase.getDate() - i);
-                  diasActivosIndices.add(dTemp.getDay());
-              }
-
-              cajasDias.forEach(caja => {
-                  const diaBoxNum = Number(caja.getAttribute("data-js-dia"));
-                  if (diasActivosIndices.has(diaBoxNum)) {
-                      caja.classList.add("activo");
-                  }
-              });
-          }
-      }
-
-      document.addEventListener("DOMContentLoaded", async () => {
-          const hoyObj = new Date();
-          const nombreMesActual = hoyObj.toLocaleDateString('es-ES', { month: 'long' });
-          const nombreMesCapitalizado = nombreMesActual.charAt(0).toUpperCase() + nombreMesActual.slice(1);
-          document.getElementById("labelSaldoDisponible").innerText = `Saldo Disponible (${nombreMesCapitalizado})`;
-
-          const token = localStorage.getItem("token");
-          if (!token) return window.location.href = "index.html"; 
-
-          try {
-              const resPerfil = await fetch(`${API_URL}/api/perfil`, {
-                  headers: { "Authorization": `Bearer ${token}` }
-              });
-              
-              let saldoInicial = 0;
-              let infoUsuario = null;
-              if (resPerfil.ok) {
-                  infoUsuario = await resPerfil.json();
-                  document.getElementById("nombreUsuario").innerText = infoUsuario.nombre;
-                  saldoInicial = Number(infoUsuario.saldo) || 0;
-                  if (infoUsuario.avatar) {
-                      document.getElementById("userBtn").src = infoUsuario.avatar;
-                  }
-              } else {
-                  return window.location.href = "index.html";
-              }
-
-              const resHistorial = await fetch(`${API_URL}/api/lista-gastos`, {
-                  headers: { "Authorization": `Bearer ${token}` }
-              });
-              const todosLosGastos = await resHistorial.json();
-
-              calcularRachaYRenderizar(todosLosGastos, infoUsuario);
-
-              const anioActual = hoyObj.getFullYear();
-              const mesActualIdx = hoyObj.getMonth();
-
-              let periodosPermitidos = [];
-              for (let i = 2; i >= 0; i--) {
-                  let d = new Date(anioActual, mesActualIdx - i, 1);
-                  periodosPermitidos.push({
-                      mes: d.getMonth(),
-                      anio: d.getFullYear()
-                  });
-              }
-
-              const gastosUltimos3Meses = todosLosGastos.filter(g => {
-                  if (!g.fecha) return false;
-                  const partesFecha = String(g.fecha).split('T')[0].split('-');
-                  if (partesFecha.length < 3) return false;
-                  const gAnio = parseInt(partesFecha[0], 10);
-                  const gMes = parseInt(partesFecha[1], 10) - 1;
-
-                  return periodosPermitidos.some(p => p.mes === gMes && p.anio === gAnio);
-              });
-
-              let agrupadoCategorias = {};
-              gastosUltimos3Meses.forEach(g => {
-                  const categoria = g.categoria || g.tipo || "General";
-                  const monto = Number(g.monto || g.cantidad || 0);
-                  agrupadoCategorias[categoria] = (agrupadoCategorias[categoria] || 0) + monto;
-              });
-
-              const datosGraficaDona = Object.keys(agrupadoCategorias).map(cat => ({
-                  tipo: cat,
-                  total: agrupadoCategorias[cat]
-              }));
-
-              const etiquetas = datosGraficaDona.map(g => g.tipo);
-              const totales = datosGraficaDona.map(g => g.total);
-              const totalSumGeneral = totales.reduce((a, b) => a + Number(b), 0);
-
-              const ctx = document.getElementById('graficaGastos').getContext('2d');
-              new Chart(ctx, {
-                  type: 'doughnut',
-                  data: {
-                      labels: etiquetas,
-                      datasets: [{
-                          data: totales,
-                          backgroundColor: ['#4caf50', '#81c784', '#2e7d32', '#1b5e20', '#a5d6a7'],
-                          borderWidth: 2,
-                          borderColor: '#1b1b1b'
-                      }]
-                  },
-                  options: {
-                      plugins: {
-                          legend: { 
-                              position: 'bottom', 
-                              labels: { color: 'white', font: { family: "'Segoe UI', sans-serif", size: 10 } } 
-                          },
-                          tooltip: {
-                              callbacks: {
-                                  label: function(context) {
-                                      const valor = context.raw || 0;
-                                      const porcentaje = totalSumGeneral > 0 ? ((valor / totalSumGeneral) * 100).toFixed(1) : 0;
-                                      return ` ${context.label}: ${porcentaje}%`;
-                                  }
-                              }
-                          }
-                      }
-                  }
-              });
-
-              const contenedorBarras = document.getElementById('contenedorBarras');
-              const totalGastosDonut = totalSumGeneral;
-
-              const emojis = {
-                  "Necesario": "🏠", "Antojos": "🍔", "Antojos / comida rápida": "🍔", "Ocio": "🎡", "Salidas / ocio": "🎡", "Streaming": "🎮", "Compras": "👜", "Transporte": "🚗", "Educación": "📚", "Ropa / accesorios": "👕"
-              };
-
-              datosGraficaDona.forEach(gasto => {
-                  const porcentaje = totalGastosDonut > 0 ? Math.round((Number(gasto.total) / totalGastosDonut) * 100) : 0;
-                  const emoji = emojis[gasto.tipo] || "💸";
-
-                  const divBarra = document.createElement('div');
-                  divBarra.className = 'bar-item';
-                  divBarra.innerHTML = `
-                      <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 13px;">
-                          <span>${emoji} ${gasto.tipo}</span>
-                          <span style="color: #81c784; font-weight: bold;">${porcentaje}%</span>
-                      </div>
-                      <div class="bar"><div style="width:${porcentaje}%; background: #4caf50;"></div></div>
-                  `;
-                  contenedorBarras.appendChild(divBarra);
-              });
-
-              const totalGastosMesActual = todosLosGastos.reduce((suma, g) => {
-                  if (!g.fecha) return suma;
-                  const partesFecha = String(g.fecha).split('T')[0].split('-');
-                  if (partesFecha.length < 3) return suma;
-                  const gAnio = parseInt(partesFecha[0], 10);
-                  const gMes = parseInt(partesFecha[1], 10) - 1;
-
-                  if (gMes === mesActualIdx && gAnio === anioActual) {
-                      return suma + Number(g.monto || g.cantidad || 0);
-                  }
-                  return suma;
-              }, 0);
-
-              const saldoRestante = saldoInicial - totalGastosMesActual;
-              document.getElementById("saldoDisponible").innerText = `$ ${saldoRestante.toFixed(2)}`;
-              
-              if(saldoRestante < 0) {
-                  document.getElementById("saldoDisponible").style.color = "#ef5350"; 
-              }
-
-              if (saldoInicial > 0) {
-                  const porcentajeConsumido = Math.min(100, Math.max(0, (totalGastosMesActual / saldoInicial) * 100));
-                  const porcentajeRestanteBarra = 100 - porcentajeConsumido; 
-                  const elementoRelleno = document.getElementById("barraDivisoriaRelleno");
-                  
-                  elementoRelleno.style.width = `${porcentajeRestanteBarra}%`;
-                  document.getElementById("txtPorcentajePresupuesto").innerText = `${porcentajeConsumido.toFixed(0)}% consumido`;
-
-                  if (porcentajeConsumido >= 100 || saldoRestante <= 0) {
-                      elementoRelleno.classList.add("alerta-roja");
-                  } else {
-                      elementoRelleno.classList.remove("alerta-roja");
-                  }
-              } else {
-                  document.getElementById("barraDivisoriaRelleno").style.width = `100%`;
-                  document.getElementById("txtPorcentajePresupuesto").innerText = `0% consumido`;
-              }
-
-              generarCalendarioEstatico(todosLosGastos);
-              generarGraficaBarrasMensual(todosLosGastos, saldoInicial);
-
-          } catch (error) {
-              console.log("Error cargando los datos", error);
-          }
-      });
-
-      function generarCalendarioEstatico(gastos) {
-          const grid = document.getElementById("calGridEstatico");
-          const hoy = new Date();
-          const mes = hoy.getMonth();
-          const anio = hoy.getFullYear();
-
-          document.getElementById("calEstaticoMes").innerText = hoy.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
-          grid.innerHTML = '';
-
-          ['Do','Lu','Ma','Mi','Ju','Vi','Sá'].forEach(d => {
-              grid.innerHTML += `<div class="cal-dia-lbl">${d}</div>`;
-          });
-
-          const primerDiaMes = new Date(anio, mes, 1).getDay();
-          const totalDias = new Date(anio, mes + 1, 0).getDate();
-
-          for(let i = 0; i < primerDiaMes; i++) {
-              grid.appendChild(document.createElement('div'));
-          }
-
-          for(let d = 1; d <= totalDias; d++) {
-              const tieneGasto = gastos.some(g => {
-                  if (!g.fecha) return false;
-                  const partesFecha = String(g.fecha).split('T')[0].split('-');
-                  if (partesFecha.length < 3) return false;
-                  return parseInt(partesFecha[2], 10) === d && (parseInt(partesFecha[1], 10) - 1) === mes && parseInt(partesFecha[0], 10) === anio;
-              });
-
-              const esHoy = (d === hoy.getDate());
-              const div = document.createElement('div');
-              div.className = `cal-celda-dia ${esHoy ? 'hoy' : ''} ${tieneGasto ? 'has-gasto' : ''}`;
-              div.innerText = d;
-
-              grid.appendChild(div);
-          }
-      }
-
-      function generarGraficaBarrasMensual(gastos, saldoMensualConstante) {
-          const hoy = new Date();
-          const nombresMeses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-          
-          let labelsMeses = [];
-          let datasetsGastos = [0, 0, 0];
-          let datasetsAhorro = [0, 0, 0];
-          let coloresGastosBarras = ['#ef5350', '#ef5350', '#ef5350'];
-
-          for (let i = 2; i >= 0; i--) {
-              let d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
-              labelsMeses.push({
-                  mesIndex: d.getMonth(),
-                  anio: d.getFullYear(),
-                  nombre: nombresMeses[d.getMonth()]
-              });
-          }
-
-          gastos.forEach(g => {
-              if (!g.fecha) return;
-              const partesFecha = String(g.fecha).split('T')[0].split('-');
-              if (partesFecha.length < 3) return;
-              const gAnio = parseInt(partesFecha[0], 10);
-              const gMes = parseInt(partesFecha[1], 10) - 1;
-              const montoGasto = Number(g.monto || g.cantidad || 0);
-
-              labelsMeses.forEach((m, index) => {
-                  if (m.mesIndex === gMes && m.anio === gAnio) {
-                      datasetsGastos[index] += montoGasto;
-                  }
-              });
-          });
-
-          labelsMeses.forEach((m, index) => {
-              let gastadoMes = datasetsGastos[index];
-              let restante = saldoMensualConstante - gastadoMes;
-              datasetsAhorro[index] = restante > 0 ? restante : 0; 
-
-              if (gastadoMes >= saldoMensualConstante && saldoMensualConstante > 0) {
-                  coloresGastosBarras[index] = '#c62828';
-              } else {
-                  coloresGastosBarras[index] = '#ef5350';
-              }
-          });
-
-          const ctxBarras = document.getElementById('graficaBarrasMensual').getContext('2d');
-          new Chart(ctxBarras, {
-              type: 'bar',
-              data: {
-                  labels: labelsMeses.map(m => m.nombre),
-                  datasets: [
-                      {
-                          label: 'Dinero No Gastado',
-                          data: datasetsAhorro,
-                          backgroundColor: '#4caf50', 
-                          borderWidth: 0,
-                          maxBarThickness: 45 
-                      },
-                      {
-                          label: 'Gastado',
-                          data: datasetsGastos,
-                          backgroundColor: coloresGastosBarras, 
-                          borderWidth: 0,
-                          maxBarThickness: 45 
-                      }
-                  ]
-              },
-              options: {
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  scales: {
-                      x: { stacked: true, grid: { display: false }, ticks: { color: 'white' } },
-                      y: { stacked: true, grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: 'white', callback: value => '$' + value } }
-                  },
-                  plugins: { legend: { position: 'top', labels: { color: 'white', font: { family: "'Segoe UI', sans-serif" } } } }
-              }
-          });
-      }
-  </script>
-
-  <script src="global-notificaciones.js" defer></script>
+    <div class="navbar">
+        <div class="logo-nombre">
+            <span class="titulo">ConSiente</span>
+            <img src="imagenes/logo.png" class="logo" alt="Logo">
+        </div>
+        <div class="menu">
+            <!-- NOTIFICACIONES -->
+            <div class="notif-wrapper">
+                <img src="imagenes/notificacion.png" class="notif-icon-img" id="notifBtn" alt="Notificaciones" title="Notificaciones">
+                <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
+
+                <div class="notif-dropdown" id="notifDropdown">
+                    <div class="notif-header">
+                        <h4>Notificaciones</h4>
+                        <span onclick="marcarTodasLeidas()">Marcar leídas</span>
+                    </div>
+                    <div class="notif-list" id="notifList"></div>
+                </div>
+            </div>
+
+            <a href="menu.html">Home</a>
+            <a href="nosotros.html">Sobre nosotros</a>
+            <a href="ODS.html">ODS</a>
+            
+            <div class="user-menu">
+                <img src="imagenes/usuario.png" class="user-icon" id="userBtn" alt="Usuario">
+                <div class="dropdown" id="dropdownMenu">
+                    <a href="config.html">Configuración</a>
+                    <a href="index.html" onclick="cerrarSesion()">Cerrar sesión</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-layout">
+        
+        <div class="sidebar">
+            <div class="sidebar-menu">
+                <button onclick="window.location.href='menu.html'" class="btn-active"><span>📊</span> Estadísticas</button>
+                <button onclick="window.location.href='agregar.html'"><span>➕</span> Agregar</button>
+                <button onclick="window.location.href='historial.html'"><span>📅</span> Historial</button>
+                <button onclick="window.location.href='semaforo.html'"><span>🚦</span> Semáforo</button>
+                <button onclick="window.location.href='metas.html'"><span>🎯</span> Metas</button>
+                <button onclick="window.location.href='racha.html'"><span>🔥</span> Racha</button>
+                <button onclick="window.location.href='consejos.html'"><span>💡</span> Consejos</button>
+            </div>
+            <div class="footer-privacidad">
+                <a href="privacidadentro.html">Políticas de Privacidad</a>
+            </div>
+        </div>
+
+        <div class="container">
+            
+            <div class="card-dashboard">
+                <div class="info">
+                    <h2>Hola, <span id="nombreUsuario" style="color: #81c784;">Cargando...</span></h2>
+                    
+                    <div class="balance-box">
+                        <p id="labelSaldoDisponible">Saldo Disponible (Mes Actual)</p>
+                        <h1 id="saldoDisponible">$ 0.00</h1>
+                    </div>
+                    <p class="subtitulo">Resumen analítico de tus movimientos mensuales.</p>
+
+                    <!-- RACHA DE FUEGUITOS SEMANALES 🔥 -->
+                    <div class="racha-container">
+                        <div class="fuegos-fila" id="fuegosRachaHeader">
+                            <div class="dia-racha-box" data-js-dia="1"><span class="dia-letra">L</span><span class="fuego-icono">🔥</span></div>
+                            <div class="dia-racha-box" data-js-dia="2"><span class="dia-letra">M</span><span class="fuego-icono">🔥</span></div>
+                            <div class="dia-racha-box" data-js-dia="3"><span class="dia-letra">Mi</span><span class="fuego-icono">🔥</span></div>
+                            <div class="dia-racha-box" data-js-dia="4"><span class="dia-letra">J</span><span class="fuego-icono">🔥</span></div>
+                            <div class="dia-racha-box" data-js-dia="5"><span class="dia-letra">V</span><span class="fuego-icono">🔥</span></div>
+                            <div class="dia-racha-box" data-js-dia="6"><span class="dia-letra">S</span><span class="fuego-icono">🔥</span></div>
+                            <div class="dia-racha-box" data-js-dia="0"><span class="dia-letra">D</span><span class="fuego-icono">🔥</span></div>
+                        </div>
+                        <div class="racha-contador-txt">
+                            <span>Racha Actual</span>
+                            <span id="txtRachaDiasHeader">0 días</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bar-chart-box" id="contenedorBarras">
+                    <h3>¿En qué gasto más?</h3>
+                    <div class="subtitulo-grafica-3meses">Acumulado de los últimos 3 meses</div>
+                </div>
+
+                <div class="chart-donut-box">
+                    <canvas id="graficaGastos" width="180" height="180"></canvas>
+                </div>
+
+                <div class="barra-divisoria-contenedor-padre">
+                    <div style="font-size: 11px; color: #888; margin-bottom: 6px; display: flex; justify-content: space-between;">
+                        <span>Presupuesto mensual consumido</span>
+                        <span id="txtPorcentajePresupuesto">0%</span>
+                    </div>
+                    <div class="barra-divisoria-contenedor">
+                        <div class="barra-divisoria-relleno" id="barraDivisoriaRelleno"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-doble">
+                
+                <div class="col-box">
+                    <h3>Tendencia de Gastos (Últimos 3 Meses)</h3>
+                    <p class="texto-explicativo-esquema">Análisis comparativo automático del mes actual y los 2 meses anteriores. El esquema se actualiza y reinicia al avanzar de periodo.</p>
+                    <div class="chart-monthly-box">
+                        <div class="chart-bar-wrapper">
+                            <canvas id="graficaBarrasMensual"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-box">
+                    <h3>Resumen del Mes</h3>
+                    <div class="cal-estatico-box" onclick="window.location.href='historial.html'" title="Haz clic para abrir el Historial Completo">
+                        <div class="cal-mes-titulo" id="calEstaticoMes"></div>
+                        <div class="cal-grid-estatico" id="calGridEstatico"></div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MODAL BIENVENIDA -->
+    <div class="modal-overlay" id="modalBienvenida">
+        <div class="modal-bienvenida">
+            <div class="bienvenida-icon">🌿</div>
+            <h3 class="bienvenida-titulo">¡Bienvenido a ConSiente!</h3>
+            <p class="bienvenida-texto">
+                Estamos felices de acompañarte en tu camino hacia la libertad y el orden financiero. ConSiente está diseñado para ayudarte a tomar decisiones inteligentes con tu dinero día a día.
+            </p>
+            <button class="btn-empezar" onclick="cerrarModalBienvenida()">🚀 ¡Empezar ahora!</button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "";
+
+        function cerrarSesion(){
+            sessionStorage.removeItem("sesionActiva");
+            localStorage.removeItem("token");
+            window.location.href = "index.html";
+        }
+
+        function cerrarModalBienvenida() {
+            document.getElementById("modalBienvenida").style.display = "none";
+        }
+
+        function mostrarModalBienvenida() {
+            document.getElementById("modalBienvenida").style.display = "flex";
+        }
+
+        // --- GESTIÓN DE MENÚ DE USUARIO Y DROPDOWNS ---
+        document.addEventListener("DOMContentLoaded", () => {
+            const userBtn = document.getElementById("userBtn");
+            const dropdownMenu = document.getElementById("dropdownMenu");
+
+            if (userBtn && dropdownMenu) {
+                userBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    dropdownMenu.classList.toggle("show");
+                });
+            }
+
+            window.addEventListener("click", (e) => {
+                if (dropdownMenu && userBtn && !userBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                    dropdownMenu.classList.remove("show");
+                }
+            });
+        });
+
+        // --- CÁLCULO DE RACHA EXACTO Y FUEGUITOS BASADOS EN DÍAS DESDE EL ÚLTIMO ACCESO ---
+        function calcularRachaYRenderizar(gastos, perfil) {
+            let diasRacha = Number(perfil.racha_dias || 0);
+            let ultimoAcceso = perfil.ultima_actividad || perfil.fecha_actualizacion || null;
+
+            if (!ultimoAcceso && gastos && gastos.length > 0) {
+                ultimoAcceso = gastos[0].fecha || gastos[gastos.length - 1].fecha;
+            }
+
+            if (diasRacha === 0 && gastos && gastos.length > 0) {
+                diasRacha = 1;
+            } else if (diasRacha === 0) {
+                diasRacha = 0;
+            }
+
+            document.getElementById("txtRachaDiasHeader").innerText = diasRacha + " días";
+
+            const cajasDias = document.querySelectorAll("#fuegosRachaHeader .dia-racha-box");
+            cajasDias.forEach(caja => caja.classList.remove("activo"));
+
+            if (diasRacha > 0) {
+                let fechaBase = ultimoAcceso ? new Date(ultimoAcceso) : new Date();
+                if (isNaN(fechaBase.getTime())) {
+                    fechaBase = new Date();
+                }
+
+                const diasActivosIndices = new Set();
+                for (let i = 0; i < Math.min(diasRacha, 7); i++) {
+                    let dTemp = new Date(fechaBase);
+                    dTemp.setDate(fechaBase.getDate() - i);
+                    diasActivosIndices.add(dTemp.getDay());
+                }
+
+                cajasDias.forEach(caja => {
+                    const diaBoxNum = Number(caja.getAttribute("data-js-dia"));
+                    if (diasActivosIndices.has(diaBoxNum)) {
+                        caja.classList.add("activo");
+                    }
+                });
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            const hoyObj = new Date();
+            const nombreMesActual = hoyObj.toLocaleDateString('es-ES', { month: 'long' });
+            const nombreMesCapitalizado = nombreMesActual.charAt(0).toUpperCase() + nombreMesActual.slice(1);
+            document.getElementById("labelSaldoDisponible").innerText = `Saldo Disponible (${nombreMesCapitalizado})`;
+
+            const token = localStorage.getItem("token");
+            if (!token) return window.location.href = "index.html"; 
+
+            try {
+                const resPerfil = await fetch(`${API_URL}/api/perfil`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                
+                let saldoInicial = 0;
+                let infoUsuario = null;
+                if (resPerfil.ok) {
+                    infoUsuario = await resPerfil.json();
+                    document.getElementById("nombreUsuario").innerText = infoUsuario.nombre;
+                    saldoInicial = Number(infoUsuario.saldo) || 0;
+                    if (infoUsuario.avatar) {
+                        const imgUser = document.getElementById("userBtn");
+                        if (imgUser) imgUser.src = infoUsuario.avatar.trim();
+                    }
+                } else {
+                    return window.location.href = "index.html";
+                }
+
+                const resHistorial = await fetch(`${API_URL}/api/lista-gastos`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                const todosLosGastos = await resHistorial.json();
+
+                calcularRachaYRenderizar(todosLosGastos, infoUsuario);
+
+                const anioActual = hoyObj.getFullYear();
+                const mesActualIdx = hoyObj.getMonth();
+
+                let periodosPermitidos = [];
+                for (let i = 2; i >= 0; i--) {
+                    let d = new Date(anioActual, mesActualIdx - i, 1);
+                    periodosPermitidos.push({
+                        mes: d.getMonth(),
+                        anio: d.getFullYear()
+                    });
+                }
+
+                const gastosUltimos3Meses = todosLosGastos.filter(g => {
+                    if (!g.fecha) return false;
+                    const partesFecha = String(g.fecha).split('T')[0].split('-');
+                    if (partesFecha.length < 3) return false;
+                    const gAnio = parseInt(partesFecha[0], 10);
+                    const gMes = parseInt(partesFecha[1], 10) - 1;
+
+                    return periodosPermitidos.some(p => p.mes === gMes && p.anio === gAnio);
+                });
+
+                let agrupadoCategorias = {};
+                gastosUltimos3Meses.forEach(g => {
+                    const categoria = g.categoria || g.tipo || "General";
+                    const monto = Number(g.monto || g.cantidad || 0);
+                    agrupadoCategorias[categoria] = (agrupadoCategorias[categoria] || 0) + monto;
+                });
+
+                const datosGraficaDona = Object.keys(agrupadoCategorias).map(cat => ({
+                    tipo: cat,
+                    total: agrupadoCategorias[cat]
+                }));
+
+                const etiquetas = datosGraficaDona.map(g => g.tipo);
+                const totales = datosGraficaDona.map(g => g.total);
+                const totalSumGeneral = totales.reduce((a, b) => a + Number(b), 0);
+
+                const ctx = document.getElementById('graficaGastos').getContext('2d');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: etiquetas,
+                        datasets: [{
+                            data: totales,
+                            backgroundColor: ['#4caf50', '#81c784', '#2e7d32', '#1b5e20', '#a5d6a7'],
+                            borderWidth: 2,
+                            borderColor: '#1b1b1b'
+                        }]
+                    },
+                    options: {
+                        plugins: {
+                            legend: { 
+                                position: 'bottom', 
+                                labels: { color: 'white', font: { family: "'Segoe UI', sans-serif", size: 10 } } 
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const valor = context.raw || 0;
+                                        const porcentaje = totalSumGeneral > 0 ? ((valor / totalSumGeneral) * 100).toFixed(1) : 0;
+                                        return ` ${context.label}: ${porcentaje}%`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                const contenedorBarras = document.getElementById('contenedorBarras');
+                const totalGastosDonut = totalSumGeneral;
+
+                const emojis = {
+                    "Necesario": "🏠", "Antojos": "🍔", "Antojos / comida rápida": "🍔", "Ocio": "🎡", "Salidas / ocio": "🎡", "Streaming": "🎮", "Compras": "👜", "Transporte": "🚗", "Educación": "📚", "Ropa / accesorios": "👕"
+                };
+
+                datosGraficaDona.forEach(gasto => {
+                    const porcentaje = totalGastosDonut > 0 ? Math.round((Number(gasto.total) / totalGastosDonut) * 100) : 0;
+                    const emoji = emojis[gasto.tipo] || "💸";
+
+                    const divBarra = document.createElement('div');
+                    divBarra.className = 'bar-item';
+                    divBarra.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 13px;">
+                            <span>${emoji} ${gasto.tipo}</span>
+                            <span style="color: #81c784; font-weight: bold;">${porcentaje}%</span>
+                        </div>
+                        <div class="bar"><div style="width:${porcentaje}%; background: #4caf50;"></div></div>
+                    `;
+                    contenedorBarras.appendChild(divBarra);
+                });
+
+                const totalGastosMesActual = todosLosGastos.reduce((suma, g) => {
+                    if (!g.fecha) return suma;
+                    const partesFecha = String(g.fecha).split('T')[0].split('-');
+                    if (partesFecha.length < 3) return suma;
+                    const gAnio = parseInt(partesFecha[0], 10);
+                    const gMes = parseInt(partesFecha[1], 10) - 1;
+
+                    if (gMes === mesActualIdx && gAnio === anioActual) {
+                        return suma + Number(g.monto || g.cantidad || 0);
+                    }
+                    return suma;
+                }, 0);
+
+                const saldoRestante = saldoInicial - totalGastosMesActual;
+                document.getElementById("saldoDisponible").innerText = `$ ${saldoRestante.toFixed(2)}`;
+                
+                if(saldoRestante < 0) {
+                    document.getElementById("saldoDisponible").style.color = "#ef5350"; 
+                }
+
+                if (saldoInicial > 0) {
+                    const porcentajeConsumido = Math.min(100, Math.max(0, (totalGastosMesActual / saldoInicial) * 100));
+                    const porcentajeRestanteBarra = 100 - porcentajeConsumido; 
+                    const elementoRelleno = document.getElementById("barraDivisoriaRelleno");
+                    
+                    elementoRelleno.style.width = `${porcentajeRestanteBarra}%`;
+                    document.getElementById("txtPorcentajePresupuesto").innerText = `${porcentajeConsumido.toFixed(0)}% consumido`;
+
+                    if (porcentajeConsumido >= 100 || saldoRestante <= 0) {
+                        elementoRelleno.classList.add("alerta-roja");
+                    } else {
+                        elementoRelleno.classList.remove("alerta-roja");
+                    }
+                } else {
+                    document.getElementById("barraDivisoriaRelleno").style.width = `100%`;
+                    document.getElementById("txtPorcentajePresupuesto").innerText = `0% consumido`;
+                }
+
+                generarCalendarioEstatico(todosLosGastos);
+                generarGraficaBarrasMensual(todosLosGastos, saldoInicial);
+
+            } catch (error) {
+                console.log("Error cargando los datos", error);
+            }
+        });
+
+        function generarCalendarioEstatico(gastos) {
+            const grid = document.getElementById("calGridEstatico");
+            const hoy = new Date();
+            const mes = hoy.getMonth();
+            const anio = hoy.getFullYear();
+
+            document.getElementById("calEstaticoMes").innerText = hoy.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+            grid.innerHTML = '';
+
+            ['Do','Lu','Ma','Mi','Ju','Vi','Sá'].forEach(d => {
+                grid.innerHTML += `<div class="cal-dia-lbl">${d}</div>`;
+            });
+
+            const primerDiaMes = new Date(anio, mes, 1).getDay();
+            const totalDias = new Date(anio, mes + 1, 0).getDate();
+
+            for(let i = 0; i < primerDiaMes; i++) {
+                grid.appendChild(document.createElement('div'));
+            }
+
+            for(let d = 1; d <= totalDias; d++) {
+                const tieneGasto = gastos.some(g => {
+                    if (!g.fecha) return false;
+                    const partesFecha = String(g.fecha).split('T')[0].split('-');
+                    if (partesFecha.length < 3) return false;
+                    return parseInt(partesFecha[2], 10) === d && (parseInt(partesFecha[1], 10) - 1) === mes && parseInt(partesFecha[0], 10) === anio;
+                });
+
+                const esHoy = (d === hoy.getDate());
+                const div = document.createElement('div');
+                div.className = `cal-celda-dia ${esHoy ? 'hoy' : ''} ${tieneGasto ? 'has-gasto' : ''}`;
+                div.innerText = d;
+
+                grid.appendChild(div);
+            }
+        }
+
+        function generarGraficaBarrasMensual(gastos, saldoMensualConstante) {
+            const hoy = new Date();
+            const nombresMeses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+            
+            let labelsMeses = [];
+            let datasetsGastos = [0, 0, 0];
+            let datasetsAhorro = [0, 0, 0];
+            let coloresGastosBarras = ['#ef5350', '#ef5350', '#ef5350'];
+
+            for (let i = 2; i >= 0; i--) {
+                let d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
+                labelsMeses.push({
+                    mesIndex: d.getMonth(),
+                    anio: d.getFullYear(),
+                    nombre: nombresMeses[d.getMonth()]
+                });
+            }
+
+            gastos.forEach(g => {
+                if (!g.fecha) return;
+                const partesFecha = String(g.fecha).split('T')[0].split('-');
+                if (partesFecha.length < 3) return;
+                const gAnio = parseInt(partesFecha[0], 10);
+                const gMes = parseInt(partesFecha[1], 10) - 1;
+                const montoGasto = Number(g.monto || g.cantidad || 0);
+
+                labelsMeses.forEach((m, index) => {
+                    if (m.mesIndex === gMes && m.anio === gAnio) {
+                        datasetsGastos[index] += montoGasto;
+                    }
+                });
+            });
+
+            labelsMeses.forEach((m, index) => {
+                let gastadoMes = datasetsGastos[index];
+                let restante = saldoMensualConstante - gastadoMes;
+                datasetsAhorro[index] = restante > 0 ? restante : 0; 
+
+                if (gastadoMes >= saldoMensualConstante && saldoMensualConstante > 0) {
+                    coloresGastosBarras[index] = '#c62828';
+                } else {
+                    coloresGastosBarras[index] = '#ef5350';
+                }
+            });
+
+            const ctxBarras = document.getElementById('graficaBarrasMensual').getContext('2d');
+            new Chart(ctxBarras, {
+                type: 'bar',
+                data: {
+                    labels: labelsMeses.map(m => m.nombre),
+                    datasets: [
+                        {
+                            label: 'Dinero No Gastado',
+                            data: datasetsAhorro,
+                            backgroundColor: '#4caf50', 
+                            borderWidth: 0,
+                            maxBarThickness: 45 
+                        },
+                        {
+                            label: 'Gastado',
+                            data: datasetsGastos,
+                            backgroundColor: coloresGastosBarras, 
+                            borderWidth: 0,
+                            maxBarThickness: 45 
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { stacked: true, grid: { display: false }, ticks: { color: 'white' } },
+                        y: { stacked: true, grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: 'white', callback: value => '$' + value } }
+                    },
+                    plugins: { legend: { position: 'top', labels: { color: 'white', font: { family: "'Segoe UI', sans-serif" } } } }
+                }
+            });
+        }
+    </script>
+
+    <script src="global-notificaciones.js" defer></script>
 </body>
 </html>
