@@ -234,6 +234,24 @@
         .footer-privacidad a { color: rgba(255, 255, 255, 0.5); text-decoration: none; font-size: 13px; font-weight: 500; transition: 0.3s ease; }
         .footer-privacidad a:hover { color: var(--accent-green); }
 
+        /* PIE DE PÁGINA DISCRETO AL FINAL DEL CONTENEDOR */
+        .footer-privacidad-main {
+            text-align: center;
+            margin-top: 10px;
+            padding-bottom: 10px;
+            width: 100%;
+        }
+        .footer-privacidad-main a {
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 400;
+            transition: 0.3s ease;
+        }
+        .footer-privacidad-main a:hover {
+            color: var(--accent-green);
+        }
+
         /* CONTENIDO */
         .container { 
             flex: 1;
@@ -498,6 +516,11 @@
         <div class="card-config" style="border: 1px solid #951b1b;">
             <h2>Zona de Peligro</h2>
             <button class="btn-delete" onclick="abrirConfirm('Eliminar Cuenta', '¡Acción irreversible! Se borrará todo tu historial de gastos de forma permanente.', eliminarCuenta)">Eliminar mi cuenta</button>
+        </div>
+
+        <!-- AVISO DE PRIVACIDAD DISCRETO HASTA ABAJO -->
+        <div class="footer-privacidad-main">
+            <a href="privacidadentro.html">Políticas de Privacidad</a>
         </div>
     </div>
 </div>
