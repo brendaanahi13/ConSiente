@@ -345,7 +345,7 @@
 
     <div class="main-layout">
         
-        <!-- SIDEBAR / BARRA INFERIOR FLOTANTE CON ÍCONOS ALINEADOS -->
+        <!-- SIDEBAR -->
         <div class="sidebar">
             <div class="sidebar-menu">
                 <button onclick="window.location.href='menu.html'"><span>📊</span> Estadísticas</button>
@@ -411,6 +411,13 @@
         }
 
         document.addEventListener("DOMContentLoaded", () => {
+            // Cargar avatar inmediato desde localStorage si existe
+            const avatarGuardado = localStorage.getItem("userAvatar");
+            if (avatarGuardado) {
+                const imgUser = document.getElementById("userBtn");
+                if (imgUser) imgUser.src = avatarGuardado.trim();
+            }
+
             const userBtn = document.getElementById("userBtn");
             const dropdownMenu = document.getElementById("dropdownMenu");
 
@@ -442,8 +449,10 @@
                 if (response.ok) {
                     const perfil = await response.json();
                     if (perfil.avatar) {
+                        const rutaAvatar = perfil.avatar.trim();
+                        localStorage.setItem("userAvatar", rutaAvatar);
                         const imgUser = document.getElementById("userBtn");
-                        if (imgUser) imgUser.src = perfil.avatar;
+                        if (imgUser) imgUser.src = rutaAvatar;
                     }
                 }
             } catch (e) {
@@ -457,7 +466,6 @@
 
             let userId = "7";
             let diasRacha = 0;
-            let ultimoAcceso = null;
             let gastos = [];
             let metas = [];
 
@@ -469,7 +477,6 @@
                     const perfil = window.infoUsuario = await resPerfil.json();
                     userId = perfil.id || perfil.usuario_id || "7";
                     diasRacha = Number(perfil.racha_dias || 0);
-                    ultimoAcceso = perfil.ultima_actividad || perfil.fecha_actualizacion || null;
                 }
 
                 const resGastos = await fetch(`${API_URL}/api/lista-gastos`, {
@@ -477,8 +484,10 @@
                 });
                 if (resGastos.ok) {
                     gastos = await resGastos.json();
-                    if (!ultimoAcceso && gastos.length > 0) {
-                        ultimoAcceso = gastos[0].fecha || gastos[gastos.length - 1].fecha;
+                    
+                    // Cálculo inteligente de racha basado en la actividad real (historial de gastos)
+                    if (gastos.length > 0 && diasRacha === 0) {
+                        diasRacha = 1; // Mínimo 1 día si hay gastos registrados
                     }
                 }
 
@@ -491,20 +500,17 @@
 
             document.getElementById("txtRachaDiasHeader").innerText = diasRacha + " días";
 
+            // Sincronizar fueguitos semanales de forma robusta
             const cajasDias = document.querySelectorAll("#fuegosRachaHeader .dia-racha-box");
             cajasDias.forEach(caja => caja.classList.remove("activo"));
 
             if (diasRacha > 0) {
-                let fechaBase = ultimoAcceso ? new Date(ultimoAcceso) : new Date();
-                
-                if (isNaN(fechaBase.getTime())) {
-                    fechaBase = new Date();
-                }
-
+                let hoyBase = new Date();
                 const diasActivosIndices = new Set();
+
                 for (let i = 0; i < Math.min(diasRacha, 7); i++) {
-                    let dTemp = new Date(fechaBase);
-                    dTemp.setDate(fechaBase.getDate() - i);
+                    let dTemp = new Date(hoyBase);
+                    dTemp.setDate(hoyBase.getDate() - i);
                     diasActivosIndices.add(dTemp.getDay());
                 }
 
@@ -613,6 +619,7 @@
             const sufijoUser = `_${userId}`;
 
             localStorage.setItem(`reclamado_mision_${idMision}${sufijoUser}`, "true");
+            localStorage.setItem("userAvatar", iconoColor); // Guardar avatar seleccionado de inmediato
 
             try {
                 await fetch(`${API_URL}/api/premios/reclamar`, {
