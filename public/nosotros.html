@@ -510,6 +510,7 @@
                 cargarPerfilUsuario();
             }
             
+            // Control exclusivo del menú de usuario (Configuración / Cerrar sesión)
             const userBtn = document.getElementById("userBtn");
             const dropdownMenu = document.getElementById("dropdownMenu");
 
@@ -520,24 +521,10 @@
                 });
             }
 
-            // Manejo del menú desplegable de notificaciones
-            const notifBtn = document.getElementById("notifBtn");
-            const notifDropdown = document.getElementById("notifDropdown");
-
-            if (notifBtn && notifDropdown) {
-                notifBtn.addEventListener("click", (e) => {
-                    e.stopPropagation();
-                    notifDropdown.classList.toggle("show");
-                    if(dropdownMenu) dropdownMenu.classList.remove("show"); // Cierra el de usuario si está abierto
-                });
-            }
-
+            // Cierre global al hacer clic fuera del menú de usuario
             window.addEventListener("click", (e) => {
                 if (dropdownMenu && userBtn && !userBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
                     dropdownMenu.classList.remove("show");
-                }
-                if (notifDropdown && notifBtn && !notifBtn.contains(e.target) && !notifDropdown.contains(e.target)) {
-                    notifDropdown.classList.remove("show");
                 }
             });
         });
@@ -565,7 +552,7 @@
         }
     </script>
     
-    <!-- SCRIPT GLOBAL DE NOTIFICACIONES (Sin diagonal inicial para evitar error 404) -->
+    <!-- SCRIPT GLOBAL DE NOTIFICACIONES (Maneja las notificaciones de forma limpia y automática) -->
     <script src="global-notificaciones.js" defer></script>
 
 </body>
