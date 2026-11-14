@@ -3,1106 +3,381 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ConSiente - Panel de Admin</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Panel de Administración Pro - ConSiente</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Segoe UI", sans-serif; }
-        
-        body { 
-            background: radial-gradient(circle at 50% 50%, #27312a 0%, #111412 100%); 
-            min-height: 100vh; 
-            color: #ffffff;
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
-        }
-
-        /* NAVBAR */
-        .navbar { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 65px; background: #0d0d0d; 
-            display: flex; justify-content: space-between; align-items: center; 
-            padding: 0 30px; z-index: 2000; border-bottom: 1px solid rgba(129, 199, 132, 0.25); 
-        }
-        .logo-nombre { display: flex; align-items: center; gap: 12px; }
-        .titulo { font-size: 18px; font-weight: bold; color: #ffffff; letter-spacing: 0.5px; }
-        .menu { display: flex; align-items: center; gap: 20px; }
-        .menu a { text-decoration: none; color: #e0e0e0; font-size: 14px; transition: 0.3s ease; cursor: pointer; white-space: nowrap; }
-        .menu a:hover { color: #81c784; }
-
-        /* LAYOUT GENERAL */
-        .main-layout { 
-            display: flex; flex-direction: column; margin-top: 65px; margin-left: 280px;
-            min-height: calc(100vh - 65px); width: calc(100% - 280px); 
-        }
-
-        /* SIDEBAR DESKTOP */
-        .sidebar { 
-            position: fixed; top: 65px; left: 0; width: 280px; height: calc(100vh - 65px); 
-            background: #121212; border-right: 1px solid rgba(129, 199, 132, 0.15); padding: 25px 15px;
-            display: flex; flex-direction: column; justify-content: space-between; z-index: 1000; 
-        }
-        .sidebar-menu { display: flex; flex-direction: column; width: 100%; gap: 12px; }
-        .sidebar button { 
-            width: 100%; padding: 16px; border: none; border-radius: 12px; background: #1b1b1b; 
-            color: #ffffff; font-size: 15px; cursor: pointer; text-align: left; 
-            border-bottom: 1px solid rgba(130,199,132,0.2); transition: 0.3s ease; 
-            display: flex; align-items: center; gap: 12px;
-        }
-        .sidebar button span { font-size: 18px; }
-        .sidebar button:hover, .sidebar button.active { background: #1c2d20; color: #81c784; border-bottom: 1px solid rgba(130,199,132,0.5); padding-left: 22px; }
-        .footer-privacidad { padding-top: 15px; text-align: center; }
-        .footer-privacidad a { color: rgba(255, 255, 255, 0.5); text-decoration: none; font-size: 13px; font-weight: 500; transition: 0.3s ease; }
-        .footer-privacidad a:hover { color: #81c784; }
-
-        /* CONTENEDOR */
-        .container { flex: 1; padding: 35px 40px; display: flex; flex-direction: column; gap: 30px; max-width: 1350px; margin: 0 auto; width: 100%; }
-        .tab-content { display: none; flex-direction: column; gap: 25px; }
-        .tab-content.active-tab { display: flex; }
-
-        /* BANNER Y TARJETAS */
-        .admin-hero-banner {
-            background: rgba(22, 22, 22, 0.85); backdrop-filter: blur(10px); border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.5); padding: 30px;
-        }
-        .admin-hero-info h1 { font-size: 22px; color: #ffffff; font-weight: 600; display: flex; align-items: center; gap: 10px; }
-        .admin-hero-info p { font-size: 13.5px; color: #b0b0b0; margin-top: 6px; }
-
-        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
-        .stat-card {
-            background: rgba(22, 22, 22, 0.85); backdrop-filter: blur(10px); border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.1); padding: 22px; display: flex; flex-direction: column; gap: 10px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3); transition: transform 0.2s ease;
-        }
-        .stat-card:hover { transform: translateY(-3px); border-color: rgba(129, 199, 132, 0.4); }
-        .stat-card span:first-child { font-size: 11px; color: #a0a0a0; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
-        .stat-card .stat-value { font-size: 24px; font-weight: 700; color: #81c784; }
-
-        /* SECCIÓN GENERAL */
-        .admin-section {
-            background: rgba(22, 22, 22, 0.85); 
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1); 
-            padding: 30px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.4); 
-        }
-        .admin-section-header { font-size: 16px; font-weight: 600; color: #81c784; display: flex; align-items: center; gap: 10px; }
-
-        /* LISTA DESPLEGABLE DE RESULTADOS */
-        .search-results-container {
-            max-height: 250px; 
-            overflow-y: auto; 
-            background: #161616; 
-            border-radius: 12px;
-            border: 1px solid rgba(129, 199, 132, 0.4); 
-            display: none; 
-            margin-top: 6px; 
-            width: 100%;
-            position: absolute; 
-            left: 0; 
-            top: 100%; 
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.95); 
-            z-index: 2500;
-        }
-        .search-result-item {
-            padding: 14px 18px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); cursor: pointer;
-            display: flex; justify-content: space-between; align-items: center; transition: all 0.2s ease; font-size: 13.5px;
-        }
-        .search-result-item:hover { background: rgba(46, 125, 50, 0.25); color: #81c784; padding-left: 22px; }
-
-        /* TARJETA DE PERFIL DETALLADO */
-        .user-profile-card {
-            background: rgba(18, 22, 19, 0.98); border: 1px solid rgba(129,199,132,0.4); border-radius: 16px;
-            padding: 25px; display: none; flex-direction: column; gap: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.8);
-            margin-top: 15px; animation: fadeIn 0.3s ease;
-        }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
-
-        .profile-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 15px; }
-        .profile-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
-        .sub-box { background: rgba(255,255,255,0.03); padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
-
-        .users-table-wrapper { width: 100%; overflow-x: auto; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); }
-        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; min-width: 700px; }
-        th { background: #161616; color: #81c784; padding: 14px 16px; font-weight: 600; border-bottom: 2px solid rgba(129,199,132,0.3); }
-        td { padding: 14px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: #e0e0e0; }
-        tr:hover td { background: rgba(129, 199, 132, 0.05); color: #fff; cursor: pointer; }
-
-        .badge-corriente { background: rgba(46, 125, 50, 0.2); color: #81c784; padding: 5px 12px; border-radius: 20px; font-size: 11.5px; font-weight: 600; border: 1px solid rgba(129,199,132,0.3); }
-        .badge-admin { background: rgba(33, 150, 243, 0.15); color: #64b5f6; padding: 5px 12px; border-radius: 20px; font-size: 11.5px; font-weight: 600; border: 1px solid rgba(100,181,246,0.3); }
-        
-        .btn-accion { background: rgba(239, 83, 80, 0.15); color: #ef5350; border: 1px solid rgba(239,83,80,0.3); padding: 6px 12px; border-radius: 8px; font-size: 11.5px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        .btn-accion:hover { background: #ef5350; color: #fff; }
-        .btn-editar { background: rgba(255, 183, 77, 0.15); color: #ffb74d; border: 1px solid rgba(255,183,77,0.3); padding: 6px 12px; border-radius: 8px; font-size: 11.5px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        .btn-editar:hover { background: #ffb74d; color: #000; }
-        .btn-notificar { background: rgba(66, 165, 245, 0.15); color: #42a5f5; border: 1px solid rgba(66,165,245,0.3); padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        .btn-notificar:hover { background: #42a5f5; color: #fff; }
-
-        .form-admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .input-box { display: flex; flex-direction: column; gap: 8px; }
-        .input-box label { font-size: 13px; color: #b0b0b0; font-weight: 500; text-transform: uppercase; }
-        .input-box input, .input-box textarea, .input-box select {
-            background: #161616; border: 1px solid rgba(255,255,255,0.15); padding: 13px 15px; border-radius: 10px;
-            color: white; font-size: 14px; outline: none; width: 100%; transition: 0.3s;
-        }
-        .input-box input:focus, .input-box textarea:focus, .input-box select:focus { border-color: #81c784; }
-        .btn-guardar {
-            background: #2e7d32; color: white; border: none; padding: 13px 25px; border-radius: 10px;
-            font-weight: 600; cursor: pointer; margin-top: 15px; width: 100%; max-width: 220px; transition: 0.3s;
-        }
-        .btn-guardar:hover { background: #388e3c; }
-
-        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
-        .chart-box { background: rgba(22, 22, 22, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 25px; display: flex; flex-direction: column; gap: 15px; }
-
-        #adminBarReturn {
-            display: none; position: fixed; bottom: 85px; right: 25px; background: #2e7d32; color: white;
-            padding: 12px 22px; border-radius: 30px; box-shadow: 0 8px 25px rgba(0,0,0,0.6); z-index: 9999;
-            font-weight: 600; cursor: pointer; border: 2px solid #81c784;
-        }
-
-        /* MODALES ADAPTATIVOS */
-        .modal-overlay-custom {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 20000; 
-            justify-content: center; align-items: center; padding: 15px;
-        }
-        .modal-card-custom {
-            background: #161616; padding: 30px; border-radius: 18px; width: 100%; max-width: 460px; 
-            max-height: 90vh; overflow-y: auto; border: 1px solid rgba(129,199,132,0.3); 
-            display: flex; flex-direction: column; gap: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.8);
-        }
-
-        /* RESPONSIVE DESIGN AVANZADO (TABLETS Y MÓVILES ≤ 900px) */
-        @media (max-width: 900px) {
-            .navbar { padding: 0 15px; height: 60px; }
-            .titulo { font-size: 16px; }
-            .main-layout { margin-left: 0; width: 100%; margin-top: 60px; }
-            
-            /* CONVERSIÓN DE SIDEBAR A BARRA DE NAVEGACIÓN INFERIOR FLOTANTE ESTILO APP */
-            .sidebar { 
-                position: fixed; bottom: 0; top: auto; left: 0; width: 100%; min-width: 100%; 
-                height: 72px; background: rgba(14, 14, 14, 0.97); backdrop-filter: blur(15px);
-                border-right: none; border-top: 1px solid rgba(129, 199, 132, 0.3); 
-                padding: 0; flex-direction: row; justify-content: space-around; align-items: center; z-index: 1000;
-            }
-            .sidebar-menu {
-                flex-direction: row; width: 100%; height: 100%; justify-content: space-around; align-items: center; gap: 0;
-            }
-            .sidebar button { 
-                width: auto; flex: 1; height: 100%; padding: 6px 2px; margin-bottom: 0; border: none; border-radius: 0;
-                background: transparent; font-size: 9px; font-weight: 500; text-align: center; 
-                display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
-                white-space: nowrap; color: #cccccc;
-            }
-            .sidebar button span { font-size: 16px; }
-            .sidebar button:hover, .sidebar button.active { 
-                background: rgba(255, 255, 255, 0.03); color: #81c784; padding-left: 2px; font-weight: bold;
-                border-bottom: none;
-            }
-            .footer-privacidad { display: none; }
-
-            .container { padding: 20px 15px 100px 15px; gap: 20px; }
-            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-            .charts-grid, .form-admin-grid, .profile-grid { grid-template-columns: 1fr; gap: 15px; }
-            .admin-section { padding: 20px; }
-            .admin-hero-banner { padding: 20px; }
-            
-            #adminBarReturn { bottom: 85px; right: 15px; padding: 10px 16px; font-size: 13px; }
-        }
-
-        @media (max-width: 500px) {
-            .stats-grid { grid-template-columns: 1fr; }
-            .modal-card-custom { padding: 20px; }
-        }
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .navbar-brand { font-weight: bold; letter-spacing: 0.5px; }
+        .card-stat { border: none; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: transform 0.2s; }
+        .card-stat:hover { transform: translateY(-3px); }
+        .table-container { background: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); padding: 20px; }
+        .badge-admin { background-color: #dc3545; }
+        .badge-usuario { background-color: #198754; }
     </style>
 </head>
 <body>
 
-    <div id="adminBarReturn" onclick="regresarAlAdminMode()">Volver al Panel Admin</div>
-
-    <div class="navbar">
-        <div class="logo-nombre">
-            <span class="titulo">ConSiente Admin</span>
+    <!-- NAVBAR DE ADMINISTRACIÓN -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#"><i class="fas fa-shield-alt text-warning me-2"></i>ConSiente | Admin Pro</a>
+            <div class="d-flex align-items-center">
+                <span class="text-light me-3 d-none d-md-inline" id="adminNombre">Administrador</span>
+                <button class="btn btn-outline-light btn-sm" onclick="cerrarSesion()">
+                    <i class="fas fa-sign-out-alt me-1"></i> Salir
+                </button>
+            </div>
         </div>
-        <div class="menu">
-            <a onclick="cambiarVistaUsuario()">Vista Usuario</a>
-            <a onclick="cerrarSesion()" style="color: #ef5350;">Cerrar sesión</a>
-        </div>
-    </div>
+    </nav>
 
-    <div class="main-layout">
+    <!-- CONTENIDO PRINCIPAL -->
+    <div class="container my-4">
         
-        <!-- SIDEBAR / NAVEGACIÓN INFERIOR MÓVIL -->
-        <div class="sidebar">
-            <div class="sidebar-menu">
-                <button class="active" onclick="cambiarTab('generalTab')" id="btnGeneral"><span>🛡️</span> General</button>
-                <button onclick="cambiarTab('statsTab')" id="btnStats"><span>📊</span> Estadísticas</button>
-                <button onclick="cambiarTab('misionesTab')" id="btnMisiones"><span>🎁</span> Misiones</button>
-                <button onclick="cambiarTab('ajustesTab')" id="btnAjustes"><span>⚙️</span> Ajustes</button>
-                <button onclick="cambiarVistaUsuario()"><span>👤</span> Ver Sitio</button>
+        <!-- TARJETAS DE ESTADÍSTICAS RÁPIDAS -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="card card-stat p-3 bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Total de Usuarios</h6>
+                            <h3 class="fw-bold mb-0" id="statTotalUsuarios">0</h3>
+                        </div>
+                        <div class="bg-primary bg-opacity-15 p-3 rounded-circle text-primary">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="footer-privacidad">
-                <a href="privacidadentro.html">Políticas de Privacidad</a>
+            <div class="col-md-4">
+                <div class="card card-stat p-3 bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Administradores</h6>
+                            <h3 class="fw-bold mb-0" id="statTotalAdmins">0</h3>
+                        </div>
+                        <div class="bg-danger bg-opacity-15 p-3 rounded-circle text-danger">
+                            <i class="fas fa-user-shield fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card card-stat p-3 bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Acciones Rápidas</h6>
+                            <button class="btn btn-dark btn-sm mt-1" data-bs-toggle="modal" data-bs-target="#modalSubadmin">
+                                <i class="fas fa-user-plus me-1"></i> Crear Sub-Admin
+                            </button>
+                        </div>
+                        <div class="bg-success bg-opacity-15 p-3 rounded-circle text-success">
+                            <i class="fas fa-cogs fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="container">
-            
-            <!-- TAB 1: GENERAL -->
-            <div id="generalTab" class="tab-content active-tab">
-                
-                <div class="admin-hero-banner">
-                    <div class="admin-hero-info">
-                        <h1>Panel Principal de Administración</h1>
-                        <p>Resumen general del estado de la plataforma y gestión avanzada de cuentas de usuario.</p>
-                    </div>
+        <!-- SECCIÓN DE GESTIÓN DE USUARIOS -->
+        <div class="table-container">
+            <div class="row align-items-center mb-3">
+                <div class="col-md-6">
+                    <h5 class="fw-bold mb-0"><i class="fas fa-address-book me-2 text-primary"></i>Gestión de Usuarios</h5>
                 </div>
-
-                <div class="stats-grid">
-                    <div class="stat-card"><span>👥 Total Usuarios</span><span class="stat-value" id="totalUsuarios">0</span></div>
-                    <div class="stat-card"><span>🛡️ Administradores</span><span class="stat-value" id="totalAdmins" style="color: #64b5f6;">0</span></div>
-                    <div class="stat-card"><span>🔥 Racha Promedio Global</span><span class="stat-value" id="rachaPromedio">0 días</span></div>
-                    <div class="stat-card"><span>🎯 Metas Activas</span><span class="stat-value" id="totalMetas">0</span></div>
-                </div>
-
-                <div class="admin-section">
-                    <div class="admin-section-header">Búsqueda de Usuarios y Estadísticas Individuales</div>
-                    <div style="position: relative;">
-                        <input type="text" id="inputBusquedaAdmin" oninput="filtrarUsuariosEnVivo()" placeholder="Escribe nombre o correo para ver coincidencias..." style="width: 100%; padding: 14px 18px; border-radius: 12px; background: #161616; border: 1px solid rgba(255,255,255,0.15); color: white; font-size: 14px; outline: none;">
-                        <div id="listaCoincidencias" class="search-results-container"></div>
-                    </div>
-
-                    <!-- TARJETA DE PERFIL DETALLADO -->
-                    <div id="tarjetaPerfilDetalle" class="user-profile-card">
-                        <div class="profile-header">
-                            <div>
-                                <h3 id="detNombre" style="color: #81c784; font-size: 20px;"></h3>
-                                <p id="detCorreo" style="font-size: 13px; color: #a0a0a0;"></p>
-                            </div>
-                            <button onclick="cerrarPerfilDetalle()" style="background:none; border:none; color:#aaa; font-size:24px; cursor:pointer;">&times;</button>
-                        </div>
-
-                        <div class="profile-grid">
-                            <div class="sub-box"><span>RACHA ACTUAL</span><h4 id="detRacha" style="color: #ffb74d;">0 días</h4></div>
-                            <div class="sub-box"><span>SALDO ACTUAL</span><h4 id="detSaldo" style="color: #81c784;">$0.00</h4></div>
-                            <div class="sub-box"><span>GASTOS TOTALES</span><h4 id="detGastos" style="color: #ef5350;">$0.00</h4></div>
-                            <div class="sub-box"><span>ROL DE CUENTA</span><h4 id="detRol" style="color: #64b5f6;">Usuario</h4></div>
-                        </div>
-
-                        <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px;">
-                            <h4 style="color: #fff; font-size: 14px; margin-bottom: 8px;">Resumen de Actividad</h4>
-                            <div style="display: flex; flex-wrap: wrap; gap: 20px; font-size: 13px; color: #b0b0b0;">
-                                <p>Total de Metas: <strong id="detTotalMetas" style="color:#fff;">0</strong></p>
-                                <p>Movimientos Registrados: <strong id="detTotalMov" style="color:#fff;">0</strong></p>
-                            </div>
-                        </div>
-
-                        <div style="display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap;">
-                            <button onclick="abrirModalNotificacion()" class="btn-notificar">Enviar Notificación</button>
-                            <button onclick="abrirModalEdicionDesdePerfil()" class="btn-editar">Editar Perfil</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="admin-section">
-                    <div class="admin-section-header">Cuentas Registradas</div>
-                    <div class="users-table-wrapper">
-                        <table>
-                            <thead>
-                                <tr><th>ID</th><th>Nombre</th><th>Correo</th><th>Rol</th><th>Racha</th><th>Saldo</th><th>Acciones</th></tr>
-                            </thead>
-                            <tbody id="tablaUsuariosBody">
-                                <tr><td colspan="7" style="text-align: center; color: #888; padding: 25px;">Cargando...</td></tr>
-                            </tbody>
-                        </table>
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
+                        <input type="text" id="inputBuscar" class="form-control" placeholder="Buscar por nombre o correo..." onkeyup="filtrarUsuarios()">
                     </div>
                 </div>
             </div>
 
-            <!-- TAB 2: ESTADÍSTICAS (CHARTS.JS) -->
-            <div id="statsTab" class="tab-content">
-                <div class="admin-hero-banner">
-                    <div class="admin-hero-info">
-                        <h1>Estadísticas de Uso y Rachas</h1>
-                        <p>Análisis visual del comportamiento y compromiso diario de la comunidad.</p>
-                    </div>
-                </div>
-                <div class="charts-grid">
-                    <div class="chart-box">
-                        <h3 style="color:#fff; font-size:15px;">Distribución de Rachas</h3>
-                        <canvas id="graficaRachasCanvas" style="max-height: 250px;"></canvas>
-                    </div>
-                    <div class="chart-box">
-                        <h3 style="color:#fff; font-size:15px;">Uso de Funciones (Movimientos)</h3>
-                        <canvas id="graficaUsoCanvas" style="max-height: 250px;"></canvas>
-                    </div>
-                </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Correo</th>
+                            <th>Saldo</th>
+                            <th>Racha</th>
+                            <th>Rol</th>
+                            <th>Último Ingreso</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaUsuariosBody">
+                        <tr>
+                            <td colspan="8" class="text-center py-4 text-muted">Cargando usuarios...</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
+        </div>
 
-            <!-- TAB 3: AJUSTES Y SUB-ADMINS (NOTIFICACIÓN GLOBAL) -->
-            <div id="ajustesTab" class="tab-content">
-                <div class="admin-hero-banner">
-                    <div class="admin-hero-info">
-                        <h1>Ajustes & Sub-Administradores</h1>
-                        <p>Gestiona los roles administrativos y envía notificaciones globales a todos los usuarios.</p>
-                    </div>
+    </div>
+
+    <!-- MODAL: EDITAR USUARIO -->
+    <div class="modal fade" id="modalEditar" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-user-edit me-2"></i>Editar Usuario</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                
-                <div class="admin-section">
-                    <div class="admin-section-header">Enviar Notificación a Todos los Usuarios</div>
-                    <p style="font-size: 13px; color: #a0a0a0; margin-bottom: 10px;">Esta notificación se enviará de inmediato a todos los usuarios registrados en la plataforma.</p>
-                    <div class="form-admin-grid" style="grid-template-columns: 1fr;">
-                        <div class="input-box">
-                            <label>Título de la Notificación Global</label>
-                            <input type="text" id="notifGlobalTitulo" placeholder="Ej. ¡Nueva actualización disponible en ConSiente!">
+                <div class="modal-body">
+                    <form id="formEditarUsuario">
+                        <input type="hidden" id="editId">
+                        <div class="mb-3">
+                            <label class="form-label">Nombre</label>
+                            <input type="text" id="editNombre" class="form-control" required>
                         </div>
-                        <div class="input-box">
-                            <label>Mensaje de la Notificación</label>
-                            <textarea id="notifGlobalMensaje" rows="3" placeholder="Escribe el mensaje que llegará a toda la comunidad..."></textarea>
+                        <div class="mb-3">
+                            <label class="form-label">Correo Electrónico</label>
+                            <input type="email" id="editCorreo" class="form-control" required>
                         </div>
-                    </div>
-                    <button onclick="enviarNotificacionGlobal()" class="btn-notificar" style="margin-top: 15px; width: 100%; max-width: 280px; padding: 12px; font-size: 14px;">Enviar Notificación Global</button>
-                </div>
-                
-                <div class="admin-section">
-                    <div class="admin-section-header">Registrar Nuevo Administrador</div>
-                    <form id="formCrearAdmin" onsubmit="registrarSubAdmin(event)">
-                        <div class="form-admin-grid">
-                            <div class="input-box"><label>Nombre</label><input type="text" id="adminNombre" required placeholder="Ej. Moderador Juan"></div>
-                            <div class="input-box"><label>Correo</label><input type="email" id="adminCorreo" required placeholder="Ej. juan@consiente.com"></div>
-                            <div class="input-box" style="grid-column: 1 / -1;"><label>Contraseña Temporal</label><input type="password" id="adminPassword" required></div>
+                        <div class="mb-3">
+                            <label class="form-label">Saldo (MXN)</label>
+                            <input type="number" step="0.01" id="editSaldo" class="form-control" required>
                         </div>
-                        <button type="submit" class="btn-guardar">Crear Sub-Administrador</button>
+                        <div class="mb-3">
+                            <label class="form-label">Rol</label>
+                            <select id="editRol" class="form-select">
+                                <option value="usuario">Usuario</option>
+                                <option value="admin">Administrador</option>
+                            </select>
+                        </div>
+                        <div class="text-end">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                        </div>
                     </form>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <!-- TAB 4: MISIONES E ICONOS -->
-            <div id="misionesTab" class="tab-content">
-                <div class="admin-hero-banner">
-                    <div class="admin-hero-info">
-                        <h1>Gestión de Misiones e Iconos</h1>
-                        <p>Crea, visualiza y administra las misiones de desbloqueo con iconos duales (gris y color) y requisitos dinámicos.</p>
-                    </div>
+    <!-- MODAL: CREAR SUB-ADMIN -->
+    <div class="modal fade" id="modalSubadmin" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-user-shield me-2"></i>Registrar Sub-Administrador</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-
-                <div class="admin-section">
-                    <div class="admin-section-header">Crear Nueva Misión con Requisitos Numéricos</div>
-                    <form id="formCrearMision" onsubmit="crearNuevaMision(event)">
-                        <div class="form-admin-grid">
-                            <div class="input-box">
-                                <label>Título de la Misión</label>
-                                <input type="text" id="misionTituloNueva" required placeholder="Ej. Ahorrador Pro">
-                            </div>
-                            <div class="input-box">
-                                <label>Nombre del Premio / Avatar</label>
-                                <input type="text" id="misionPremioNueva" required placeholder="PuerQuito">
-                            </div>
-                            <div class="input-box">
-                                <label>Tipo de Condición</label>
-                                <select id="misionTipoCondicion" required>
-                                    <option value="racha">Días de Racha Consecutivos</option>
-                                    <option value="metas_cumplidas">Metas Financieras Completadas</option>
-                                    <option value="gastos">Cantidad de Gastos / Movimientos</option>
-                                </select>
-                            </div>
-                            <div class="input-box">
-                                <label>Cantidad Objetivo (Número)</label>
-                                <input type="number" id="misionCantidadObjetivo" min="1" value="7" required placeholder="Ej. 7, 10, 30">
-                            </div>
-                            <div class="input-box">
-                                <label>Imagen en Gris (Bloqueada)</label>
-                                <input type="file" id="misionArchivoGris" accept="image/*" required style="padding: 10px; background: #161616; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); color: #fff;">
-                            </div>
-                            <div class="input-box">
-                                <label>Imagen a Color (Desbloqueada)</label>
-                                <input type="file" id="misionArchivoColor" accept="image/*" required style="padding: 10px; background: #161616; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); color: #fff;">
-                            </div>
-                            <div class="input-box" style="grid-column: 1 / -1;">
-                                <label>Breve Descripción</label>
-                                <input type="text" id="misionDescNueva" required placeholder="Ej. Mantén tu racha activa durante 7 días seguidos.">
-                            </div>
+                <div class="modal-body">
+                    <form id="formCrearSubadmin">
+                        <div class="mb-3">
+                            <label class="form-label">Nombre Completo</label>
+                            <input type="text" id="subNombre" class="form-control" required>
                         </div>
-                        <button type="submit" class="btn-guardar">Publicar Misión</button>
+                        <div class="mb-3">
+                            <label class="form-label">Correo Electrónico</label>
+                            <input type="email" id="subCorreo" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Contraseña Temporal</label>
+                            <input type="password" id="subPassword" class="form-control" required>
+                        </div>
+                        <div class="text-end">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-dark">Crear Administrador</button>
+                        </div>
                     </form>
                 </div>
-
-                <!-- TABLA CRUD DE MISIONES -->
-                <div class="admin-section">
-                    <div class="admin-section-header">Misiones Registradas en la Base de Datos</div>
-                    <div class="users-table-wrapper">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Iconos y Título</th>
-                                    <th>Premio</th>
-                                    <th>Requisito</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tablaMisionesAdminBody">
-                                <tr>
-                                    <td colspan="5" style="text-align: center; color: #888; padding: 25px;">
-                                        Cargando misiones...
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="admin-section">
-                    <div class="admin-section-header">Premios e Iconos Reclamados por la Comunidad</div>
-                    <div class="users-table-wrapper">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Usuario</th>
-                                    <th>Correo</th>
-                                    <th>Misión</th>
-                                    <th>Premio Reclamado</th>
-                                    <th>Fecha</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tablaPremiosBody">
-                                <tr>
-                                    <td colspan="5" style="text-align: center; color: #888; padding: 25px;">
-                                        Cargando historial de premios...
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </div>
-
-    <!-- MODAL EDITAR USUARIO -->
-    <div id="modalEditarUsuario" class="modal-overlay-custom">
-        <div class="modal-card-custom">
-            <h3 style="color:#81c784;">Editar Perfil de Usuario</h3>
-            <input type="hidden" id="editUserId">
-            <div class="input-box"><label>Nombre:</label><input type="text" id="editUserNombre"></div>
-            <div class="input-box"><label>Correo:</label><input type="email" id="editUserCorreo"></div>
-            <div class="input-box"><label>Saldo ($):</label><input type="number" step="0.01" id="editUserSaldo"></div>
-            <div class="input-box"><label>Rol:</label><select id="editUserRol"><option value="usuario">Usuario</option><option value="admin">Admin</option></select></div>
-            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:10px;">
-                <button onclick="cerrarModalEdicion()" style="background:rgba(255,255,255,0.06); color:#fff; border:none; padding:10px 18px; border-radius:10px; cursor:pointer;">Cancelar</button>
-                <button onclick="guardarCambiosUsuario()" style="background:#2e7d32; color:#fff; border:none; padding:10px 18px; border-radius:10px; cursor:pointer; font-weight:600;">Guardar</button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL EDITAR MISIÓN -->
-    <div id="modalEditarMision" class="modal-overlay-custom">
-        <div class="modal-card-custom">
-            <h3 style="color:#81c784;">Editar Misión</h3>
-            <input type="hidden" id="editMisionId">
-            <div class="input-box"><label>Título:</label><input type="text" id="editMisionTitulo"></div>
-            <div class="input-box"><label>Premio / Avatar:</label><input type="text" id="editMisionPremio"></div>
-            <div class="input-box">
-                <label>Tipo de Condición:</label>
-                <select id="editMisionTipoCondicion">
-                    <option value="racha">Días de Racha Consecutivos</option>
-                    <option value="metas_cumplidas">Metas Financieras Completadas</option>
-                    <option value="gastos">Cantidad de Gastos / Movimientos</option>
-                </select>
-            </div>
-            <div class="input-box"><label>Cantidad Objetivo:</label><input type="number" id="editMisionCantidadObjetivo" min="1"></div>
-            <div class="input-box"><label>Descripción:</label><input type="text" id="editMisionDesc"></div>
-            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:10px;">
-                <button onclick="cerrarModalEditarMision()" style="background:rgba(255,255,255,0.06); color:#fff; border:none; padding:10px 18px; border-radius:10px; cursor:pointer;">Cancelar</button>
-                <button onclick="guardarCambiosMision()" style="background:#2e7d32; color:#fff; border:none; padding:10px 18px; border-radius:10px; cursor:pointer; font-weight:600;">Guardar Cambios</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL NOTIFICACIÓN (Individual) -->
-    <div id="modalNotificacion" class="modal-overlay-custom">
-        <div class="modal-card-custom" style="border-color: rgba(66,165,245,0.3);">
-            <h3 style="color:#42a5f5;">Enviar Notificación Directa</h3>
-            <div class="input-box"><label>Título:</label><input type="text" id="notifTitulo" placeholder="Ej. Aviso importante"></div>
-            <div class="input-box"><label>Mensaje:</label><textarea id="notifMensaje" rows="4" placeholder="Escribe el mensaje..."></textarea></div>
-            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:10px;">
-                <button onclick="cerrarModalNotificacion()" style="background:rgba(255,255,255,0.06); color:#fff; border:none; padding:10px 18px; border-radius:10px; cursor:pointer;">Cancelar</button>
-                <button onclick="enviarNotificacionUsuario()" style="background:#42a5f5; color:#fff; border:none; padding:10px 18px; border-radius:10px; cursor:pointer; font-weight:600;">Enviar Aviso</button>
-            </div>
-        </div>
-    </div>
-
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- SCRIPT DE CONTROL DEL PANEL -->
     <script>
-        const API_URL = "";
-
         const token = localStorage.getItem("token");
-        const rolUsuario = localStorage.getItem("rol");
-        let usuarioSeleccionadoActual = null;
-        let chartRachasInstance = null;
-        let chartUsoInstance = null;
-        let todosLosUsuariosBD = [];
+        const rol = localStorage.getItem("rol");
 
-        if (!token || rolUsuario !== 'admin') {
-            alert("Acceso no autorizado.");
-            window.location.href = "index.html";
+        // 1. Validar seguridad de acceso al cargar la página
+        if (!token || rol !== 'admin') {
+            alert("Acceso denegado. Se requieren privilegios de administrador.");
+            window.location.href = "index.html"; // O tu página de login
+        } else {
+            document.getElementById("adminNombre").textContent = localStorage.getItem("nombre") || "Administrador";
         }
 
-        // CONTROL DE PESTAÑAS (TABS)
-        function cambiarTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active-tab'));
-            document.querySelectorAll('.sidebar-menu button').forEach(el => el.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active-tab');
-            
-            if(tabId === 'generalTab') document.getElementById('btnGeneral').classList.add('active');
-            if(tabId === 'statsTab') { document.getElementById('btnStats').classList.add('active'); cargarEstadisticasReales(); }
-            if(tabId === 'ajustesTab') document.getElementById('btnAjustes').classList.add('active');
-            
-            if(tabId === 'misionesTab') { 
-                document.getElementById('btnMisiones').classList.add('active'); 
-                cargarHistorialPremios(); 
-                cargarMisionesAdmin();
+        let listaUsuariosGlobal = [];
+
+        // 2. Cargar usuarios y estadísticas al iniciar
+        document.addEventListener("DOMContentLoaded", () => {
+            cargarUsuarios();
+        });
+
+        function cargarUsuarios(busqueda = '') {
+            fetch(`/api/admin/usuarios?buscar=${encodeURIComponent(busqueda)}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(res => {
+                if (!res.ok) throw new Error("Error al obtener los usuarios");
+                return res.json();
+            })
+            .then(usuarios => {
+                listaUsuariosGlobal = usuarios;
+                renderizarTabla(usuarios);
+                actualizarEstadisticas(usuarios);
+            })
+            .catch(err => {
+                console.error(err);
+                document.getElementById("tablaUsuariosBody").innerHTML = `
+                    <tr><td colspan="8" class="text-center text-danger py-4">Error al conectar con el servidor o sesión expirada.</td></tr>
+                `;
+            });
+        }
+
+        function renderizarTabla(usuarios) {
+            const tbody = document.getElementById("tablaUsuariosBody");
+            tbody.innerHTML = "";
+
+            if (usuarios.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-muted">No se encontraron usuarios registrados.</td></tr>`;
+                return;
             }
+
+            usuarios.forEach(u => {
+                const badgeRol = u.rol === 'admin' ? '<span class="badge badge-admin">Admin</span>' : '<span class="badge badge-usuario">Usuario</span>';
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>#${u.id}</td>
+                    <td class="fw-semibold">${u.nombre}</td>
+                    <td>${u.correo}</td>
+                    <td>$${Number(u.saldo || 0).toFixed(2)}</td>
+                    <td><i class="fas fa-fire text-danger me-1"></i>${u.racha_dias || 0} días</td>
+                    <td>${badgeRol}</td>
+                    <td>${u.ultimo_ingreso || 'Nunca'}</td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="abrirEditar(${u.id}, '${u.nombre}', '${u.correo}', ${u.saldo}, '${u.rol}')" title="Editar">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="eliminarUsuario(${u.id})" title="Eliminar">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
 
-        function cambiarVistaUsuario() {
-            localStorage.setItem("modoVistaAdmin", "activo");
-            window.location.href = "menu.html";
+        function actualizarEstadisticas(usuarios) {
+            document.getElementById("statTotalUsuarios").textContent = usuarios.length;
+            const totalAdmins = usuarios.filter(u => u.rol === 'admin').length;
+            document.getElementById("statTotalAdmins").textContent = totalAdmins;
         }
+
+        // Búsqueda en tiempo real
+        function filtrarUsuarios() {
+            const texto = document.getElementById("inputBuscar").value.toLowerCase();
+            const filtrados = listaUsuariosGlobal.filter(u => 
+                u.nombre.toLowerCase().includes(texto) || u.correo.toLowerCase().includes(texto)
+            );
+            renderizarTabla(filtrados);
+        }
+
+        // Abrir Modal de Edición con datos previos
+        function abrirEditar(id, nombre, correo, saldo, rolUser) {
+            document.getElementById("editId").value = id;
+            document.getElementById("editNombre").value = nombre;
+            document.getElementById("editCorreo").value = correo;
+            document.getElementById("editSaldo").value = saldo;
+            document.getElementById("editRol").value = rolUser;
+
+            const modal = new bootstrap.Modal(document.getElementById('modalEditar'));
+            modal.show();
+        }
+
+        // Enviar formulario de edición
+        document.getElementById("formEditarUsuario").addEventListener("submit", (e) => {
+            e.preventDefault();
+            const id = document.getElementById("editId").value;
+            const datos = {
+                nombre: document.getElementById("editNombre").value,
+                correo: document.getElementById("editCorreo").value,
+                saldo: parseFloat(document.getElementById("editSaldo").value),
+                rol: document.getElementById("editRol").value
+            };
+
+            fetch(`/api/admin/usuarios/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(datos)
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.mensaje || "Actualizado con éxito");
+                bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
+                cargarUsuarios();
+            })
+            .catch(err => alert("Error al actualizar usuario"));
+        });
+
+        // Eliminar usuario
+        function eliminarUsuario(id) {
+            if (!confirm("¿Estás seguro de eliminar este usuario? Se borrarán todos sus movimientos y metas asociadas.")) return;
+
+            fetch(`/api/admin/usuarios/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.mensaje || "Usuario eliminado");
+                cargarUsuarios();
+            })
+            .catch(err => alert("Error al eliminar usuario"));
+        }
+
+        // Crear Sub-Administrador
+        document.getElementById("formCrearSubadmin").addEventListener("submit", (e) => {
+            e.preventDefault();
+            const datos = {
+                nombre: document.getElementById("subNombre").value,
+                correo: document.getElementById("subCorreo").value,
+                password: document.getElementById("subPassword").value
+            };
+
+            fetch('/api/admin/crear-subadmin', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(datos)
+            })
+            .then(res => {
+                if (!res.ok) return res.json().then(err => { throw new Error(err.error); });
+                return res.json();
+            })
+            .then(data => {
+                alert(data.message || "Sub-administrador creado con éxito");
+                document.getElementById("formCrearSubadmin").reset();
+                bootstrap.Modal.getInstance(document.getElementById('modalSubadmin')).hide();
+                cargarUsuarios();
+            })
+            .catch(err => alert(err.message || "Error al crear sub-administrador"));
+        });
 
         function cerrarSesion() {
             localStorage.clear();
             window.location.href = "index.html";
         }
-
-        window.addEventListener("DOMContentLoaded", () => {
-            if (localStorage.getItem("modoVistaAdmin") === "activo") {
-                document.getElementById("adminBarReturn").style.display = "block";
-            }
-            cargarDatosAdministrador();
-            cargarMisionesAdmin();
-        });
-
-        function regresarAlAdminMode() {
-            localStorage.removeItem("modoVistaAdmin");
-            window.location.href = "admin.html";
-        }
-
-        async function cargarDatosAdministrador() {
-            try {
-                const res = await fetch(`${API_URL}/api/admin/usuarios`, {
-                    headers: { "Authorization": `Bearer ${token}` }
-                });
-
-                if(res.ok) {
-                    const usuarios = await res.json();
-                    todosLosUsuariosBD = usuarios;
-                    document.getElementById("totalUsuarios").innerText = usuarios.length;
-                    
-                    let adminsCount = 0;
-                    let rachaTotal = 0;
-                    let metasSuma = 0;
-                    const tbody = document.getElementById("tablaUsuariosBody");
-                    tbody.innerHTML = "";
-
-                    usuarios.forEach(u => {
-                        if(u.rol === 'admin') adminsCount++;
-                        rachaTotal += Number(u.racha_dias || 0);
-                        if(u.total_metas) metasSuma += Number(u.total_metas);
-
-                        const tr = document.createElement("tr");
-                        tr.onclick = (e) => {
-                            if(e.target.tagName !== 'BUTTON') seleccionarUsuarioPorId(u.id);
-                        };
-
-                        tr.innerHTML = `
-                            <td>#${u.id}</td>
-                            <td><strong style="color: #fff;">${u.nombre}</strong></td>
-                            <td style="color: #a0a0a0;">${u.correo}</td>
-                            <td>${u.rol === 'admin' ? '<span class="badge-admin">Admin</span>' : '<span class="badge-corriente">Usuario</span>'}</td>
-                            <td style="color: #ffb74d; font-weight: 600;">${u.racha_dias || 0}d</td>
-                            <td style="color: #81c784; font-weight: 600;">$${Number(u.saldo || 0).toFixed(2)}</td>
-                            <td>
-                                <div style="display: flex; gap: 8px;">
-                                    <button class="btn-editar" onclick="event.stopPropagation(); seleccionarUsuarioPorId(${u.id})">Ver Perfil</button>
-                                    ${u.correo === 'equipoconsiente@gmail.com' ? '' : `<button class="btn-accion" onclick="event.stopPropagation(); eliminarUsuarioAdmin(${u.id})">Eliminar</button>`}
-                                </div>
-                            </td>
-                        `;
-                        tbody.appendChild(tr);
-                    });
-
-                    document.getElementById("totalAdmins").innerText = adminsCount;
-                    document.getElementById("rachaPromedio").innerText = usuarios.length > 0 ? `${(rachaTotal / usuarios.length).toFixed(1)} días` : '0 días';
-                    document.getElementById("totalMetas").innerText = metasSuma;
-                }
-            } catch (error) { console.error("Error:", error); }
-        }
-
-        async function filtrarUsuariosEnVivo() {
-            const query = document.getElementById("inputBusquedaAdmin").value.trim();
-            const contenedor = document.getElementById("listaCoincidencias");
-            
-            if(!query) { contenedor.style.display = "none"; return; }
-
-            try {
-                const res = await fetch(`${API_URL}/api/admin/usuarios?buscar=${encodeURIComponent(query)}`, {
-                    headers: { "Authorization": `Bearer ${token}` }
-                });
-
-                if(res.ok) {
-                    const coincidences = await res.json();
-                    contenedor.innerHTML = "";
-                    
-                    if(coincidences.length === 0) {
-                        contenedor.innerHTML = `<div style="padding:14px; color:#888; font-size:13px;">No se encontraron perfiles.</div>`;
-                    } else {
-                        coincidences.forEach(u => {
-                            const item = document.createElement("div");
-                            item.className = "search-result-item";
-                            item.innerHTML = `<span><strong>${u.nombre}</strong> (${u.correo})</span> <span style="color:#81c784; font-size:12px;">Ver perfil ➔</span>`;
-                            
-                            item.onmousedown = (e) => {
-                                e.preventDefault();
-                                seleccionarUsuarioPorId(u.id);
-                                contenedor.style.display = "none";
-                                document.getElementById("inputBusquedaAdmin").value = "";
-                            };
-                            contenedor.appendChild(item);
-                        });
-                    }
-                    contenedor.style.display = "block";
-                }
-            } catch(e) { console.error(e); }
-        }
-
-        document.addEventListener("click", (e) => {
-            const buscadorContainer = document.querySelector(".admin-section");
-            const contenedorResultados = document.getElementById("listaCoincidencias");
-            if (buscadorContainer && !buscadorContainer.contains(e.target)) {
-                if(contenedorResultados) contenedorResultados.style.display = "none";
-            }
-        });
-
-        async function seleccionarUsuarioPorId(id) {
-            try {
-                const res = await fetch(`${API_URL}/api/admin/usuarios/${id}/detalle`, {
-                    headers: { "Authorization": `Bearer ${token}` }
-                });
-                
-                if(res.ok) {
-                    const data = await res.json();
-                    usuarioSeleccionadoActual = data.usuario;
-
-                    document.getElementById("detNombre").innerText = data.usuario.nombre || "Sin nombre";
-                    document.getElementById("detCorreo").innerText = data.usuario.correo || "Sin correo";
-                    document.getElementById("detRacha").innerText = `${data.usuario.racha_dias || 0} días`;
-                    document.getElementById("detSaldo").innerText = `$${Number(data.usuario.saldo || 0).toFixed(2)}`;
-                    document.getElementById("detGastos").innerText = `$${Number(data.estadisticas?.sumaGastos || 0).toFixed(2)}`;
-                    document.getElementById("detRol").innerText = (data.usuario.rol || "usuario").toUpperCase();
-                    document.getElementById("detTotalMetas").innerText = data.estadisticas?.totalMetas || 0;
-                    document.getElementById("detTotalMov").innerText = data.estadisticas?.totalMovimientos || 0;
-
-                    const tarjeta = document.getElementById("tarjetaPerfilDetalle");
-                    tarjeta.style.display = "flex";
-                    tarjeta.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                } else {
-                    alert("No se pudo obtener el detalle del usuario.");
-                }
-            } catch(e) { 
-                console.error("Error al obtener detalle del usuario:", e); 
-            }
-        }
-
-        function cerrarPerfilDetalle() {
-            document.getElementById("tarjetaPerfilDetalle").style.display = "none";
-            usuarioSeleccionadoActual = null;
-        }
-
-        function abrirModalEdicionDesdePerfil() {
-            if(!usuarioSeleccionadoActual) return;
-            
-            document.getElementById("editUserId").value = usuarioSeleccionadoActual.id || usuarioSeleccionadoActual.usuario_id;
-            document.getElementById("editUserNombre").value = usuarioSeleccionadoActual.nombre;
-            document.getElementById("editUserCorreo").value = usuarioSeleccionadoActual.correo;
-            document.getElementById("editUserSaldo").value = usuarioSeleccionadoActual.saldo;
-            document.getElementById("editUserRol").value = usuarioSeleccionadoActual.rol;
-            document.getElementById("modalEditarUsuario").style.display = "flex";
-        }
-
-        function cerrarModalEdicion() { 
-            document.getElementById("modalEditarUsuario").style.display = "none"; 
-        }
-
-        async function guardarCambiosUsuario() {
-            const id = document.getElementById("editUserId").value;
-            const nombre = document.getElementById("editUserNombre").value;
-            const correo = document.getElementById("editUserCorreo").value;
-            const saldo = document.getElementById("editUserSaldo").value;
-            const rol = document.getElementById("editUserRol").value;
-
-            try {
-                const res = await fetch(`${API_URL}/api/admin/usuarios/${id}`, {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-                    body: JSON.stringify({ nombre, correo, saldo, rol })
-                });
-                
-                if(res.ok) {
-                    alert("¡Perfil actualizado con éxito!");
-                    cerrarModalEdicion();
-                    cerrarPerfilDetalle();
-                    cargarDatosAdministrador();
-                } else {
-                    const data = await res.json();
-                    alert(data.error || "Ocurrió un error al guardar los cambios.");
-                }
-            } catch(e) {
-                console.error("Error al actualizar usuario:", e);
-                alert("Ocurrió un error en la conexión al servidor.");
-            }
-        }
-
-        function abrirModalNotificacion() {
-            if(!usuarioSeleccionadoActual) return;
-            document.getElementById("notifTitulo").value = "";
-            document.getElementById("notifMensaje").value = "";
-            document.getElementById("modalNotificacion").style.display = "flex";
-        }
-        function cerrarModalNotificacion() { document.getElementById("modalNotificacion").style.display = "none"; }
-
-        async function enviarNotificacionUsuario() {
-            if(!usuarioSeleccionadoActual) return;
-            
-            const userId = usuarioSeleccionadoActual.id || usuarioSeleccionadoActual.usuario_id;
-            const titulo = document.getElementById("notifTitulo").value.trim();
-            const mensaje = document.getElementById("notifMensaje").value.trim();
-
-            if(!titulo || !mensaje) { 
-                alert("Por favor completa el título y el mensaje."); 
-                return; 
-            }
-
-            try {
-                const res = await fetch(`${API_URL}/api/admin/usuarios/${userId}/notificar`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-                    body: JSON.stringify({ titulo, mensaje })
-                });
-                
-                if(res.ok) {
-                    alert("Notificación enviada con éxito.");
-                    cerrarModalNotificacion();
-                } else {
-                    const data = await res.json();
-                    alert(data.error || "No se pudo enviar la notificación.");
-                }
-            } catch (error) { console.error("Error:", error); }
-        }
-
-        async function enviarNotificacionGlobal() {
-            const titulo = document.getElementById("notifGlobalTitulo").value.trim();
-            const mensaje = document.getElementById("notifGlobalMensaje").value.trim();
-
-            if (!titulo || !mensaje) {
-                alert("Por favor, escribe un título y un mensaje antes de enviar.");
-                return;
-            }
-
-            if (!confirm(`¿Estás seguro de que deseas enviar esta notificación a TODOS los usuarios registrados (${todosLosUsuariosBD.length} usuarios)?`)) {
-                return;
-            }
-
-            let enviados = 0;
-            let fallidos = 0;
-
-            for (const usuario of todosLosUsuariosBD) {
-                const userId = usuario.id || usuario.usuario_id;
-                try {
-                    const res = await fetch(`${API_URL}/api/admin/usuarios/${userId}/notificar`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-                        body: JSON.stringify({ titulo, mensaje })
-                    });
-                    if (res.ok) enviados++; else fallidos++;
-                } catch (e) { fallidos++; }
-            }
-
-            alert(`Proceso finalizado.\n\nNotificaciones enviadas: ${enviados}\nFallidas: ${fallidos}`);
-            
-            document.getElementById("notifGlobalTitulo").value = "";
-            document.getElementById("notifGlobalMensaje").value = "";
-        }
-
-        async function cargarEstadisticasReales() {
-            try {
-                const res = await fetch(`${API_URL}/api/admin/estadisticas`, {
-                    headers: { "Authorization": `Bearer ${token}` }
-                });
-                if(res.ok) {
-                    const data = await res.json();
-                    
-                    const ctxRachas = document.getElementById('graficaRachasCanvas').getContext('2d');
-                    if(chartRachasInstance) chartRachasInstance.destroy();
-                    chartRachasInstance = new Chart(ctxRachas, {
-                        type: 'bar',
-                        data: {
-                            labels: data.distribucionRachas.map(r => `${r.racha_dias} días`),
-                            datasets: [{ data: data.distribucionRachas.map(r => r.cantidad), backgroundColor: '#81c784', borderRadius: 6 }]
-                        },
-                        options: { responsive: true, plugins: { legend: { display: false } } }
-                    });
-
-                    const ctxUso = document.getElementById('graficaUsoCanvas').getContext('2d');
-                    if(chartUsoInstance) chartUsoInstance.destroy();
-                    chartUsoInstance = new Chart(ctxUso, {
-                        type: 'doughnut',
-                        data: {
-                            labels: data.usoMovimientos.map(m => m.categoria),
-                            datasets: [{ data: data.usoMovimientos.map(m => m.total), backgroundColor: ['#81c784', '#42A5F5', '#AB47BC', '#FFA726', '#26A69A'] }]
-                        },
-                        options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#ccc' } } } }
-                    });
-                }
-            } catch(e) { console.error(e); }
-        }
-
-        async function registrarSubAdmin(e) {
-            e.preventDefault();
-            const nombre = document.getElementById("adminNombre").value;
-            const correo = document.getElementById("adminCorreo").value;
-            const password = document.getElementById("adminPassword").value;
-
-            const res = await fetch(`${API_URL}/api/admin/crear-subadmin`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-                body: JSON.stringify({ nombre, correo, password })
-            });
-            const data = await res.json();
-            alert(data.message || data.error);
-            if(res.ok) {
-                document.getElementById("formCrearAdmin").reset();
-                cargarDatosAdministrador();
-                cambiarTab('generalTab');
-            }
-        }
-
-        async function eliminarUsuarioAdmin(id) {
-            if(!confirm("¿Seguro que deseas eliminar este usuario? (Esta acción no se puede deshacer)")) return;
-            const res = await fetch(`${API_URL}/api/admin/usuarios/${id}`, {
-                method: 'DELETE', headers: { "Authorization": `Bearer ${token}` }
-            });
-            if(res.ok) { alert("Usuario eliminado correctamente."); cargarDatosAdministrador(); }
-        }
-
-        async function crearNuevaMision(e) {
-            e.preventDefault();
-            const titulo = document.getElementById("misionTituloNueva").value;
-            const inputPremioValor = document.getElementById("misionPremioNueva").value.trim();
-            const recompensa = inputPremioValor.toLowerCase().startsWith("avatar:") 
-                ? inputPremioValor 
-                : `avatar: ${inputPremioValor}`;
-
-            const descripcion = document.getElementById("misionDescNueva").value;
-            const tipo_condicion = document.getElementById("misionTipoCondicion").value;
-            const cantidad_objetivo = document.getElementById("misionCantidadObjetivo").value;
-
-            const archivoGris = document.getElementById("misionArchivoGris").files[0];
-            const archivoColor = document.getElementById("misionArchivoColor").files[0];
-
-            const formData = new FormData();
-            formData.append("titulo", titulo);
-            formData.append("recompensa", recompensa);
-            formData.append("descripcion", descripcion);
-            formData.append("tipo_condicion", tipo_condicion);
-            formData.append("cantidad_objetivo", cantidad_objetivo);
-            
-            if (archivoGris) formData.append("archivoGris", archivoGris);
-            if (archivoColor) formData.append("archivoColor", archivoColor);
-
-            try {
-                const res = await fetch(`${API_URL}/api/admin/misiones`, {
-                    method: "POST",
-                    headers: { "Authorization": `Bearer ${token}` },
-                    body: formData
-                });
-                
-                const data = await res.json();
-                if(res.ok) {
-                    alert("Misión, requisitos y archivos publicados con éxito.");
-                    document.getElementById("formCrearMision").reset();
-                    cargarMisionesAdmin();
-                    cargarHistorialPremios();
-                } else {
-                    alert(data.error || "Error al publicar la misión.");
-                }
-            } catch (error) {
-                console.error("Error al crear misión:", error);
-                alert("Error de conexión al servidor.");
-            }
-        }
-
-        async function cargarMisionesAdmin() {
-            try {
-                const res = await fetch(`${API_URL}/api/misiones`, {
-                    headers: { "Authorization": `Bearer ${token}` }
-                });
-                
-                if (res.ok) {
-                    const misiones = await res.json();
-                    const tbody = document.getElementById("tablaMisionesAdminBody");
-                    tbody.innerHTML = "";
-
-                    if (misiones.length === 0) {
-                        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #888; padding: 25px;">No hay misiones creadas todavía.</td></tr>`;
-                        return;
-                    }
-
-                    misiones.forEach(m => {
-                        const imgGris = m.imagen_gris ? `<img src="${m.imagen_gris}" alt="Gris" style="width: 32px; height: 32px; object-fit: contain; border-radius: 6px; background: #222; padding: 2px; border: 1px solid rgba(255,255,255,0.1);" title="Versión Gris (Bloqueada)">` : '<span style="color:#777; font-size:11px;">Sin gris</span>';
-                        const imgColor = m.imagen_color ? `<img src="${m.imagen_color}" alt="Color" style="width: 32px; height: 32px; object-fit: contain; border-radius: 6px; background: #222; padding: 2px; border: 1px solid rgba(129,199,132,0.3);" title="Versión Color (Desbloqueada)">` : '<span style="color:#777; font-size:11px;">Sin color</span>';
-
-                        const tr = document.createElement("tr");
-                        tr.innerHTML = `
-                            <td>#${m.id}</td>
-                            <td>
-                                <div style="display: flex; gap: 8px; align-items: center;">
-                                    <div style="display: flex; gap: 4px;" title="Gris vs Color">
-                                        ${imgGris}
-                                        ${imgColor}
-                                    </div>
-                                    <div>
-                                        <strong style="color: #fff;">${m.titulo}</strong><br>
-                                        <small style="color:#aaa;">${m.descripcion || ''}</small>
-                                    </div>
-                                </div>
-                            </td>
-                            <td style="color: #81c784;">${m.recompensa}</td>
-                            <td><span class="badge-admin">${m.tipo_condicion || 'racha'}</span> (${m.cantidad_objetivo || 1})</td>
-                            <td>
-                                <div style="display: flex; gap: 8px;">
-                                    <button class="btn-editar" onclick="abrirModalEditarMision(${m.id}, '${m.titulo}', '${m.recompensa}', '${m.tipo_condicion || 'racha'}', ${m.cantidad_objetivo || 1}, '${m.descripcion || ''}')">Editar</button>
-                                    <button class="btn-accion" onclick="eliminarMision(${m.id})">Eliminar</button>
-                                </div>
-                            </td>
-                        `;
-                        tbody.appendChild(tr);
-                    });
-                }
-            } catch (error) {
-                console.error("Error al cargar misiones en admin:", error);
-            }
-        }
-
-        function abrirModalEditarMision(id, titulo, recompensa, tipoCondicion, cantidadObjetivo, descripcion) {
-            document.getElementById("editMisionId").value = id;
-            document.getElementById("editMisionTitulo").value = titulo;
-            document.getElementById("editMisionPremio").value = recompensa.replace('avatar: ', '');
-            document.getElementById("editMisionTipoCondicion").value = tipoCondicion;
-            document.getElementById("editMisionCantidadObjetivo").value = cantidadObjetivo;
-            document.getElementById("editMisionDesc").value = descripcion;
-            document.getElementById("modalEditarMision").style.display = "flex";
-        }
-
-        function cerrarModalEditarMision() {
-            document.getElementById("modalEditarMision").style.display = "none";
-        }
-
-        async function guardarCambiosMision() {
-            const id = document.getElementById("editMisionId").value;
-            const titulo = document.getElementById("editMisionTitulo").value;
-            const inputPremioValor = document.getElementById("editMisionPremio").value.trim();
-            const recompensa = inputPremioValor.toLowerCase().startsWith("avatar:") 
-                ? inputPremioValor 
-                : `avatar: ${inputPremioValor}`;
-            const tipo_condicion = document.getElementById("editMisionTipoCondicion").value;
-            const cantidad_objetivo = document.getElementById("editMisionCantidadObjetivo").value;
-            const descripcion = document.getElementById("editMisionDesc").value;
-
-            const formData = new FormData();
-            formData.append("titulo", titulo);
-            formData.append("recompensa", recompensa);
-            formData.append("tipo_condicion", tipo_condicion);
-            formData.append("cantidad_objetivo", cantidad_objetivo);
-            formData.append("descripcion", descripcion);
-
-            try {
-                const res = await fetch(`${API_URL}/api/admin/misiones/${id}`, {
-                    method: "PUT",
-                    headers: { "Authorization": `Bearer ${token}` },
-                    body: formData
-                });
-
-                const data = await res.json();
-                if (res.ok) {
-                    alert("¡Misión actualizada con éxito!");
-                    cerrarModalEditarMision();
-                    cargarMisionesAdmin();
-                } else {
-                    alert(data.error || "No se pudo actualizar la misión.");
-                }
-            } catch (error) {
-                console.error("Error al actualizar misión:", error);
-            }
-        }
-
-        async function eliminarMision(id) {
-            if (!confirm("¿Estás seguro de que deseas eliminar esta misión?")) return;
-
-            try {
-                const res = await fetch(`${API_URL}/api/admin/misiones/${id}`, {
-                    method: "DELETE",
-                    headers: { "Authorization": `Bearer ${token}` }
-                });
-
-                const data = await res.json();
-                if (res.ok) {
-                    alert("Misión eliminada con éxito.");
-                    cargarMisionesAdmin();
-                } else {
-                    alert(data.error || "No se pudo eliminar la misión.");
-                }
-            } catch (error) {
-                console.error("Error al borrar misión:", error);
-            }
-        }
-
-        async function cargarHistorialPremios() {
-            try {
-                const res = await fetch(`${API_URL}/api/admin/premios-reclamados`, {
-                    headers: { "Authorization": `Bearer ${token}` }
-                });
-                
-                if (res.ok) {
-                    const premios = await res.json();
-                    const tbody = document.getElementById("tablaPremiosBody");
-                    tbody.innerHTML = "";
-
-                    if(premios.length === 0) {
-                        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #888; padding: 25px;">Aún no hay premios reclamados por los usuarios.</td></tr>`;
-                        return;
-                    }
-
-                    premios.forEach(p => {
-                        const tr = document.createElement("tr");
-                        tr.innerHTML = `
-                            <td><strong style="color: #fff;">${p.nombre}</strong></td>
-                            <td style="color: #a0a0a0;">${p.correo}</td>
-                            <td style="color: #ffb74d;">${p.mision_titulo}</td>
-                            <td style="color: #81c784; font-weight: 600;">${p.premio_reclamado}</td>
-                            <td style="color: #ccc;">${p.fecha}</td>
-                        `;
-                        tbody.appendChild(tr);
-                    });
-                }
-            } catch (error) {
-                console.error("Error al cargar historial de premios:", error);
-            }
-        }
     </script>
-    <script src="admin-control.js" defer></script>
 </body>
 </html>
