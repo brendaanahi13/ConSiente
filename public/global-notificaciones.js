@@ -1,4 +1,4 @@
-// --- GLOBAL NOTIFICACIONES.JS (VERSIÓN DEFINITIVA Y SEGURA) ---
+// --- GLOBAL NOTIFICACIONES.JS (VERSIÓN DEFINITIVA Y AL 100%) ---
 
 if (typeof window.API_URL === 'undefined') {
     window.API_URL = "";
@@ -72,16 +72,31 @@ async function cargarNotificacionesSistema() {
 
             const tiempoRelativo = obtenerTiempoRelativo(notif.fecha);
 
+            // Redirección inteligente automática según el contenido
+            const textoCompleto = ((notif.titulo || "") + " " + (notif.mensaje || "")).toLowerCase();
+            let destinoUrl = "agregar.html"; // Por defecto si es general
+
+            if (textoCompleto.includes("meta") || textoCompleto.includes("abono") || textoCompleto.includes("ahorro")) {
+                destinoUrl = "metas.html";
+            } else if (textoCompleto.includes("racha") || textoCompleto.includes("avatar") || textoCompleto.includes("puerquito")) {
+                destinoUrl = "racha.html";
+            } else if (textoCompleto.includes("gasto") || textoCompleto.includes("movimiento") || textoCompleto.includes("historial")) {
+                destinoUrl = "historial.html";
+            } else if (textoCompleto.includes("semáforo") || textoCompleto.includes("economico") || textoCompleto.includes("finanzas")) {
+                destinoUrl = "semaforo.html";
+            }
+
             const item = document.createElement("div");
             item.className = `notif-item ${esLeida ? '' : 'unread'}`;
-            item.style.cursor = "pointer";
+            
+            // Estructura segura con etiqueta <a> nativa para garantizar el salto de página
             item.innerHTML = `
                 <div class="notif-icon" style="font-size: 18px; margin-top: 2px;">🌿</div>
-                <div class="notif-detalles" style="flex: 1;">
+                <a href="${destinoUrl}" onclick="marcarUnaLeida('${idNotif}')" class="notif-detalles" style="flex: 1; text-decoration: none; color: inherit; cursor: pointer; display: block;">
                     <div class="notif-titulo-item">${notif.titulo || 'Notificación'}</div>
                     <div class="notif-texto">${notif.mensaje || notif.texto || ''}</div>
                     <div class="notif-fecha" style="font-size: 11px; color: #81c784; margin-top: 4px; font-weight: 500;">${tiempoRelativo}</div>
-                </div>
+                </a>
                 <button class="btn-eliminar-notif" title="Eliminar notificación" style="background: transparent; border: none; color: #ffffff; cursor: pointer; font-size: 18px; padding: 4px 8px; font-weight: bold; opacity: 0.7; transition: 0.2s;">&times;</button>
             `;
 
@@ -89,43 +104,9 @@ async function cargarNotificacionesSistema() {
             btnEliminar.addEventListener("mouseenter", () => { btnEliminar.style.opacity = "1"; btnEliminar.style.color = "#ef5350"; });
             btnEliminar.addEventListener("mouseleave", () => { btnEliminar.style.opacity = "0.7"; btnEliminar.style.color = "#ffffff"; });
 
-            // Clic en la tarjeta de notificación
-            item.addEventListener("click", async (e) => {
-                if (e.target.closest(".btn-eliminar-notif")) return;
-
-                e.stopPropagation();
-                
-                if (!esLeida) {
-                    await marcarUnaLeida(idNotif);
-                    item.classList.remove("unread");
-                    esLeida = true;
-                    
-                    if (notifBadge) {
-                        let badgeCount = parseInt(notifBadge.innerText) || 1;
-                        badgeCount = Math.max(0, badgeCount - 1);
-                        if (badgeCount === 0) {
-                            notifBadge.style.display = "none";
-                        } else {
-                            notifBadge.innerText = badgeCount;
-                        }
-                    }
-                }
-
-                // Redirección inteligente
-                const textoCompleto = ((notif.titulo || "") + " " + (notif.mensaje || "")).toLowerCase();
-                
-                if (textoCompleto.includes("meta") || textoCompleto.includes("abono") || textoCompleto.includes("ahorro")) {
-                    window.location.href = "metas.html";
-                } else if (textoCompleto.includes("racha") || textoCompleto.includes("avatar") || textoCompleto.includes("puerquito")) {
-                    window.location.href = "racha.html";
-                } else if (textoCompleto.includes("gasto") || textoCompleto.includes("movimiento") || textoCompleto.includes("historial")) {
-                    window.location.href = "historial.html";
-                } else if (textoCompleto.includes("semáforo") || textoCompleto.includes("economico") || textoCompleto.includes("finanzas")) {
-                    window.location.href = "semaforo.html";
-                }
-            });
-
+            // Botón para eliminar notificación de forma individual
             btnEliminar.addEventListener("click", async (e) => {
+                e.preventDefault();
                 e.stopPropagation();
                 await eliminarNotificacion(idNotif);
             });
@@ -229,7 +210,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Evitar que los clics dentro de los menús los cierren
+    // Evitar que los clics dentro de los menús los cierren abruptamente
     if (notifDropdown) notifDropdown.addEventListener("click", (e) => e.stopPropagation());
     if (dropdownMenu) dropdownMenu.addEventListener("click", (e) => e.stopPropagation());
 
