@@ -26,8 +26,8 @@
         .titulo { font-size: 20px; font-weight: bold; color: #ffffff; letter-spacing: 0.5px; }
         .logo { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; }
         .menu { display: flex; align-items: center; gap: 20px; }
-        .menu a { text-decoration: none; color: #e0e0e0; font-size: 14px; transition: 0.3s ease; white-space: nowrap; }
-        .menu a:hover { color: #81c784; }
+        .menu a.nav-link { text-decoration: none; color: #e0e0e0; font-size: 14px; transition: 0.3s ease; white-space: nowrap; }
+        .menu a.nav-link:hover { color: #81c784; }
 
         /* NOTIFICACIONES */
         .notif-wrapper { position: relative; display: flex; align-items: center; }
@@ -43,9 +43,9 @@
             display: flex; align-items: center; justify-content: center; border: 2px solid #0d0d0d;
         }
         .notif-dropdown {
-            position: absolute; right: 0; top: 50px; width: 320px; max-width: 90vw; background: rgba(18, 22, 19, 0.98);
+            position: absolute; right: 0; top: 52px; width: 320px; max-width: 90vw; background: rgba(18, 22, 19, 0.98);
             backdrop-filter: blur(15px); border-radius: 16px; border: 1px solid rgba(129, 199, 132, 0.25);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.7); display: none; flex-direction: column; z-index: 4000; overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.8); display: none; flex-direction: column; z-index: 9999; overflow: hidden;
         }
         .notif-dropdown.show { display: flex !important; }
         .notif-header {
@@ -66,15 +66,15 @@
         .notif-texto { font-size: 12px; color: #cccccc; line-height: 1.4; white-space: pre-line; word-break: break-word; }
         .notif-fecha { font-size: 10px; color: #81c784; margin-top: 4px; font-weight: 500; }
 
-        /* DROPDOWN USUARIO */
+        /* DROPDOWN USUARIO Y CONFIGURACIÓN */
         .user-menu { position: relative; display: flex; align-items: center; }
         .user-icon { width: 38px; height: 38px; border-radius: 50%; cursor: pointer; border: 1.5px solid rgba(129, 199, 132, 0.5); transition: 0.3s ease; object-fit: cover; }
         .user-icon:hover { border-color: #81c784; box-shadow: 0 0 10px rgba(129, 199, 132, 0.4); }
         .dropdown { 
-            position: absolute; right: 0; top: 50px; background: rgba(20, 20, 20, 0.98); 
+            position: absolute; right: 0; top: 52px; background: rgba(20, 20, 20, 0.98); 
             backdrop-filter: blur(10px); border-radius: 12px; border: 1px solid rgba(129, 199, 132, 0.2); 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.6); display: none; flex-direction: column; 
-            min-width: 160px; overflow: hidden; z-index: 4000; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.8); display: none; flex-direction: column; 
+            min-width: 160px; overflow: hidden; z-index: 9999; 
         }
         .dropdown a { padding: 12px 18px; text-decoration: none; color: #ffffff; font-size: 14px; transition: 0.2s ease; border-bottom: 1px solid rgba(255,255,255,0.05); display: block; }
         .dropdown a:last-child { border-bottom: none; }
@@ -140,7 +140,7 @@
         .cal-date { padding: 8px 2px; text-align: center; background: #161616; border-radius: 6px; cursor: pointer; border: 1.5px solid transparent; font-size: 12px; color: #ffffff; transition: 0.2s ease; }
         .cal-date:hover { background: rgba(129, 199, 132, 0.2); border-color: #81c784; }
         .cal-date.today { background: #2e7d32 !important; color: white; font-weight: bold; }
-        .cal-date.has-gasto { border-color: rgba(129, 199, 132, 0.4); background: rgba(46, 125, 50, 0.15); color: #81c784; font-weight: 500; }
+        .cal-date.has-gasto { border-color: rgba(129, 199, 132, 0.4); background: rgba(76, 175, 80, 0.15); color: #81c784; font-weight: 500; }
         .cal-date.selected { background: #81c784; color: #111412; font-weight: bold; }
 
         /* MODAL */
@@ -257,7 +257,7 @@
         @media (max-width: 600px) {
             .navbar { padding: 0 15px; }
             .menu { gap: 12px; }
-            .menu a { font-size: 13px; }
+            .menu a.nav-link { font-size: 13px; }
             .titulo { font-size: 18px; }
         }
     </style>
@@ -284,9 +284,9 @@
                 </div>
             </div>
 
-            <a href="menu.html">Home</a>
-            <a href="nosotros.html">Sobre nosotros</a>
-            <a href="ODS.html">ODS</a>
+            <a href="menu.html" class="nav-link">Home</a>
+            <a href="nosotros.html" class="nav-link">Sobre nosotros</a>
+            <a href="ODS.html" class="nav-link">ODS</a>
             
             <!-- MENÚ DE USUARIO Y CONFIGURACIÓN -->
             <div class="user-menu">
@@ -408,6 +408,7 @@
             const notifBtn = document.getElementById("notifBtn");
             const notifDropdown = document.getElementById("notifDropdown");
 
+            // Control robusto para abrir/cerrar menú de usuario (Configuración / Cerrar sesión)
             if (userBtn && dropdownMenu) {
                 userBtn.addEventListener("click", (e) => {
                     e.stopPropagation();
@@ -416,6 +417,7 @@
                 });
             }
 
+            // Control robusto para abrir/cerrar notificaciones
             if (notifBtn && notifDropdown) {
                 notifBtn.addEventListener("click", (e) => {
                     e.stopPropagation();
@@ -424,6 +426,7 @@
                 });
             }
 
+            // Cerrar menús al hacer clic fuera de ellos
             window.addEventListener("click", (e) => {
                 if (dropdownMenu && userBtn && !userBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
                     dropdownMenu.classList.remove("show");
@@ -760,8 +763,5 @@
             if(btnVerTodos) btnVerTodos.style.display = "inline-block";
         }
     </script>
-    
-    <!-- SCRIPT GLOBAL DE NOTIFICACIONES -->
-    <script src="global-notificaciones.js" defer></script>
 </body>
 </html>
