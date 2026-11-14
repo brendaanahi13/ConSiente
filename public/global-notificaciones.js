@@ -1,4 +1,4 @@
-// --- GLOBAL NOTIFICACIONES.JS CORREGIDO Y COMPLETO ---
+// --- GLOBAL NOTIFICACIONES.JS LIMPIO E INFALIBLE ---
 
 if (typeof window.API_URL === 'undefined') {
     window.API_URL = "";
@@ -8,7 +8,6 @@ function obtenerTokenNotif() {
     return localStorage.getItem("token");
 }
 
-// Función para formatear el tiempo de manera amigable
 function obtenerTiempoRelativo(fechaStr) {
     if (!fechaStr) return "Hace un momento";
     const fecha = new Date(fechaStr);
@@ -34,7 +33,6 @@ function obtenerTiempoRelativo(fechaStr) {
     return `Hace ${anos} ${anos === 1 ? 'año' : 'años'}`;
 }
 
-// Cargar las notificaciones y actualizar el badge y la lista
 async function cargarNotificacionesSistema() {
     const token = obtenerTokenNotif();
     if (!token) return;
@@ -60,11 +58,7 @@ async function cargarNotificacionesSistema() {
             return;
         }
 
-        notificaciones.sort((a, b) => {
-            const idA = a.id || 0;
-            const idB = b.id || 0;
-            return idB - idA;
-        });
+        notificaciones.sort((a, b) => (b.id || 0) - (a.id || 0));
 
         notificaciones.forEach(notif => {
             const idNotif = notif.id || notif._id;
@@ -75,72 +69,36 @@ async function cargarNotificacionesSistema() {
             }
 
             const tiempoRelativo = obtenerTiempoRelativo(notif.fecha);
+            
+            // Determinar la URL de destino según el texto
+            const textoCompleto = ((notif.titulo || "") + " " + (notif.mensaje || "")).toLowerCase();
+            let destinoUrl = "menu.html";
+            
+            if (textoCompleto.includes("meta") || textoCompleto.includes("abono") || textoCompleto.includes("ahorro")) {
+                destinoUrl = "metas.html";
+            } else if (textoCompleto.includes("racha") || textoCompleto.includes("avatar") || textoCompleto.includes("puerquito")) {
+                destinoUrl = "racha.html";
+            } else if (textoCompleto.includes("gasto") || textoCompleto.includes("movimiento") || textoCompleto.includes("historial")) {
+                destinoUrl = "historial.html";
+            } else if (textoCompleto.includes("semáforo") || textoCompleto.includes("economico") || textoCompleto.includes("finanzas")) {
+                destinoUrl = "semaforo.html";
+            }
 
             const item = document.createElement("div");
             item.className = `notif-item ${esLeida ? '' : 'unread'}`;
-            item.style.cursor = "pointer"; // Indica visualmente que es interactivo
             item.innerHTML = `
                 <div class="notif-icon" style="font-size: 18px; margin-top: 2px;">🌿</div>
-                <div class="notif-detalles" style="flex: 1;">
+                <a href="${destinoUrl}" class="notif-detalles" onclick="marcarUnaLeida('${idNotif}')" style="flex: 1; text-decoration: none; color: inherit; cursor: pointer; display: block;">
                     <div class="notif-titulo-item">${notif.titulo || 'Notificación'}</div>
                     <div class="notif-texto">${notif.mensaje || notif.texto || ''}</div>
                     <div class="notif-fecha" style="font-size: 11px; color: #81c784; margin-top: 4px; font-weight: 500;">${tiempoRelativo}</div>
-                </div>
-                <button class="btn-eliminar-notif" title="Eliminar notificación" style="background: transparent; border: none; color: #ffffff; cursor: pointer; font-size: 18px; padding: 4px 8px; font-weight: bold; opacity: 0.7; transition: 0.2s;">&times;</button>
+                </a>
+                <button class="btn-eliminar-notif" onclick="event.stopPropagation(); eliminarNotificacion('${idNotif}')" title="Eliminar notificación" style="background: transparent; border: none; color: #ffffff; cursor: pointer; font-size: 18px; padding: 4px 8px; font-weight: bold; opacity: 0.7; transition: 0.2s;">&times;</button>
             `;
 
             const btnEliminar = item.querySelector(".btn-eliminar-notif");
             btnEliminar.addEventListener("mouseenter", () => { btnEliminar.style.opacity = "1"; btnEliminar.style.color = "#ef5350"; });
             btnEliminar.addEventListener("mouseleave", () => { btnEliminar.style.opacity = "0.7"; btnEliminar.style.color = "#ffffff"; });
-
-            // EVENTO AL HACER CLIC EN TODA LA TARJETA
-            item.addEventListener("click", async (e) => {
-                // Si hace clic en la "X", ignoramos la redirección para que solo borre
-                if (e.target.closest(".btn-eliminar-notif")) return;
-
-                e.preventDefault();
-                e.stopPropagation();
-                
-                // 1. Marcar como leída de inmediato si no lo estaba
-                if (!esLeida) {
-                    await marcarUnaLeida(idNotif);
-                    item.classList.remove("unread");
-                    esLeida = true;
-                    
-                    if (notifBadge) {
-                        let badgeCount = parseInt(notifBadge.innerText) || 1;
-                        badgeCount = Math.max(0, badgeCount - 1);
-                        if (badgeCount === 0) {
-                            notifBadge.style.display = "none";
-                        } else {
-                            notifBadge.innerText = badgeCount;
-                        }
-                    }
-                }
-
-                // 2. Redirección inteligente según el contenido
-                const textoCompleto = ((notif.titulo || "") + " " + (notif.mensaje || "")).toLowerCase();
-                
-                if (textoCompleto.includes("meta") || textoCompleto.includes("abono") || textoCompleto.includes("ahorro")) {
-                    window.location.href = "metas.html";
-                } else if (textoCompleto.includes("racha") || textoCompleto.includes("avatar") || textoCompleto.includes("puerquito")) {
-                    window.location.href = "racha.html";
-                } else if (textoCompleto.includes("gasto") || textoCompleto.includes("movimiento") || textoCompleto.includes("historial")) {
-                    window.location.href = "historial.html";
-                } else if (textoCompleto.includes("semáforo") || textoCompleto.includes("economico") || textoCompleto.includes("finanzas")) {
-                    window.location.href = "semaforo.html";
-                } else {
-                    const dropdown = document.getElementById("notifDropdown");
-                    if (dropdown) dropdown.classList.remove("show");
-                    cargarNotificacionesSistema();
-                }
-            });
-
-            // EVENTO: Eliminar notificación individual
-            btnEliminar.addEventListener("click", async (e) => {
-                e.stopPropagation();
-                await eliminarNotificacion(idNotif);
-            });
 
             notifList.appendChild(item);
         });
