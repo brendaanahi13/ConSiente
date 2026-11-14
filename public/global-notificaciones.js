@@ -1,6 +1,5 @@
-// --- GLOBAL NOTIFICACIONES.JS COMPLETO Y OPTIMIZADO ---
+// --- GLOBAL NOTIFICACIONES.JS CORREGIDO Y COMPLETO ---
 
-// Declaración segura en el objeto global para evitar conflictos de duplicado
 if (typeof window.API_URL === 'undefined') {
     window.API_URL = "";
 }
@@ -79,9 +78,10 @@ async function cargarNotificacionesSistema() {
 
             const item = document.createElement("div");
             item.className = `notif-item ${esLeida ? '' : 'unread'}`;
+            item.style.cursor = "pointer"; // Indica visualmente que es interactivo
             item.innerHTML = `
                 <div class="notif-icon" style="font-size: 18px; margin-top: 2px;">🌿</div>
-                <div class="notif-detalles" style="cursor: pointer; flex: 1;">
+                <div class="notif-detalles" style="flex: 1;">
                     <div class="notif-titulo-item">${notif.titulo || 'Notificación'}</div>
                     <div class="notif-texto">${notif.mensaje || notif.texto || ''}</div>
                     <div class="notif-fecha" style="font-size: 11px; color: #81c784; margin-top: 4px; font-weight: 500;">${tiempoRelativo}</div>
@@ -93,11 +93,15 @@ async function cargarNotificacionesSistema() {
             btnEliminar.addEventListener("mouseenter", () => { btnEliminar.style.opacity = "1"; btnEliminar.style.color = "#ef5350"; });
             btnEliminar.addEventListener("mouseleave", () => { btnEliminar.style.opacity = "0.7"; btnEliminar.style.color = "#ffffff"; });
 
-            // EVENTO AL HACER CLIC EN LA NOTIFICACIÓN
-            const detallesDiv = item.querySelector(".notif-detalles");
-            detallesDiv.addEventListener("click", async (e) => {
+            // EVENTO AL HACER CLIC EN TODA LA TARJETA
+            item.addEventListener("click", async (e) => {
+                // Si hace clic en la "X", ignoramos la redirección para que solo borre
+                if (e.target.closest(".btn-eliminar-notif")) return;
+
+                e.preventDefault();
                 e.stopPropagation();
                 
+                // 1. Marcar como leída de inmediato si no lo estaba
                 if (!esLeida) {
                     await marcarUnaLeida(idNotif);
                     item.classList.remove("unread");
@@ -114,6 +118,7 @@ async function cargarNotificacionesSistema() {
                     }
                 }
 
+                // 2. Redirección inteligente según el contenido
                 const textoCompleto = ((notif.titulo || "") + " " + (notif.mensaje || "")).toLowerCase();
                 
                 if (textoCompleto.includes("meta") || textoCompleto.includes("abono") || textoCompleto.includes("ahorro")) {
@@ -125,6 +130,8 @@ async function cargarNotificacionesSistema() {
                 } else if (textoCompleto.includes("semáforo") || textoCompleto.includes("economico") || textoCompleto.includes("finanzas")) {
                     window.location.href = "semaforo.html";
                 } else {
+                    const dropdown = document.getElementById("notifDropdown");
+                    if (dropdown) dropdown.classList.remove("show");
                     cargarNotificacionesSistema();
                 }
             });
