@@ -548,10 +548,8 @@
                 return;
             }
 
-            // Cargar foto de perfil del usuario en el navbar
             cargarPerfilUsuario();
 
-            // Manejo de dropdowns en navbar
             const userBtn = document.getElementById("userBtn");
             const dropdownMenu = document.getElementById("dropdownMenu");
             const notifBtn = document.getElementById("notifBtn");
@@ -666,7 +664,6 @@
             const mes = fechaCalendarioActiva.getMonth();
             const anio = fechaCalendarioActiva.getFullYear();
 
-            // Sincronizar el valor del input de mes/año manual (YYYY-MM)
             const inputMes = document.getElementById("inputMesSelector");
             if (inputMes) {
                 const mesStr = String(mes + 1).padStart(2, '0');
@@ -733,21 +730,40 @@
             document.getElementById("btnVerTodos").style.display = "none";
         }
 
+        // LÓGICA ACTUALIZADA DE ELIMINACIÓN CON SOPORTE PARA METAS Y SALDO
         async function eliminarGasto(id) {
-            if (!confirm("¿Estás segura de que deseas eliminar este gasto?")) return;
+            const gasto = listaGastosGlobal.find(g => g.id === id);
+            let regresarSaldo = false;
+            let metaId = gasto ? (gasto.meta_id || gasto.metaId) : null;
+            let monto = gasto ? Number(gasto.monto || gasto.cantidad || 0) : 0;
+
+            if (metaId && metaId !== null && metaId !== 'null' && metaId !== undefined) {
+                regresarSaldo = confirm("Este movimiento pertenece a una meta. ¿Deseas regresar este dinero al saldo general al eliminarlo?");
+            } else {
+                if (!confirm("¿Estás segura de que deseas eliminar este movimiento?")) return;
+            }
 
             try {
                 const token = localStorage.getItem("token");
-                const res = await fetch(`${API_URL}/api/gastos/${id}`, {
+                const res = await fetch(`${API_URL}/api/movimientos/${id}`, {
                     method: "DELETE",
-                    headers: { "Authorization": `Bearer ${token}` }
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({ 
+                        regresarSaldo: regresarSaldo, 
+                        metaId: metaId, 
+                        monto: monto 
+                    })
                 });
 
                 if (res.ok) {
-                    alert("Gasto eliminado correctamente.");
+                    alert("Movimiento eliminado correctamente y balances actualizados.");
                     location.reload();
                 } else {
-                    alert("No se pudo eliminar el gasto.");
+                    const data = await res.json().catch(() => ({}));
+                    alert(data.error || "No se pudo eliminar el movimiento.");
                 }
             } catch (err) {
                 console.error("Error al eliminar:", err);
