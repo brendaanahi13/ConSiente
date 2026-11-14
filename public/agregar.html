@@ -97,6 +97,8 @@
             z-index: 2500;
             overflow: hidden;
         }
+        /* REGLA CORREGIDA PARA QUE ABRA LA LISTA DE NOTIFICACIONES */
+        .notif-dropdown.show { display: flex !important; }
 
         .notif-header {
             padding: 14px 18px;
@@ -125,7 +127,6 @@
             overflow-y: auto;
         }
 
-        /* CLASES GLOBALES DE INTERACCIÓN DE NOTIFICACIONES CORREGIDAS */
         .notif-item {
             padding: 14px 16px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.04);
@@ -867,7 +868,7 @@
         }
     </script>
     
-    <!-- SCRIPT GLOBAL DE NOTIFICACIONES CORREGIDO (Sin slash inicial) -->
+    <!-- SCRIPT GLOBAL DE NOTIFICACIONES -->
     <script src="global-notificaciones.js" defer></script>
 
 </body>
