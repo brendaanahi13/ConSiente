@@ -1,4 +1,4 @@
-// --- GLOBAL NOTIFICACIONES.JS (VERSIÓN DEFINITIVA Y AL 100%) ---
+// --- GLOBAL NOTIFICACIONES.JS (PROFESIONAL Y ANTIDUPLICADOS) ---
 
 if (typeof window.API_URL === 'undefined') {
     window.API_URL = "";
@@ -8,7 +8,6 @@ function obtenerTokenNotif() {
     return localStorage.getItem("token");
 }
 
-// Formatear el tiempo de manera amigable
 function obtenerTiempoRelativo(fechaStr) {
     if (!fechaStr) return "Hace un momento";
     const fecha = new Date(fechaStr);
@@ -34,7 +33,6 @@ function obtenerTiempoRelativo(fechaStr) {
     return `Hace ${anos} ${anos === 1 ? 'año' : 'anos'}`;
 }
 
-// Cargar notificaciones y actualizar badge
 async function cargarNotificacionesSistema() {
     const token = obtenerTokenNotif();
     if (!token) return;
@@ -55,14 +53,26 @@ async function cargarNotificacionesSistema() {
         let noLeidasCount = 0;
 
         if (!notificaciones || notificaciones.length === 0) {
-            notifList.innerHTML = `<div class="notif-item"><div class="notif-detalles"><div class="notif-texto" style="padding: 10px; color: #888; text-align: center;">No hay notificaciones recientes.</div></div></div>`;
+            notifList.innerHTML = `<div class="notif-item"><div class="notif-detalles"><div class="notif-texto" style="padding: 12px; color: #888; text-align: center; font-size: 13px;">No hay notificaciones recientes.</div></div></div>`;
             notifBadge.style.display = "none";
             return;
         }
 
-        notificaciones.sort((a, b) => (b.id || 0) - (a.id || 0));
-
+        // 🛡️ FILTRO INTELIGENTE: Evitar que salgan repetidas el mismo día con el mismo título
+        const unicasMap = new Map();
         notificaciones.forEach(notif => {
+            const fechaDia = notif.fecha ? notif.fecha.split('T')[0] : '';
+            const claveUnica = (notif.titulo || '').trim().toLowerCase() + '_' + fechaDia;
+            // Guardamos la más reciente o la única de ese día
+            if (!unicasMap.has(claveUnica) || (notif.id > unicasMap.get(claveUnica).id)) {
+                unicasMap.set(claveUnica, notif);
+            }
+        });
+        let notificacionesFiltradas = Array.from(unicasMap.values());
+
+        notificacionesFiltradas.sort((a, b) => (b.id || 0) - (a.id || 0));
+
+        notificacionesFiltradas.forEach(notif => {
             const idNotif = notif.id || notif._id;
             let esLeida = notif.leida === true || notif.leida === 1 || notif.leida === "1" || notif.leida === "true";
 
@@ -72,13 +82,13 @@ async function cargarNotificacionesSistema() {
 
             const tiempoRelativo = obtenerTiempoRelativo(notif.fecha);
 
-            // Redirección inteligente automática según el contenido
+            // Redirección inteligente según el contenido
             const textoCompleto = ((notif.titulo || "") + " " + (notif.mensaje || "")).toLowerCase();
-            let destinoUrl = "agregar.html"; // Por defecto si es general
+            let destinoUrl = "agregar.html";
 
             if (textoCompleto.includes("meta") || textoCompleto.includes("abono") || textoCompleto.includes("ahorro")) {
                 destinoUrl = "metas.html";
-            } else if (textoCompleto.includes("racha") || textoCompleto.includes("avatar") || textoCompleto.includes("puerquito")) {
+            } else if (textoCompleto.includes("racha") || textoCompleto.includes("avatar") || textoCompleto.includes("puerquito") || textoCompleto.includes("días de racha")) {
                 destinoUrl = "racha.html";
             } else if (textoCompleto.includes("gasto") || textoCompleto.includes("movimiento") || textoCompleto.includes("historial")) {
                 destinoUrl = "historial.html";
@@ -89,22 +99,20 @@ async function cargarNotificacionesSistema() {
             const item = document.createElement("div");
             item.className = `notif-item ${esLeida ? '' : 'unread'}`;
             
-            // Estructura segura con etiqueta <a> nativa para garantizar el salto de página
             item.innerHTML = `
-                <div class="notif-icon" style="font-size: 18px; margin-top: 2px;">🌿</div>
-                <a href="${destinoUrl}" onclick="marcarUnaLeida('${idNotif}')" class="notif-detalles" style="flex: 1; text-decoration: none; color: inherit; cursor: pointer; display: block;">
-                    <div class="notif-titulo-item">${notif.titulo || 'Notificación'}</div>
-                    <div class="notif-texto">${notif.mensaje || notif.texto || ''}</div>
+                <div class="notif-icon" style="font-size: 20px; margin-top: 2px; flex-shrink: 0;">🌿</div>
+                <a href="${destinoUrl}" onclick="marcarUnaLeida('${idNotif}')" class="notif-detalles" style="flex: 1; text-decoration: none; color: inherit; cursor: pointer; display: block; min-width: 0;">
+                    <div class="notif-titulo-item" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${notif.titulo || 'Notificación'}</div>
+                    <div class="notif-texto" style="word-break: break-word; overflow-wrap: break-word;">${notif.mensaje || notif.texto || ''}</div>
                     <div class="notif-fecha" style="font-size: 11px; color: #81c784; margin-top: 4px; font-weight: 500;">${tiempoRelativo}</div>
                 </a>
-                <button class="btn-eliminar-notif" title="Eliminar notificación" style="background: transparent; border: none; color: #ffffff; cursor: pointer; font-size: 18px; padding: 4px 8px; font-weight: bold; opacity: 0.7; transition: 0.2s;">&times;</button>
+                <button class="btn-eliminar-notif" title="Eliminar" style="background: transparent; border: none; color: #ffffff; cursor: pointer; font-size: 18px; padding: 4px 8px; font-weight: bold; opacity: 0.7; transition: 0.2s; flex-shrink: 0;">&times;</button>
             `;
 
             const btnEliminar = item.querySelector(".btn-eliminar-notif");
             btnEliminar.addEventListener("mouseenter", () => { btnEliminar.style.opacity = "1"; btnEliminar.style.color = "#ef5350"; });
             btnEliminar.addEventListener("mouseleave", () => { btnEliminar.style.opacity = "0.7"; btnEliminar.style.color = "#ffffff"; });
 
-            // Botón para eliminar notificación de forma individual
             btnEliminar.addEventListener("click", async (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -129,56 +137,40 @@ async function cargarNotificacionesSistema() {
 async function marcarUnaLeida(idNotificacion) {
     const token = obtenerTokenNotif();
     if (!token) return;
-
     try {
         await fetch(`${window.API_URL}/api/notificaciones/${idNotificacion}/leida`, {
             method: "PUT",
             headers: { "Authorization": `Bearer ${token}` }
         });
-    } catch (error) {
-        console.error("Error al marcar como leída:", error);
-    }
+    } catch (error) { console.error(error); }
 }
 
 async function eliminarNotificacion(idNotificacion) {
     const token = obtenerTokenNotif();
     if (!token) return;
-
     try {
         const res = await fetch(`${window.API_URL}/api/notificaciones/${idNotificacion}`, {
             method: "DELETE",
             headers: { "Authorization": `Bearer ${token}` }
         });
-
-        if (res.ok) {
-            cargarNotificacionesSistema();
-        }
-    } catch (error) {
-        console.error("Error al eliminar:", error);
-    }
+        if (res.ok) cargarNotificacionesSistema();
+    } catch (error) { console.error(error); }
 }
 
 async function marcarTodasLeidas() {
     const token = obtenerTokenNotif();
     if (!token) return;
-
     try {
         const res = await fetch(`${window.API_URL}/api/notificaciones/marcar-leidas`, {
             method: "PUT",
             headers: { "Authorization": `Bearer ${token}` }
         });
-
-        if (res.ok) {
-            cargarNotificacionesSistema();
-        }
-    } catch (error) {
-        console.error("Error al marcar todas como leídas:", error);
-    }
+        if (res.ok) cargarNotificacionesSistema();
+    } catch (error) { console.error(error); }
 }
 
 window.marcarTodasLeidas = marcarTodasLeidas;
 
-// Inicialización de eventos en la barra superior
 document.addEventListener("DOMContentLoaded", () => {
     const notifBtn = document.getElementById("notifBtn");
     const notifDropdown = document.getElementById("notifDropdown");
@@ -204,17 +196,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (marcarTodasBtn) {
-        marcarTodasBtn.addEventListener("click", (e) => {
+        marcarTodasBtn.addEventListener("click5" || "click", (e) => {
             e.stopPropagation();
             marcarTodasLeidas();
         });
     }
 
-    // Evitar que los clics dentro de los menús los cierren abruptamente
     if (notifDropdown) notifDropdown.addEventListener("click", (e) => e.stopPropagation());
     if (dropdownMenu) dropdownMenu.addEventListener("click", (e) => e.stopPropagation());
 
-    // Cerrar menús al hacer clic fuera
     window.addEventListener("click", () => {
         if (notifDropdown) notifDropdown.classList.remove("show");
         if (dropdownMenu) dropdownMenu.classList.remove("show");
