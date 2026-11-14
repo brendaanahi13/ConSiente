@@ -124,6 +124,22 @@
 
         .btn-edit-gasto { background: rgba(129,199,132,0.1); color: #81c784; border: none; cursor: pointer; font-size: 12px; padding: 5px 10px; border-radius: 6px; transition: 0.2s; white-space: nowrap; }
         .btn-edit-gasto:hover { background: #2e7d32; color: white; }
+        
+        /* ETIQUETA PARA REGISTROS DE METAS (BLOQUEADOS) */
+        .badge-meta-bloqueado {
+            background: rgba(129, 199, 132, 0.12);
+            color: #81c784;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            border: 1px solid rgba(129, 199, 132, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+
         .sin-datos { text-align: center; padding: 30px; color: #888; font-style: italic; }
 
         /* CALENDARIO */
@@ -505,15 +521,25 @@
 
                 const badgeClass = tipo.toLowerCase() === 'ingreso' ? 'badge-ingreso' : 'badge-gasto';
 
+                // Detectar si es un ahorro o proviene de metas
+                const categoriaLower = categoria.toLowerCase();
+                const esAhorroMeta = categoriaLower.includes("ahorro") || categoriaLower.includes("meta");
+
+                // Generar celda de acciones condicional (Bloqueada si es de metas)
+                let htmlAcciones = '';
+                if (esAhorroMeta) {
+                    htmlAcciones = `<span class="badge-meta-bloqueado" title="Gestionado desde Metas">🔒 Desde Metas</span>`;
+                } else {
+                    htmlAcciones = `<button class="btn-edit-gasto" onclick="abrirModalEditar('${id}', ${monto}, '${categoria}', '${g.fecha}')">Editar</button>`;
+                }
+
                 tbody.innerHTML += `
                     <tr>
                         <td>${categoria}</td>
                         <td><span class="badge-tipo ${badgeClass}">${tipo}</span></td>
                         <td style="font-weight: 600; color: #fff;">$${parseFloat(monto).toFixed(2)}</td>
                         <td>${fechaFormateada}</td>
-                        <td>
-                            <button class="btn-edit-gasto" onclick="abrirModalEditar('${id}', ${monto}, '${categoria}', '${g.fecha}')">Editar</button>
-                        </td>
+                        <td>${htmlAcciones}</td>
                     </tr>`;
             });
         }
@@ -584,6 +610,13 @@
         }
 
         function abrirModalEditar(id, monto, categoria, fechaRaw) {
+            // Protección adicional por si intentan abrir un registro de ahorro
+            const categoriaLower = (categoria || "").toLowerCase();
+            if (categoriaLower.includes("ahorro") || categoriaLower.includes("meta")) {
+                alert("💡 Este registro proviene de tus metas y debe administrarse directamente desde la sección de **Metas**.");
+                return;
+            }
+
             document.getElementById("editGastoId").value = id;
             document.getElementById("editMonto").value = monto;
             document.getElementById("editCategoria").value = categoria;
