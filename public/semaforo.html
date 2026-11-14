@@ -60,11 +60,12 @@
             padding: 14px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.04);
             display: flex; gap: 12px; align-items: flex-start; cursor: pointer; transition: all 0.2s ease;
         }
-        .notif-item:hover { background: rgba(46, 125, 50, 0.2); padding-left: 20px; }
+        .notif-item:hover { background: rgba(46, 125, 50, 0.2); }
         .notif-item.unread { background: rgba(129, 199, 132, 0.08); border-left: 3px solid #81c784; }
-        .notif-titulo-item { font-size: 13px; font-weight: 700; color: #81c784; margin-bottom: 2px; }
-        .notif-texto { font-size: 12px; color: #cccccc; line-height: 1.4; }
-        .notif-fecha { font-size: 10px; color: #888; margin-top: 4px; font-weight: 600; }
+        .notif-detalles { flex: 1; min-width: 0; }
+        .notif-titulo-item { font-size: 13px; font-weight: 700; color: #81c784; margin-bottom: 2px; word-break: break-word; }
+        .notif-texto { font-size: 12px; color: #cccccc; line-height: 1.4; white-space: pre-line; word-break: break-word; }
+        .notif-fecha { font-size: 10px; color: #81c784; margin-top: 4px; font-weight: 500; }
 
         /* DROPDOWN USUARIO */
         .user-menu { position: relative; display: flex; align-items: center; }
@@ -207,7 +208,16 @@
             .titulo { font-size: 18px; }
             .sidebar button { font-size: 9px; } 
             .sidebar button span { font-size: 15px; }
-            .notif-dropdown { width: calc(100vw - 30px); right: -10px; max-height: 280px; }
+            
+            /* AJUSTE RESPONSIVO PARA EL MENÚ DE NOTIFICACIONES EN MÓVIL */
+            .notif-dropdown {
+                position: fixed !important;
+                top: 70px !important;
+                left: 15px !important;
+                right: 15px !important;
+                width: auto !important;
+                max-width: none !important;
+            }
         }
     </style>
 </head>
@@ -354,31 +364,11 @@
         const API_URL = "";
 
         document.addEventListener("DOMContentLoaded", () => {
-            const userBtn = document.getElementById("userBtn");
-            const dropdownMenu = document.getElementById("dropdownMenu");
-            const notifBtn = document.getElementById("notifBtn");
-            const notifDropdown = document.getElementById("notifDropdown");
-
-            if (userBtn && dropdownMenu) {
-                userBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    if (notifDropdown) notifDropdown.classList.remove("show");
-                    dropdownMenu.classList.toggle("show");
-                };
+            const token = localStorage.getItem("token");
+            if (!token) {
+                window.location.href = "index.html";
+                return;
             }
-
-            if (notifBtn && notifDropdown) {
-                notifBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    if (dropdownMenu) dropdownMenu.classList.remove("show");
-                    notifDropdown.classList.toggle("show");
-                };
-            }
-
-            window.onclick = () => {
-                if (dropdownMenu) dropdownMenu.classList.remove("show");
-                if (notifDropdown) notifDropdown.classList.remove("show");
-            };
 
             cargarPerfilUsuario();
             cargarTodoElSemaforo();
@@ -395,7 +385,8 @@
                 if (response.ok) {
                     const perfil = await response.json();
                     if (perfil.avatar) {
-                        document.getElementById("userBtn").src = perfil.avatar;
+                        const imgUser = document.getElementById("userBtn");
+                        if (imgUser) imgUser.src = perfil.avatar.trim();
                     }
                 }
             } catch (e) {
@@ -564,6 +555,6 @@
     </script>
     
     <!-- SCRIPT GLOBAL DE NOTIFICACIONES -->
-    <script src="/global-notificaciones.js" defer></script>
+    <script src="global-notificaciones.js" defer></script>
 </body>
 </html>
