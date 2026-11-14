@@ -300,24 +300,6 @@
         .hero-img { flex: 0.4; text-align: center; }
         .hero-img img { width: 100%; max-width: 320px; border-radius: 20px; border: 2px solid #81c784; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
 
-        /* AVISO DE PRIVACIDAD DISCRETO HASTA ABAJO */
-        .footer-privacidad-main {
-            text-align: center;
-            margin-top: 20px;
-            padding-bottom: 10px;
-            width: 100%;
-        }
-        .footer-privacidad-main a {
-            color: rgba(255, 255, 255, 0.6);
-            text-decoration: none;
-            font-size: 13px;
-            font-weight: 400;
-            transition: 0.3s ease;
-        }
-        .footer-privacidad-main a:hover {
-            color: #81c784;
-        }
-
         /* DISEÑO RESPONSIVO MÓVIL (BARRA INFERIOR FLOTANTE) */
         @media (max-width: 900px) {
             .main-layout { flex-direction: column; margin-top: 65px; min-height: auto; }
@@ -497,11 +479,6 @@
                     <img src="imagenes/ods.png" alt="ODS 12">
                 </div>
             </div>
-
-            <!-- AVISO DE PRIVACIDAD DISCRETO HASTA ABAJO -->
-            <div class="footer-privacidad-main">
-                <a href="privacidadentro.html">Políticas de Privacidad</a>
-            </div>
         </div>
 
     </div>
@@ -512,10 +489,18 @@
         function cerrarSesion(){
             sessionStorage.removeItem("sesionActiva");
             localStorage.removeItem("token");
+            localStorage.removeItem("userAvatar");
             window.location.href = "index.html";
         }
 
         document.addEventListener("DOMContentLoaded", () => {
+            // Cargar avatar guardado de inmediato desde localStorage para que no parpadee o falte
+            const avatarGuardado = localStorage.getItem("userAvatar");
+            if (avatarGuardado) {
+                const imgUser = document.getElementById("userBtn");
+                if (imgUser) imgUser.src = avatarGuardado.trim();
+            }
+
             const token = localStorage.getItem("token");
             if (token) {
                 cargarPerfilUsuario();
@@ -549,8 +534,10 @@
                 if (response.ok) {
                     const perfil = await response.json();
                     if (perfil.avatar) {
+                        const rutaAvatar = perfil.avatar.trim();
+                        localStorage.setItem("userAvatar", rutaAvatar);
                         const imgUser = document.getElementById("userBtn");
-                        if (imgUser) imgUser.src = perfil.avatar.trim();
+                        if (imgUser) imgUser.src = rutaAvatar;
                     }
                 }
             } catch (e) {
