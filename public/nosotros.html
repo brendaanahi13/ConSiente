@@ -108,6 +108,8 @@
             overflow: hidden;
         }
 
+        .notif-dropdown.show { display: flex !important; }
+
         .notif-header {
             padding: 14px 18px;
             background: rgba(255, 255, 255, 0.03);
@@ -497,7 +499,6 @@
         }
 
         document.addEventListener("DOMContentLoaded", () => {
-            // Cargar avatar guardado de inmediato desde localStorage para evitar que tarde en mostrarse
             const avatarGuardado = localStorage.getItem("userAvatar");
             if (avatarGuardado) {
                 const imgUser = document.getElementById("userBtn");
@@ -519,9 +520,24 @@
                 });
             }
 
+            // Manejo del menú desplegable de notificaciones
+            const notifBtn = document.getElementById("notifBtn");
+            const notifDropdown = document.getElementById("notifDropdown");
+
+            if (notifBtn && notifDropdown) {
+                notifBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    notifDropdown.classList.toggle("show");
+                    if(dropdownMenu) dropdownMenu.classList.remove("show"); // Cierra el de usuario si está abierto
+                });
+            }
+
             window.addEventListener("click", (e) => {
                 if (dropdownMenu && userBtn && !userBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
                     dropdownMenu.classList.remove("show");
+                }
+                if (notifDropdown && notifBtn && !notifBtn.contains(e.target) && !notifDropdown.contains(e.target)) {
+                    notifDropdown.classList.remove("show");
                 }
             });
         });
@@ -549,8 +565,8 @@
         }
     </script>
     
-    <!-- SCRIPT GLOBAL DE NOTIFICACIONES -->
-    <script src="/global-notificaciones.js" defer></script>
+    <!-- SCRIPT GLOBAL DE NOTIFICACIONES (Sin diagonal inicial para evitar error 404) -->
+    <script src="global-notificaciones.js" defer></script>
 
 </body>
 </html>
