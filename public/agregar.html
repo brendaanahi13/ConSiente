@@ -39,7 +39,7 @@
         .menu a { text-decoration: none; color: #e0e0e0; font-size: 14px; transition: 0.3s ease; white-space: nowrap; }
         .menu a:hover { color: #81c784; }
 
-        /* NOTIFICACIONES PROFESIONALES Y MULTILÍNEA */
+        /* NOTIFICACIONES */
         .notif-wrapper { position: relative; display: flex; align-items: center; }
         .notif-icon-img {
             width: 38px; height: 38px; border-radius: 50%; cursor: pointer;
@@ -53,7 +53,7 @@
             display: flex; align-items: center; justify-content: center; border: 2px solid #0d0d0d;
         }
         .notif-dropdown {
-            position: absolute; right: 0; top: 52px; width: 380px; max-width: 90vw; background: rgba(18, 22, 19, 0.98);
+            position: absolute; right: 0; top: 50px; width: 340px; max-width: 90vw; background: rgba(18, 22, 19, 0.98);
             backdrop-filter: blur(15px); border-radius: 16px; border: 1px solid rgba(129, 199, 132, 0.25);
             box-shadow: 0 15px 35px rgba(0,0,0,0.7); display: none; flex-direction: column; z-index: 2500; overflow: hidden;
         }
@@ -64,7 +64,7 @@
         }
         .notif-header h4 { color: #ffffff; font-size: 14px; font-weight: 700; }
         .notif-header span { color: #81c784; font-size: 11px; cursor: pointer; font-weight: 600; }
-        .notif-list { max-height: 350px; overflow-y: auto; overflow-x: hidden; }
+        .notif-list { max-height: 320px; overflow-y: auto; overflow-x: hidden; }
         .notif-item {
             padding: 14px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.04);
             display: flex; gap: 12px; align-items: flex-start; cursor: pointer; transition: all 0.2s ease;
@@ -72,9 +72,9 @@
         .notif-item:hover { background: rgba(46, 125, 50, 0.2); }
         .notif-item.unread { background: rgba(129, 199, 132, 0.08); border-left: 3px solid #81c784; }
         .notif-detalles { flex: 1; min-width: 0; }
-        .notif-titulo-item { font-size: 13px; font-weight: 700; color: #81c784; margin-bottom: 3px; word-break: break-word; }
-        .notif-texto { font-size: 12px; color: #cccccc; line-height: 1.5; white-space: pre-line; word-break: break-word; }
-        .notif-fecha { font-size: 10px; color: #81c784; margin-top: 4px; font-weight: 500; }
+        .notif-titulo-item { font-size: 13px; font-weight: 700; color: #81c784; margin-bottom: 2px; word-break: break-word; }
+        .notif-texto { font-size: 12px; color: #cccccc; line-height: 1.4; white-space: pre-line; word-break: break-word; }
+        .notif-fecha { font-size: 10px; color: #81c784; margin-top: 4px; }
 
         /* MENÚ DE USUARIO */
         .user-menu {
@@ -507,31 +507,17 @@
 
             const userBtn = document.getElementById("userBtn");
             const dropdownMenu = document.getElementById("dropdownMenu");
-            const notifBtn = document.getElementById("notifBtn");
-            const notifDropdown = document.getElementById("notifDropdown");
 
             if (userBtn && dropdownMenu) {
                 userBtn.addEventListener("click", (e) => {
                     e.stopPropagation();
-                    if (notifDropdown) notifDropdown.classList.remove("show");
                     dropdownMenu.classList.toggle("show");
-                });
-            }
-
-            if (notifBtn && notifDropdown) {
-                notifBtn.addEventListener("click", (e) => {
-                    e.stopPropagation();
-                    if (dropdownMenu) dropdownMenu.classList.remove("show");
-                    notifDropdown.classList.toggle("show");
                 });
             }
 
             window.addEventListener("click", (e) => {
                 if (dropdownMenu && userBtn && !userBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
                     dropdownMenu.classList.remove("show");
-                }
-                if (notifDropdown && notifBtn && !notifBtn.contains(e.target) && !notifDropdown.contains(e.target)) {
-                    notifDropdown.classList.remove("show");
                 }
             });
 
@@ -692,7 +678,7 @@
         }
     </script>
     
-    <!-- SCRIPT GLOBAL DE NOTIFICACIONES -->
+    <!-- SCRIPT GLOBAL DE NOTIFICACIONES EXTERNO (Mantiene anti-duplicados, racha y multilínea intactos) -->
     <script src="global-notificaciones.js" defer></script>
 </body>
 </html>
