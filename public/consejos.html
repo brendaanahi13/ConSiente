@@ -70,10 +70,10 @@
         }
         .notif-item:hover { background: rgba(46, 125, 50, 0.2); }
         .notif-item.unread { background: rgba(129, 199, 132, 0.08); border-left: 3px solid #81c784; }
-        .notif-detalles { flex: 1; }
-        .notif-titulo-item { font-size: 13px; font-weight: 700; color: #81c784; margin-bottom: 2px; }
-        .notif-texto { font-size: 12px; color: #cccccc; line-height: 1.4; }
-        .notif-fecha { font-size: 10px; color: #777; margin-top: 4px; }
+        .notif-detalles { flex: 1; min-width: 0; }
+        .notif-titulo-item { font-size: 13px; font-weight: 700; color: #81c784; margin-bottom: 2px; word-break: break-word; }
+        .notif-texto { font-size: 12px; color: #cccccc; line-height: 1.4; white-space: pre-line; word-break: break-word; }
+        .notif-fecha { font-size: 10px; color: #81c784; margin-top: 4px; font-weight: 500; }
 
         /* MENÚ DE USUARIO */
         .user-menu {
@@ -288,7 +288,17 @@
             .titulo { font-size: 18px; }
             .sidebar button { font-size: 9px; } 
             .sidebar button span { font-size: 15px; }
-            .notif-dropdown { width: calc(100vw - 30px); right: -10px; max-height: 280px; }
+            
+            /* AJUSTE RESPONSIVO UNIFICADO PARA EL MENÚ DE NOTIFICACIONES */
+            .notif-dropdown {
+                position: fixed !important;
+                top: 70px !important;
+                left: 15px !important;
+                right: 15px !important;
+                width: auto !important;
+                max-width: none !important;
+                max-height: 75vh !important;
+            }
         }
     </style>
 </head>
