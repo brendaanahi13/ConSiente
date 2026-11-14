@@ -878,10 +878,52 @@
             });
         });
 
-        // --- CÁLCULO DE RACHA CORREGIDO Y ROBUSTO ---
+        // --- CÁLCULO DE RACHA INTELIGENTE Y CORREGIDO ---
         function calcularRachaYRenderizar(gastos, perfil) {
-            // Lectura robusta soportando tanto 'racha_dias' como 'racha'
-            let diasRacha = Number(perfil.racha_dias ?? perfil.racha ?? 0);
+            const fechasGastos = new Set();
+            if (Array.isArray(gastos)) {
+                gastos.forEach(g => {
+                    if (g.fecha) {
+                        const fechaStr = String(g.fecha).split('T')[0];
+                        fechasGastos.add(fechaStr);
+                    }
+                });
+            }
+
+            let hoy = new Date();
+            hoy.setHours(0, 0, 0, 0);
+            let hoyStr = hoy.toISOString().split('T')[0];
+
+            let rachaCalculada = 0;
+            let tieneHoy = fechasGastos.has(hoyStr);
+            
+            let ayer = new Date(hoy);
+            ayer.setDate(ayer.getDate() - 1);
+            let ayerStr = ayer.toISOString().split('T')[0];
+            let tieneAyer = fechasGastos.has(ayerStr);
+
+            if (tieneHoy || tieneAyer || fechasGastos.size > 0) {
+                let fechaActual = new Date(hoy);
+                if (!tieneHoy && tieneAyer) {
+                    fechaActual.setDate(fechaActual.getDate() - 1);
+                } else if (!tieneHoy && !tieneAyer) {
+                    rachaCalculada = Number(perfil.racha_dias ?? perfil.racha ?? 0);
+                }
+
+                if (tieneHoy || tieneAyer) {
+                    while (true) {
+                        let fStr = fechaActual.toISOString().split('T')[0];
+                        if (fechasGastos.has(fStr)) {
+                            rachaCalculada++;
+                            fechaActual.setDate(fechaActual.getDate() - 1);
+                        } else {
+                            break;
+                        }
+                    }
+                }
+            }
+
+            let diasRacha = Math.max(rachaCalculada, Number(perfil.racha_dias ?? perfil.racha ?? 0));
 
             const txtRacha = document.getElementById("txtRachaDiasHeader");
             if (txtRacha) {
@@ -891,25 +933,25 @@
             const cajasDias = document.querySelectorAll("#fuegosRachaHeader .dia-racha-box");
             cajasDias.forEach(caja => caja.classList.remove("activo"));
 
-            if (diasRacha > 0) {
-                let hoyBase = new Date();
-                const diasActivosIndices = new Set();
+            let diaSemana = hoy.getDay(); 
+            let diasDesdeLunes = (diaSemana === 0) ? 6 : diaSemana - 1;
+            let lunesActual = new Date(hoy);
+            lunesActual.setDate(hoy.getDate() - diasDesdeLunes);
 
-                // Marca los últimos días correspondientes hacia atrás (máximo 7 para la vista semanal)
-                let diasVisuales = Math.min(diasRacha, 7);
-                for (let i = 0; i < diasVisuales; i++) {
-                    let dTemp = new Date(hoyBase);
-                    dTemp.setDate(hoyBase.getDate() - i);
-                    diasActivosIndices.add(dTemp.getDay()); // 0 = Domingo, 1 = Lunes, etc.
-                }
-
-                cajasDias.forEach(caja => {
-                    const diaBoxNum = Number(caja.getAttribute("data-js-dia"));
-                    if (diasActivosIndices.has(diaBoxNum)) {
-                        caja.classList.add("activo");
+            cajasDias.forEach(caja => {
+                const diaBoxNum = Number(caja.getAttribute("data-js-dia")); 
+                
+                for (let i = 0; i <= diasDesdeLunes; i++) {
+                    let dSemana = new Date(lunesActual);
+                    dSemana.setDate(lunesActual.getDate() + i);
+                    if (dSemana.getDay() === diaBoxNum) {
+                        let fStr = dSemana.toISOString().split('T')[0];
+                        if (fechasGastos.has(fStr) || (i === diasDesdeLunes && diasRacha > 0)) {
+                            caja.classList.add("activo");
+                        }
                     }
-                });
-            }
+                }
+            });
         }
 
         document.addEventListener("DOMContentLoaded", async () => {
