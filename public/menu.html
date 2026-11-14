@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ConSiente - Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         * { margin:0; padding:0; box-sizing:border-box; font-family:"Segoe UI",sans-serif; }
@@ -15,65 +15,160 @@
             color: #ffffff;
             display: flex;
             flex-direction: column;
+            overflow-x: hidden;
         }
 
         /* NAVBAR */
         .navbar { 
-            position:fixed; 
-            top:0; 
+            position: fixed; 
+            top: 0; 
             left: 0;
-            width:100%; 
-            height:65px; 
-            background:#0d0d0d; 
-            display:flex; 
-            justify-content:space-between; 
-            align-items:center; 
-            padding:0 25px; 
-            z-index:1000; 
+            width: 100%; 
+            height: 65px; 
+            background: #0d0d0d; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 0 25px; 
+            z-index: 2000; 
             border-bottom: 1px solid rgba(129, 199, 132, 0.25); 
         }
-        .logo-nombre { display:flex; align-items:center; gap:10px; }
-        .titulo { font-size:20px; font-weight:bold; color:#ffffff; letter-spacing: 0.5px; }
-        .logo { width:30px; height: 30px; border-radius: 50%; object-fit: cover; }
-        .menu { display:flex; align-items:center; gap:25px; }
-        .menu a { text-decoration:none; color:#e0e0e0; font-size: 14px; transition: 0.3s ease; }
+        .logo-nombre { display: flex; align-items: center; gap: 10px; }
+        .titulo { font-size: 20px; font-weight: bold; color: #ffffff; letter-spacing: 0.5px; }
+        .logo { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; }
+        .menu { display: flex; align-items: center; gap: 20px; }
+        .menu a { text-decoration: none; color: #e0e0e0; font-size: 14px; transition: 0.3s ease; white-space: nowrap; }
         .menu a:hover { color: #81c784; }
 
         /* NOTIFICACIONES */
-        .notif-wrapper { position: relative; display: flex; align-items: center; }
+        .notif-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
         .notif-icon-img {
-            width: 38px; height: 38px; border-radius: 50%; cursor: pointer;
-            border: 1.5px solid rgba(129, 199, 132, 0.5); padding: 6px; object-fit: contain;
-            background: rgba(255, 255, 255, 0.05); transition: 0.3s ease;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 1.5px solid rgba(129, 199, 132, 0.5);
+            padding: 6px;
+            object-fit: contain;
+            background: rgba(255, 255, 255, 0.05);
+            transition: 0.3s ease;
         }
-        .notif-icon-img:hover { border-color: #81c784; background: rgba(129, 199, 132, 0.15); box-shadow: 0 0 10px rgba(129, 199, 132, 0.4); }
+
+        .notif-icon-img:hover {
+            border-color: #81c784;
+            background: rgba(129, 199, 132, 0.15);
+            box-shadow: 0 0 10px rgba(129, 199, 132, 0.4);
+        }
+
         .notif-badge {
-            position: absolute; top: -2px; right: -2px; background: #ef5350; color: white;
-            font-size: 10px; font-weight: 800; width: 18px; height: 18px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; border: 2px solid #0d0d0d;
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background: #ef5350;
+            color: white;
+            font-size: 10px;
+            font-weight: 800;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #0d0d0d;
         }
+
         .notif-dropdown {
-            position: absolute; right: 0; top: 50px; width: 340px; background: rgba(18, 22, 19, 0.98);
-            backdrop-filter: blur(15px); border-radius: 16px; border: 1px solid rgba(129, 199, 132, 0.25);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.7); display: none; flex-direction: column; z-index: 1200; overflow: hidden;
+            position: absolute;
+            right: 0;
+            top: 50px;
+            width: 340px;
+            max-width: 90vw;
+            background: rgba(18, 22, 19, 0.98);
+            backdrop-filter: blur(15px);
+            border-radius: 16px;
+            border: 1px solid rgba(129, 199, 132, 0.25);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.7);
+            display: none;
+            flex-direction: column;
+            z-index: 2500;
+            overflow: hidden;
         }
+
         .notif-header {
-            padding: 14px 18px; background: rgba(255, 255, 255, 0.03);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08); display: flex; justify-content: space-between; align-items: center;
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .notif-header h4 { color: #ffffff; font-size: 14px; font-weight: 700; margin: 0; }
-        .notif-header span { color: #81c784; font-size: 11px; cursor: pointer; font-weight: 600; }
-        .notif-list { max-height: 320px; overflow-y: auto; }
+
+        .notif-header h4 {
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .notif-header span {
+            color: #81c784;
+            font-size: 11px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .notif-list {
+            max-height: 320px;
+            overflow-y: auto;
+        }
+
         .notif-item {
-            padding: 14px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-            display: flex; gap: 12px; align-items: flex-start; cursor: pointer; transition: all 0.2s ease;
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            cursor: pointer;
+            transition: all 0.2s ease;
         }
-        .notif-item:hover { background: rgba(46, 125, 50, 0.2); padding-left: 20px; }
-        .notif-item.unread { background: rgba(129, 199, 132, 0.08); border-left: 3px solid #81c784; }
-        .notif-detalles { flex: 1; }
-        .notif-titulo-item { font-size: 13px; font-weight: 700; color: #81c784; margin-bottom: 2px; }
-        .notif-texto { font-size: 12px; color: #cccccc; line-height: 1.4; }
-        .notif-fecha { font-size: 10px; color: #888; margin-top: 4px; font-weight: 600; }
+
+        .notif-item:hover {
+            background: rgba(46, 125, 50, 0.2);
+            padding-left: 20px;
+        }
+
+        .notif-item.unread {
+            background: rgba(129, 199, 132, 0.08);
+            border-left: 3px solid #81c784;
+        }
+
+        .notif-detalles {
+            flex: 1;
+        }
+
+        .notif-titulo-item {
+            font-size: 13px;
+            font-weight: 700;
+            color: #81c784;
+            margin-bottom: 2px;
+        }
+
+        .notif-texto {
+            font-size: 12px;
+            color: #cccccc;
+            line-height: 1.4;
+        }
+
+        .notif-fecha {
+            font-size: 10px;
+            color: #888;
+            margin-top: 4px;
+            font-weight: 600;
+        }
 
         /* MENÚ DE USUARIO */
         .user-menu {
@@ -107,7 +202,7 @@
             flex-direction: column;
             min-width: 160px;
             overflow: hidden;
-            z-index: 1100;
+            z-index: 2500;
         }
         .dropdown a {
             padding: 12px 18px;
@@ -125,10 +220,10 @@
         }
         .dropdown.show { display: flex !important; }
 
-        /* CONTENEDOR ESTRUCTURAL */
+        /* LAYOUT GENERAL */
         .main-layout {
             display: flex;
-            margin-top: 65px; 
+            margin-top: 65px;
             min-height: calc(100vh - 65px);
             width: 100%;
         }
@@ -137,39 +232,35 @@
         .sidebar { 
             width: 280px; 
             min-width: 280px;
-            height: calc(100vh - 65px);
-            position: sticky;
-            top: 65px;
-            background:#121212; 
+            background: #121212; 
             border-right: 1px solid rgba(129, 199, 132, 0.15); 
             padding: 25px 15px;
             display: flex;
             flex-direction: column;
-            justify-content: space-between; 
-            z-index: 90;
+            justify-content: space-between;
         }
         .sidebar-menu {
             display: flex;
             flex-direction: column;
         }
         .sidebar button { 
-            width:100%; 
-            padding:16px; 
-            margin-bottom:15px; 
-            border:none; 
-            border-radius:12px; 
-            background:#1b1b1b; 
-            color:#ffffff;
-            font-size:15px; 
-            cursor:pointer; 
-            text-align:left; 
-            border-bottom:1px solid rgba(130,199,132,0.2); 
+            width: 100%; 
+            padding: 16px; 
+            margin-bottom: 15px; 
+            border: none; 
+            border-radius: 12px; 
+            background: #1b1b1b; 
+            color: #ffffff;
+            font-size: 15px; 
+            cursor: pointer; 
+            text-align: left; 
+            border-bottom: 1px solid rgba(130,199,132,0.2); 
             transition: 0.3s ease;
         }
         .sidebar button:hover, .sidebar button.btn-active { 
-            background:#1c2d20; 
+            background: #1c2d20; 
             color: #81c784;
-            border-bottom:1px solid rgba(130,199,132,0.5); 
+            border-bottom: 1px solid rgba(130,199,132,0.5); 
             padding-left: 22px;
         }
         .sidebar button.btn-active {
@@ -508,6 +599,7 @@
             .container { 
                 padding: 20px 15px 100px 15px; 
                 width: 100%; 
+                flex-direction: column;
             }
 
             .card-dashboard {
@@ -523,10 +615,10 @@
             }
             
             .sidebar { 
-                position: fixed;
-                bottom: 0;
-                top: auto;
-                left: 0;
+                position: fixed; 
+                bottom: 0; 
+                top: auto; 
+                left: 0; 
                 width: 100%; 
                 min-width: 100%; 
                 height: 72px; 
@@ -534,10 +626,10 @@
                 backdrop-filter: blur(15px);
                 border-right: none; 
                 border-top: 1px solid rgba(129, 199, 132, 0.3); 
-                padding: 0;
-                flex-direction: row;
-                justify-content: space-around;
-                align-items: center;
+                padding: 0; 
+                flex-direction: row; 
+                justify-content: space-around; 
+                align-items: center; 
                 z-index: 1000;
             }
             
@@ -558,26 +650,31 @@
                 border: none; 
                 border-radius: 0;
                 background: transparent; 
-                font-size: 12px; 
+                font-size: 10px; 
                 font-weight: 500;
                 text-align: center; 
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
-                gap: 6px;
+                gap: 3px;
                 white-space: nowrap;
                 color: #cccccc;
             }
 
             .sidebar button span {
-                font-size: 20px; 
+                font-size: 16px; 
             }
 
-            .sidebar button:hover { 
+            .sidebar button:hover, .sidebar button.btn-active { 
                 background: rgba(255, 255, 255, 0.03); 
                 color: #81c784;
                 padding-left: 2px; 
+            }
+
+            .sidebar button.btn-active {
+                color: #81c784;
+                font-weight: bold;
             }
 
             .footer-privacidad { display: none; }
@@ -588,8 +685,8 @@
             .menu { gap: 12px; }
             .menu a { font-size: 13px; }
             .titulo { font-size: 18px; }
-            .sidebar button { font-size: 10.5px; } 
-            .sidebar button span { font-size: 18px; }
+            .sidebar button { font-size: 9px; } 
+            .sidebar button span { font-size: 15px; }
         }
     </style>
 </head>
@@ -600,8 +697,8 @@
             <span class="titulo">ConSiente</span>
             <img src="imagenes/logo.png" class="logo" alt="Logo">
         </div>
+        
         <div class="menu">
-            <!-- NOTIFICACIONES -->
             <div class="notif-wrapper">
                 <img src="imagenes/notificacion.png" class="notif-icon-img" id="notifBtn" alt="Notificaciones" title="Notificaciones">
                 <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
@@ -609,7 +706,7 @@
                 <div class="notif-dropdown" id="notifDropdown">
                     <div class="notif-header">
                         <h4>Notificaciones</h4>
-                        <span onclick="marcarTodasLeidas()">Marcar leídas</span>
+                        <span id="marcarTodasLeidasBtn">Marcar leídas</span>
                     </div>
                     <div class="notif-list" id="notifList"></div>
                 </div>
@@ -623,7 +720,7 @@
                 <img src="imagenes/usuario.png" class="user-icon" id="userBtn" alt="Usuario">
                 <div class="dropdown" id="dropdownMenu">
                     <a href="config.html">Configuración</a>
-                    <a href="index.html" onclick="cerrarSesion()">Cerrar sesión</a>
+                    <a href="#" onclick="cerrarSesion()">Cerrar sesión</a>
                 </div>
             </div>
         </div>
@@ -746,10 +843,6 @@
             document.getElementById("modalBienvenida").style.display = "none";
         }
 
-        function mostrarModalBienvenida() {
-            document.getElementById("modalBienvenida").style.display = "flex";
-        }
-
         // --- GESTIÓN DE MENÚ DE USUARIO Y DROPDOWNS ---
         document.addEventListener("DOMContentLoaded", () => {
             const userBtn = document.getElementById("userBtn");
@@ -769,14 +862,9 @@
             });
         });
 
-        // --- CÁLCULO DE RACHA EXACTO Y FUEGUITOS BASADOS EN DÍAS DESDE EL ÚLTIMO ACCESO ---
+        // --- CÁLCULO DE RACHA: SIEMPRE DESDE HOY HACIA ATRÁS ---
         function calcularRachaYRenderizar(gastos, perfil) {
             let diasRacha = Number(perfil.racha_dias || 0);
-            let ultimoAcceso = perfil.ultima_actividad || perfil.fecha_actualizacion || null;
-
-            if (!ultimoAcceso && gastos && gastos.length > 0) {
-                ultimoAcceso = gastos[0].fecha || gastos[gastos.length - 1].fecha;
-            }
 
             if (diasRacha === 0 && gastos && gastos.length > 0) {
                 diasRacha = 1;
@@ -790,15 +878,12 @@
             cajasDias.forEach(caja => caja.classList.remove("activo"));
 
             if (diasRacha > 0) {
-                let fechaBase = ultimoAcceso ? new Date(ultimoAcceso) : new Date();
-                if (isNaN(fechaBase.getTime())) {
-                    fechaBase = new Date();
-                }
-
+                let hoyBase = new Date();
                 const diasActivosIndices = new Set();
+
                 for (let i = 0; i < Math.min(diasRacha, 7); i++) {
-                    let dTemp = new Date(fechaBase);
-                    dTemp.setDate(fechaBase.getDate() - i);
+                    let dTemp = new Date(hoyBase);
+                    dTemp.setDate(hoyBase.getDate() - i);
                     diasActivosIndices.add(dTemp.getDay());
                 }
 
@@ -1100,7 +1185,9 @@
             });
         }
     </script>
+    
+    <!-- SCRIPT GLOBAL DE NOTIFICACIONES -->
+    <script src="/global-notificaciones.js" defer></script>
 
-    <script src="global-notificaciones.js" defer></script>
 </body>
 </html>
