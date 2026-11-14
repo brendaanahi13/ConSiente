@@ -125,6 +125,7 @@
             overflow-y: auto;
         }
 
+        /* CLASES GLOBALES DE INTERACCIÓN DE NOTIFICACIONES CORREGIDAS */
         .notif-item {
             padding: 14px 16px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.04);
@@ -132,6 +133,8 @@
             gap: 12px;
             align-items: flex-start;
             cursor: pointer;
+            position: relative;
+            z-index: 2501;
             transition: all 0.2s ease;
         }
 
@@ -147,6 +150,8 @@
 
         .notif-detalles {
             flex: 1;
+            cursor: pointer;
+            pointer-events: auto !important;
         }
 
         .notif-titulo-item {
@@ -568,15 +573,6 @@
                 right: -10px;
                 max-height: 280px;
             }
-            .notif-item {
-    cursor: pointer;
-    position: relative;
-    z-index: 2501;
-}
-.notif-detalles {
-    cursor: pointer;
-    pointer-events: auto !important;
-}
         }
     </style>
 </head>
@@ -871,8 +867,8 @@
         }
     </script>
     
-    <!-- SCRIPT GLOBAL DE NOTIFICACIONES -->
-    <script src="/global-notificaciones.js" defer></script>
+    <!-- SCRIPT GLOBAL DE NOTIFICACIONES CORREGIDO (Sin slash inicial) -->
+    <script src="global-notificaciones.js" defer></script>
 
 </body>
 </html>
