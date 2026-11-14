@@ -125,15 +125,15 @@
         .btn-edit-gasto { background: rgba(129,199,132,0.1); color: #81c784; border: none; cursor: pointer; font-size: 12px; padding: 5px 10px; border-radius: 6px; transition: 0.2s; white-space: nowrap; }
         .btn-edit-gasto:hover { background: #2e7d32; color: white; }
         
-        /* ETIQUETA PARA REGISTROS DE METAS (BLOQUEADOS) */
+        /* ETIQUETA EN GRIS PARA REGISTROS DE METAS (BLOQUEADOS) */
         .badge-meta-bloqueado {
-            background: rgba(129, 199, 132, 0.12);
-            color: #81c784;
+            background: rgba(255, 255, 255, 0.07);
+            color: #b0b0b0;
             padding: 5px 10px;
             border-radius: 6px;
             font-size: 11px;
             font-weight: 600;
-            border: 1px solid rgba(129, 199, 132, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             display: inline-flex;
             align-items: center;
             gap: 4px;
@@ -525,10 +525,10 @@
                 const categoriaLower = categoria.toLowerCase();
                 const esAhorroMeta = categoriaLower.includes("ahorro") || categoriaLower.includes("meta");
 
-                // Generar celda de acciones condicional (Bloqueada si es de metas)
+                // Generar celda de acciones condicional (Bloqueada con etiqueta gris si es de metas)
                 let htmlAcciones = '';
                 if (esAhorroMeta) {
-                    htmlAcciones = `<span class="badge-meta-bloqueado" title="Gestionado desde Metas">🔒 Desde Metas</span>`;
+                    htmlAcciones = `<span class="badge-meta-bloqueado" title="Gestionado automáticamente desde Metas">Vinculado a Meta</span>`;
                 } else {
                     htmlAcciones = `<button class="btn-edit-gasto" onclick="abrirModalEditar('${id}', ${monto}, '${categoria}', '${g.fecha}')">Editar</button>`;
                 }
@@ -610,10 +610,9 @@
         }
 
         function abrirModalEditar(id, monto, categoria, fechaRaw) {
-            // Protección adicional por si intentan abrir un registro de ahorro
             const categoriaLower = (categoria || "").toLowerCase();
             if (categoriaLower.includes("ahorro") || categoriaLower.includes("meta")) {
-                alert("💡 Este registro proviene de tus metas y debe administrarse directamente desde la sección de **Metas**.");
+                alert(" Este registro proviene de tus metas y debe administrarse directamente desde la sección de **Metas**.");
                 return;
             }
 
@@ -678,7 +677,7 @@
             const esAhorroMeta = categoria.includes("ahorro") || categoria.includes("meta");
 
             if (esAhorroMeta) {
-                alert("💡 Para mantener tus metas perfectamente sincronizadas con la base de datos, los abonos y registros de ahorro deben administrarse directamente desde la sección de **Metas**.");
+                alert("Para mantener tus metas perfectamente sincronizadas, los abonos y registros de ahorro deben administrarse directamente desde la sección de **Metas**.");
                 cerrarModal();
                 return;
             }
