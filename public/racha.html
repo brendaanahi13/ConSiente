@@ -429,34 +429,20 @@
                 if (imgUser) imgUser.src = avatarGuardado.trim();
             }
 
-            // Manejo sincronizado del menú de usuario y notificaciones
+            // Manejo robusto del menú desplegable del usuario (Configuración / Cerrar sesión)
             const userBtn = document.getElementById("userBtn");
             const dropdownMenu = document.getElementById("dropdownMenu");
-            const notifBtn = document.getElementById("notifBtn");
-            const notifDropdown = document.getElementById("notifDropdown");
 
             if (userBtn && dropdownMenu) {
                 userBtn.addEventListener("click", (e) => {
                     e.stopPropagation();
-                    if (notifDropdown) notifDropdown.classList.remove("show");
                     dropdownMenu.classList.toggle("show");
-                });
-            }
-
-            if (notifBtn && notifDropdown) {
-                notifBtn.addEventListener("click", (e) => {
-                    e.stopPropagation();
-                    if (dropdownMenu) dropdownMenu.classList.remove("show");
-                    notifDropdown.classList.toggle("show");
                 });
             }
 
             window.addEventListener("click", (e) => {
                 if (dropdownMenu && userBtn && !userBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
                     dropdownMenu.classList.remove("show");
-                }
-                if (notifDropdown && notifBtn && !notifBtn.contains(e.target) && !notifDropdown.contains(e.target)) {
-                    notifDropdown.classList.remove("show");
                 }
             });
 
@@ -511,8 +497,9 @@
                 if (resGastos.ok) {
                     gastos = await resGastos.json();
                     
+                    // Cálculo inteligente de racha basado en la actividad real (historial de gastos)
                     if (gastos.length > 0 && diasRacha === 0) {
-                        diasRacha = 1;
+                        diasRacha = 1; // Mínimo 1 día si hay gastos registrados
                     }
                 }
 
@@ -525,6 +512,7 @@
 
             document.getElementById("txtRachaDiasHeader").innerText = diasRacha + " días";
 
+            // Sincronizar fueguitos semanales de forma robusta
             const cajasDias = document.querySelectorAll("#fuegosRachaHeader .dia-racha-box");
             cajasDias.forEach(caja => caja.classList.remove("activo"));
 
@@ -643,7 +631,7 @@
             const sufijoUser = `_${userId}`;
 
             localStorage.setItem(`reclamado_mision_${idMision}${sufijoUser}`, "true");
-            localStorage.setItem("userAvatar", iconoColor);
+            localStorage.setItem("userAvatar", iconoColor); // Guardar avatar seleccionado de inmediato
 
             try {
                 await fetch(`${API_URL}/api/premios/reclamar`, {
@@ -680,7 +668,7 @@
         }
     </script>
     
-    <!-- SCRIPT GLOBAL DE NOTIFICACIONES (Sin diagonal inicial para evitar error 404) -->
+    <!-- SCRIPT GLOBAL DE NOTIFICACIONES -->
     <script src="global-notificaciones.js" defer></script>
 </body>
 </html>
