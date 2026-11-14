@@ -548,8 +548,10 @@
                 return;
             }
 
+            // Cargar foto de perfil del usuario en el navbar
             cargarPerfilUsuario();
 
+            // Manejo de dropdowns en navbar
             const userBtn = document.getElementById("userBtn");
             const dropdownMenu = document.getElementById("dropdownMenu");
             const notifBtn = document.getElementById("notifBtn");
@@ -664,6 +666,7 @@
             const mes = fechaCalendarioActiva.getMonth();
             const anio = fechaCalendarioActiva.getFullYear();
 
+            // Sincronizar el valor del input de mes/año manual (YYYY-MM)
             const inputMes = document.getElementById("inputMesSelector");
             if (inputMes) {
                 const mesStr = String(mes + 1).padStart(2, '0');
@@ -730,7 +733,6 @@
             document.getElementById("btnVerTodos").style.display = "none";
         }
 
-        // LÓGICA ACTUALIZADA DE ELIMINACIÓN CON SOPORTE PARA METAS Y SALDO
         async function eliminarGasto(id) {
             const gasto = listaGastosGlobal.find(g => g.id === id);
             let regresarSaldo = false;
@@ -738,7 +740,7 @@
             let monto = gasto ? Number(gasto.monto || gasto.cantidad || 0) : 0;
 
             if (metaId && metaId !== null && metaId !== 'null' && metaId !== undefined) {
-                regresarSaldo = confirm("Este movimiento pertenece a una meta. ¿Deseas regresar este dinero al saldo general al eliminarlo?");
+                regresarSaldo = confirm("¿Quieres que se regrese ese dinero al saldo general o no?");
             } else {
                 if (!confirm("¿Estás segura de que deseas eliminar este movimiento?")) return;
             }
