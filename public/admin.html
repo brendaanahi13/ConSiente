@@ -35,7 +35,7 @@
             min-height: calc(100vh - 65px); width: calc(100% - 280px); 
         }
 
-        /* SIDEBAR */
+        /* SIDEBAR DESKTOP */
         .sidebar { 
             position: fixed; top: 65px; left: 0; width: 280px; height: calc(100vh - 65px); 
             background: #121212; border-right: 1px solid rgba(129, 199, 132, 0.15); padding: 25px 15px;
@@ -158,15 +158,64 @@
         .chart-box { background: rgba(22, 22, 22, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 25px; display: flex; flex-direction: column; gap: 15px; }
 
         #adminBarReturn {
-            display: none; position: fixed; bottom: 25px; right: 25px; background: #2e7d32; color: white;
+            display: none; position: fixed; bottom: 85px; right: 25px; background: #2e7d32; color: white;
             padding: 12px 22px; border-radius: 30px; box-shadow: 0 8px 25px rgba(0,0,0,0.6); z-index: 9999;
             font-weight: 600; cursor: pointer; border: 2px solid #81c784;
         }
 
+        /* MODALES ADAPTATIVOS */
+        .modal-overlay-custom {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 20000; 
+            justify-content: center; align-items: center; padding: 15px;
+        }
+        .modal-card-custom {
+            background: #161616; padding: 30px; border-radius: 18px; width: 100%; max-width: 460px; 
+            max-height: 90vh; overflow-y: auto; border: 1px solid rgba(129,199,132,0.3); 
+            display: flex; flex-direction: column; gap: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.8);
+        }
+
+        /* RESPONSIVE DESIGN AVANZADO (TABLETS Y MÓVILES ≤ 900px) */
         @media (max-width: 900px) {
-            .main-layout { margin-left: 0; width: 100%; margin-top: 65px; }
-            .sidebar { width: 100%; height: auto; position: relative; top: 0; flex-direction: row; flex-wrap: wrap; }
-            .stats-grid, .charts-grid, .form-admin-grid, .profile-grid { grid-template-columns: 1fr; }
+            .navbar { padding: 0 15px; height: 60px; }
+            .titulo { font-size: 16px; }
+            .main-layout { margin-left: 0; width: 100%; margin-top: 60px; }
+            
+            /* CONVERSIÓN DE SIDEBAR A BARRA DE NAVEGACIÓN INFERIOR FLOTANTE ESTILO APP */
+            .sidebar { 
+                position: fixed; bottom: 0; top: auto; left: 0; width: 100%; min-width: 100%; 
+                height: 72px; background: rgba(14, 14, 14, 0.97); backdrop-filter: blur(15px);
+                border-right: none; border-top: 1px solid rgba(129, 199, 132, 0.3); 
+                padding: 0; flex-direction: row; justify-content: space-around; align-items: center; z-index: 1000;
+            }
+            .sidebar-menu {
+                flex-direction: row; width: 100%; height: 100%; justify-content: space-around; align-items: center; gap: 0;
+            }
+            .sidebar button { 
+                width: auto; flex: 1; height: 100%; padding: 6px 2px; margin-bottom: 0; border: none; border-radius: 0;
+                background: transparent; font-size: 9px; font-weight: 500; text-align: center; 
+                display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+                white-space: nowrap; color: #cccccc;
+            }
+            .sidebar button span { font-size: 16px; }
+            .sidebar button:hover, .sidebar button.active { 
+                background: rgba(255, 255, 255, 0.03); color: #81c784; padding-left: 2px; font-weight: bold;
+                border-bottom: none;
+            }
+            .footer-privacidad { display: none; }
+
+            .container { padding: 20px 15px 100px 15px; gap: 20px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .charts-grid, .form-admin-grid, .profile-grid { grid-template-columns: 1fr; gap: 15px; }
+            .admin-section { padding: 20px; }
+            .admin-hero-banner { padding: 20px; }
+            
+            #adminBarReturn { bottom: 85px; right: 15px; padding: 10px 16px; font-size: 13px; }
+        }
+
+        @media (max-width: 500px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .modal-card-custom { padding: 20px; }
         }
     </style>
 </head>
@@ -186,13 +235,13 @@
 
     <div class="main-layout">
         
-        <!-- SIDEBAR (Navegación) -->
+        <!-- SIDEBAR / NAVEGACIÓN INFERIOR MÓVIL -->
         <div class="sidebar">
             <div class="sidebar-menu">
                 <button class="active" onclick="cambiarTab('generalTab')" id="btnGeneral"><span>🛡️</span> General</button>
                 <button onclick="cambiarTab('statsTab')" id="btnStats"><span>📊</span> Estadísticas</button>
-                <button onclick="cambiarTab('misionesTab')" id="btnMisiones"><span>🎁</span> Misiones & Iconos</button>
-                <button onclick="cambiarTab('ajustesTab')" id="btnAjustes"><span>⚙️</span> Ajustes & Alertas</button>
+                <button onclick="cambiarTab('misionesTab')" id="btnMisiones"><span>🎁</span> Misiones</button>
+                <button onclick="cambiarTab('ajustesTab')" id="btnAjustes"><span>⚙️</span> Ajustes</button>
                 <button onclick="cambiarVistaUsuario()"><span>👤</span> Ver Sitio</button>
             </div>
             <div class="footer-privacidad">
@@ -245,13 +294,13 @@
 
                         <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px;">
                             <h4 style="color: #fff; font-size: 14px; margin-bottom: 8px;">Resumen de Actividad</h4>
-                            <div style="display: flex; gap: 30px; font-size: 13px; color: #b0b0b0;">
+                            <div style="display: flex; flex-wrap: wrap; gap: 20px; font-size: 13px; color: #b0b0b0;">
                                 <p>Total de Metas: <strong id="detTotalMetas" style="color:#fff;">0</strong></p>
                                 <p>Movimientos Registrados: <strong id="detTotalMov" style="color:#fff;">0</strong></p>
                             </div>
                         </div>
 
-                        <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                        <div style="display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap;">
                             <button onclick="abrirModalNotificacion()" class="btn-notificar">Enviar Notificación</button>
                             <button onclick="abrirModalEdicionDesdePerfil()" class="btn-editar">Editar Perfil</button>
                         </div>
@@ -324,7 +373,7 @@
                         <div class="form-admin-grid">
                             <div class="input-box"><label>Nombre</label><input type="text" id="adminNombre" required placeholder="Ej. Moderador Juan"></div>
                             <div class="input-box"><label>Correo</label><input type="email" id="adminCorreo" required placeholder="Ej. juan@consiente.com"></div>
-                            <div class="input-box" style="grid-column: 1 / -1; max-width: 50%;"><label>Contraseña Temporal</label><input type="password" id="adminPassword" required></div>
+                            <div class="input-box" style="grid-column: 1 / -1;"><label>Contraseña Temporal</label><input type="password" id="adminPassword" required></div>
                         </div>
                         <button type="submit" class="btn-guardar">Crear Sub-Administrador</button>
                     </form>
@@ -435,8 +484,8 @@
     </div>
 
     <!-- MODAL EDITAR USUARIO -->
-    <div id="modalEditarUsuario" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:20000; justify-content:center; align-items:center;">
-        <div style="background:#161616; padding:30px; border-radius:18px; width:420px; border:1px solid rgba(129,199,132,0.3); display:flex; flex-direction:column; gap:16px; box-shadow: 0 15px 40px rgba(0,0,0,0.8);">
+    <div id="modalEditarUsuario" class="modal-overlay-custom">
+        <div class="modal-card-custom">
             <h3 style="color:#81c784;">Editar Perfil de Usuario</h3>
             <input type="hidden" id="editUserId">
             <div class="input-box"><label>Nombre:</label><input type="text" id="editUserNombre"></div>
@@ -451,8 +500,8 @@
     </div>
 
     <!-- MODAL EDITAR MISIÓN -->
-    <div id="modalEditarMision" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:20000; justify-content:center; align-items:center;">
-        <div style="background:#161616; padding:30px; border-radius:18px; width:480px; border:1px solid rgba(129,199,132,0.3); display:flex; flex-direction:column; gap:16px; box-shadow: 0 15px 40px rgba(0,0,0,0.8);">
+    <div id="modalEditarMision" class="modal-overlay-custom">
+        <div class="modal-card-custom">
             <h3 style="color:#81c784;">Editar Misión</h3>
             <input type="hidden" id="editMisionId">
             <div class="input-box"><label>Título:</label><input type="text" id="editMisionTitulo"></div>
@@ -475,8 +524,8 @@
     </div>
 
     <!-- MODAL NOTIFICACIÓN (Individual) -->
-    <div id="modalNotificacion" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:20000; justify-content:center; align-items:center;">
-        <div style="background:#161616; padding:30px; border-radius:18px; width:440px; border:1px solid rgba(66,165,245,0.3); display:flex; flex-direction:column; gap:16px; box-shadow: 0 15px 40px rgba(0,0,0,0.8);">
+    <div id="modalNotificacion" class="modal-overlay-custom">
+        <div class="modal-card-custom" style="border-color: rgba(66,165,245,0.3);">
             <h3 style="color:#42a5f5;">Enviar Notificación Directa</h3>
             <div class="input-box"><label>Título:</label><input type="text" id="notifTitulo" placeholder="Ej. Aviso importante"></div>
             <div class="input-box"><label>Mensaje:</label><textarea id="notifMensaje" rows="4" placeholder="Escribe el mensaje..."></textarea></div>
@@ -488,7 +537,6 @@
     </div>
 
     <script>
-        // USO DE RUTA RELATIVA ABIERTA (Funciona tanto en Localhost como en Render automáticamente)
         const API_URL = "";
 
         const token = localStorage.getItem("token");
@@ -897,7 +945,6 @@
             }
         }
 
-        // CRUD: Cargar misiones
         async function cargarMisionesAdmin() {
             try {
                 const res = await fetch(`${API_URL}/api/misiones`, {
@@ -1056,6 +1103,6 @@
             }
         }
     </script>
-    <script src="/admin-control.js" defer></script>
+    <script src="admin-control.js" defer></script>
 </body>
 </html>
