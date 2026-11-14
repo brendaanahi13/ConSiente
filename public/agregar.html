@@ -39,7 +39,7 @@
         .menu a { text-decoration: none; color: #e0e0e0; font-size: 14px; transition: 0.3s ease; white-space: nowrap; }
         .menu a:hover { color: #81c784; }
 
-        /* NOTIFICACIONES PROFESIONALES Y 100% RESPONSIVAS */
+        /* NOTIFICACIONES PROFESIONALES Y MULTILÍNEA */
         .notif-wrapper {
             position: relative;
             display: flex;
@@ -85,7 +85,7 @@
             position: absolute;
             right: 0;
             top: 55px;
-            width: 380px;
+            width: 400px;
             max-width: 90vw;
             background: rgba(14, 18, 15, 0.98);
             backdrop-filter: blur(16px);
@@ -128,7 +128,7 @@
         .notif-header span:hover { color: #a5d6a7; }
 
         .notif-list {
-            max-height: 360px;
+            max-height: 400px;
             overflow-y: auto;
             overflow-x: hidden;
             scrollbar-width: thin;
@@ -163,13 +163,15 @@
             min-width: 0;
             cursor: pointer;
             text-decoration: none;
+            white-space: normal !important;
         }
 
         .notif-titulo-item {
             font-size: 13px;
             font-weight: 700;
             color: #81c784;
-            margin-bottom: 3px;
+            margin-bottom: 4px;
+            white-space: normal !important;
             word-break: break-word;
             overflow-wrap: break-word;
         }
@@ -177,7 +179,8 @@
         .notif-texto {
             font-size: 12px;
             color: #d1d5db;
-            line-height: 1.45;
+            line-height: 1.5;
+            white-space: pre-line !important;
             word-break: break-word;
             overflow-wrap: break-word;
         }
@@ -185,7 +188,7 @@
         .notif-fecha {
             font-size: 11px;
             color: #81c784;
-            margin-top: 4px;
+            margin-top: 6px;
             font-weight: 500;
         }
 
