@@ -325,7 +325,7 @@
             <img src="imagenes/logo.png" class="logo" alt="Logo">
         </div>
         <div class="menu">
-            <!-- NOTIFICACIONES (Controlado por global-notificaciones.js) -->
+            <!-- NOTIFICACIONES -->
             <div class="notif-wrapper">
                 <img src="imagenes/notificacion.png" class="notif-icon-img" id="notifBtn" alt="Notificaciones" title="Notificaciones">
                 <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
@@ -429,20 +429,34 @@
                 if (imgUser) imgUser.src = avatarGuardado.trim();
             }
 
-            // Manejo exclusivo del menú desplegable del usuario (Configuración / Cerrar sesión)
+            // Manejo sincronizado del menú de usuario y notificaciones
             const userBtn = document.getElementById("userBtn");
             const dropdownMenu = document.getElementById("dropdownMenu");
+            const notifBtn = document.getElementById("notifBtn");
+            const notifDropdown = document.getElementById("notifDropdown");
 
             if (userBtn && dropdownMenu) {
                 userBtn.addEventListener("click", (e) => {
                     e.stopPropagation();
+                    if (notifDropdown) notifDropdown.classList.remove("show");
                     dropdownMenu.classList.toggle("show");
+                });
+            }
+
+            if (notifBtn && notifDropdown) {
+                notifBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    if (dropdownMenu) dropdownMenu.classList.remove("show");
+                    notifDropdown.classList.toggle("show");
                 });
             }
 
             window.addEventListener("click", (e) => {
                 if (dropdownMenu && userBtn && !userBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
                     dropdownMenu.classList.remove("show");
+                }
+                if (notifDropdown && notifBtn && !notifBtn.contains(e.target) && !notifDropdown.contains(e.target)) {
+                    notifDropdown.classList.remove("show");
                 }
             });
 
@@ -666,7 +680,7 @@
         }
     </script>
     
-    <!-- SCRIPT GLOBAL DE NOTIFICACIONES (Con la ruta correcta con /) -->
-    <script src="/global-notificaciones.js" defer></script>
+    <!-- SCRIPT GLOBAL DE NOTIFICACIONES (Sin diagonal inicial para evitar error 404) -->
+    <script src="global-notificaciones.js" defer></script>
 </body>
 </html>
