@@ -372,7 +372,16 @@
             .menu { gap: 12px; }
             .menu a { font-size: 13px; }
             .titulo { font-size: 18px; }
-            .notif-dropdown { width: calc(100vw - 30px); right: -10px; max-height: 280px; }
+            
+            /* AJUSTE RESPONSIVO PARA EL MENÚ DE NOTIFICACIONES EN MÓVIL */
+            .notif-dropdown {
+                position: fixed !important;
+                top: 70px !important;
+                left: 15px !important;
+                right: 15px !important;
+                width: auto !important;
+                max-width: none !important;
+            }
         }
     </style>
 </head>
