@@ -706,6 +706,15 @@
         }
 
         document.addEventListener("DOMContentLoaded", () => {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                window.location.href = "index.html";
+                return;
+            }
+
+            // Cargar la foto de perfil personalizada del usuario
+            cargarPerfilUsuario();
+
             const inputFecha = document.getElementById('fechaGasto');
             const hoy = new Date();
             
@@ -719,6 +728,26 @@
             
             renderizarGrafica();
         });
+
+        async function cargarPerfilUsuario() {
+            const token = localStorage.getItem("token");
+            if (!token) return;
+
+            try {
+                const response = await fetch(`${API_URL}/api/perfil`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    const perfil = await response.json();
+                    if (perfil.avatar) {
+                        const imgUser = document.getElementById("userBtn");
+                        if (imgUser) imgUser.src = perfil.avatar.trim();
+                    }
+                }
+            } catch (e) {
+                console.error("Error al cargar foto de perfil:", e);
+            }
+        }
 
         async function renderizarGrafica() {
             try {
