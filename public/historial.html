@@ -66,8 +66,8 @@
         .notif-texto { font-size: 12px; color: #cccccc; line-height: 1.4; white-space: pre-line; word-break: break-word; }
         .notif-fecha { font-size: 10px; color: #81c784; margin-top: 4px; font-weight: 500; }
 
-        /* DROPDOWN USUARIO Y CONFIGURACIÓN */
-        .user-menu { position: relative; display: flex; align-items: center; }
+        /* MENÚ USUARIO Y CONFIGURACIÓN */
+        .user-menu { position: relative; display: flex; align-items: center; cursor: pointer; }
         .user-icon { width: 38px; height: 38px; border-radius: 50%; cursor: pointer; border: 1.5px solid rgba(129, 199, 132, 0.5); transition: 0.3s ease; object-fit: cover; }
         .user-icon:hover { border-color: #81c784; box-shadow: 0 0 10px rgba(129, 199, 132, 0.4); }
         .dropdown { 
@@ -221,9 +221,7 @@
                 color: #cccccc; 
             }
 
-            .sidebar button span { 
-                font-size: 16px; 
-            }
+            .sidebar button span { font-size: 16px; }
 
             .sidebar button:hover, .sidebar button.active { 
                 background: rgba(255, 255, 255, 0.03); 
@@ -288,8 +286,8 @@
             <a href="nosotros.html" class="nav-link">Sobre nosotros</a>
             <a href="ODS.html" class="nav-link">ODS</a>
             
-            <!-- MENÚ DE USUARIO Y CONFIGURACIÓN -->
-            <div class="user-menu">
+            <!-- MENÚ DE USUARIO CON TOGGLE DIRECTO -->
+            <div class="user-menu" onclick="toggleUserMenu(event)">
                 <img src="imagenes/usuario.png" class="user-icon" id="userBtn" alt="Usuario">
                 <div class="dropdown" id="dropdownMenu">
                     <a href="config.html">Configuración</a>
@@ -346,7 +344,7 @@
                     </div>
                 </div>
 
-                <!-- CAJA DEL CALENDario -->
+                <!-- CAJA DEL CALENDARIO -->
                 <div class="box box-calendario">
                     <div class="cal-header">
                         <h3 id="calMesAnio">Calendario</h3>
@@ -396,6 +394,17 @@
         let todosLosGastos = [];
         let fechaActualVista = new Date();
 
+        // Control limpio del menú de usuario y configuración
+        function toggleUserMenu(e) {
+            e.stopPropagation();
+            const dropdownMenu = document.getElementById("dropdownMenu");
+            const notifDropdown = document.getElementById("notifDropdown");
+            if (notifDropdown) notifDropdown.classList.remove("show");
+            if (dropdownMenu) {
+                dropdownMenu.classList.toggle("show");
+            }
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
             const token = localStorage.getItem("token");
             if (!token) {
@@ -403,38 +412,16 @@
                 return;
             }
 
-            const userBtn = document.getElementById("userBtn");
-            const dropdownMenu = document.getElementById("dropdownMenu");
-            const notifBtn = document.getElementById("notifBtn");
-            const notifDropdown = document.getElementById("notifDropdown");
-
-            if (userBtn && dropdownMenu) {
-                userBtn.addEventListener("click", (e) => {
-                    e.stopPropagation();
-                    if (notifDropdown) notifDropdown.classList.remove("show");
-                    dropdownMenu.classList.toggle("show");
-                });
-            }
-
-            if (notifBtn && notifDropdown) {
-                notifBtn.addEventListener("click", (e) => {
-                    e.stopPropagation();
-                    if (dropdownMenu) dropdownMenu.classList.remove("show");
-                    notifDropdown.classList.toggle("show");
-                });
-            }
-
+            // Cerrar menús al hacer clic fuera
             window.addEventListener("click", (e) => {
-                if (dropdownMenu && userBtn && !userBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                const dropdownMenu = document.getElementById("dropdownMenu");
+                const userMenu = document.querySelector(".user-menu");
+                if (dropdownMenu && userMenu && !userMenu.contains(e.target)) {
                     dropdownMenu.classList.remove("show");
-                }
-                if (notifDropdown && notifBtn && !notifBtn.contains(e.target) && !notifDropdown.contains(e.target)) {
-                    notifDropdown.classList.remove("show");
                 }
             });
 
             cargarPerfilUsuario();
-            cargarNotificacionesLocales();
             cargarDatos();
         });
 
@@ -444,7 +431,11 @@
 
             try {
                 const response = await fetch(`${API_URL}/api/perfil`, {
-                    headers: { "Authorization": `Bearer ${token}` }
+                    headers: { 
+                        "Authorization": `Bearer ${token}`,
+                        "Cache-Control": "no-cache"
+                    },
+                    cache: "no-store"
                 });
                 if (response.ok) {
                     const perfil = await response.json();
@@ -458,54 +449,6 @@
             }
         }
 
-        async function cargarNotificacionesLocales() {
-            const token = localStorage.getItem("token");
-            if (!token) return;
-
-            try {
-                const res = await fetch(`${API_URL}/api/notificaciones`, {
-                    headers: { "Authorization": `Bearer ${token}` }
-                });
-                if (res.ok) {
-                    const notificaciones = await res.json();
-                    const lista = document.getElementById("notifList");
-                    const badge = document.getElementById("notifBadge");
-                    if (!lista) return;
-                    
-                    lista.innerHTML = "";
-                    let noLeidas = 0;
-
-                    if (notificaciones.length === 0) {
-                        lista.innerHTML = `<div style="padding: 20px; text-align: center; color: #888; font-size: 13px;">No hay notificaciones</div>`;
-                    } else {
-                        notificaciones.forEach(n => {
-                            if (!n.leida) noLeidas++;
-                            lista.innerHTML += `
-                                <div class="notif-item ${n.leida ? '' : 'unread'}">
-                                    <div class="notif-detalles">
-                                        <div class="notif-titulo-item">${n.titulo}</div>
-                                        <div class="notif-texto">${n.mensaje}</div>
-                                        <div class="notif-fecha">${n.fecha || ''}</div>
-                                    </div>
-                                </div>
-                            `;
-                        });
-                    }
-
-                    if (badge) {
-                        if (noLeidas > 0) {
-                            badge.style.display = "flex";
-                            badge.innerText = noLeidas;
-                        } else {
-                            badge.style.display = "none";
-                        }
-                    }
-                }
-            } catch (e) {
-                console.error("Error al cargar notificaciones:", e);
-            }
-        }
-
         function cerrarSesion(){
             localStorage.clear();
             sessionStorage.clear();
@@ -516,7 +459,11 @@
             const token = localStorage.getItem("token");
             try {
                 const response = await fetch(`${API_URL}/api/lista-gastos`, {
-                    headers: { "Authorization": `Bearer ${token}` }
+                    headers: { 
+                        "Authorization": `Bearer ${token}`,
+                        "Cache-Control": "no-cache"
+                    },
+                    cache: "no-store"
                 });
                 if (response.ok) {
                     todosLosGastos = await response.json();
@@ -697,7 +644,6 @@
             const categoria = (gasto.categoria || "").toLowerCase();
             const esAhorroMeta = categoria.includes("ahorro") || categoria.includes("meta");
 
-            // SEGURIDAD: Evita desincronizar la BD ya que el servidor actual no procesa borrados de metas desde el historial
             if (esAhorroMeta) {
                 alert("💡 Para mantener tus metas perfectamente sincronizadas con la base de datos, los abonos y registros de ahorro deben administrarse directamente desde la sección de **Metas**.");
                 cerrarModal();
