@@ -19,15 +19,15 @@
         /* NAVBAR */
         .navbar { 
             position: fixed; top: 0; left: 0; width: 100%; height: 65px; background: #0d0d0d; 
-            display: flex; justify-content: space-between; align-items: center; padding: 0 20px; 
+            display: flex; justify-content: space-between; align-items: center; padding: 0 25px; 
             z-index: 2000; border-bottom: 1px solid rgba(129, 199, 132, 0.25); 
         }
-        .logo-nombre { display: flex; align-items: center; gap: 8px; }
-        .titulo { font-size: 18px; font-weight: bold; color: #ffffff; letter-spacing: 0.5px; }
+        .logo-nombre { display: flex; align-items: center; gap: 10px; }
+        .titulo { font-size: 20px; font-weight: bold; color: #ffffff; letter-spacing: 0.5px; }
         .logo { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; }
-        .menu { display: flex; align-items: center; gap: 15px; }
-        .menu a.nav-link { text-decoration: none; color: #e0e0e0; font-size: 14px; transition: 0.3s ease; white-space: nowrap; }
-        .menu a.nav-link:hover { color: #81c784; }
+        .menu { display: flex; align-items: center; gap: 20px; }
+        .menu a { text-decoration: none; color: #e0e0e0; font-size: 14px; transition: 0.3s ease; white-space: nowrap; }
+        .menu a:hover { color: #81c784; }
 
         /* NOTIFICACIONES */
         .notif-wrapper { position: relative; display: flex; align-items: center; }
@@ -45,7 +45,7 @@
         .notif-dropdown {
             position: absolute; right: 0; top: 50px; width: 320px; max-width: 90vw; background: rgba(18, 22, 19, 0.98);
             backdrop-filter: blur(15px); border-radius: 16px; border: 1px solid rgba(129, 199, 132, 0.25);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.8); display: none; flex-direction: column; z-index: 4000; overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.7); display: none; flex-direction: column; z-index: 4000; overflow: hidden;
         }
         .notif-dropdown.show { display: flex !important; }
         .notif-header {
@@ -73,7 +73,7 @@
         .dropdown { 
             position: absolute; right: 0; top: 50px; background: rgba(20, 20, 20, 0.98); 
             backdrop-filter: blur(10px); border-radius: 12px; border: 1px solid rgba(129, 199, 132, 0.2); 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.8); display: none; flex-direction: column; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6); display: none; flex-direction: column; 
             min-width: 160px; overflow: hidden; z-index: 4000; 
         }
         .dropdown a { padding: 12px 18px; text-decoration: none; color: #ffffff; font-size: 14px; transition: 0.2s ease; border-bottom: 1px solid rgba(255,255,255,0.05); display: block; }
@@ -84,7 +84,7 @@
         /* LAYOUT GENERAL */
         .main-layout { display: flex; margin-top: 65px; min-height: calc(100vh - 65px); width: 100%; }
 
-        /* SIDEBAR / MENÚ LATERAL */
+        /* SIDEBAR */
         .sidebar { width: 280px; min-width: 280px; background: #121212; border-right: 1px solid rgba(129, 199, 132, 0.15); padding: 25px 15px; display: flex; flex-direction: column; justify-content: space-between; }
         .sidebar-menu { display: flex; flex-direction: column; }
         .sidebar button { width: 100%; padding: 16px; margin-bottom: 15px; border: none; border-radius: 12px; background: #1b1b1b; color: #ffffff; font-size: 15px; cursor: pointer; text-align: left; border-bottom: 1px solid rgba(130,199,132,0.2); transition: 0.3s ease; display: flex; align-items: center; gap: 10px; }
@@ -96,10 +96,10 @@
         .footer-privacidad a:hover { color: #81c784; }
 
         /* CONTENEDOR SCROLL */
-        .scrollable-content { flex: 1; height: calc(100vh - 65px); overflow-y: auto; padding: 25px; display: flex; flex-direction: column; gap: 25px; width: 100%; }
+        .scrollable-content { flex: 1; height: calc(100vh - 65px); overflow-y: auto; padding: 30px; display: flex; flex-direction: column; gap: 30px; width: 100%; }
         .content-row { display: flex; gap: 25px; max-width: 1300px; width: 100%; margin: 0 auto; align-items: flex-start; }
         
-        .box { background: rgba(22, 22, 22, 0.85); backdrop-filter: blur(10px); border-radius: 20px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 100%; }
+        .box { background: rgba(22, 22, 22, 0.85); backdrop-filter: blur(10px); border-radius: 20px; padding: 25px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 100%; }
         .box-tabla { flex: 1.4; }
         .box-calendario { flex: 1; }
 
@@ -107,22 +107,22 @@
         h2 { font-size: clamp(18px, 2.5vw, 22px); margin-bottom: 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
 
         /* HEADER TABLA & BOTÓN */
-        .header-tabla-acciones { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; width: 100%; }
+        .header-tabla-acciones { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; width: 100%; }
         .btn-ver-todo { background: rgba(46, 125, 50, 0.25); border: 1px solid rgba(129, 199, 132, 0.4); color: #81c784; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; transition: 0.2s; display: none; }
         .btn-ver-todo:hover { background: #2e7d32; color: #fff; }
 
-        /* TABLA DE MOVIMIENTOS */
-        .table-responsive { width: 100%; overflow-x: auto; max-height: 480px; overflow-y: auto; }
-        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 500px; }
-        th { color: #81c784; padding: 12px 10px; font-size: 12px; text-transform: uppercase; border-bottom: 2px solid rgba(129,199,132,0.3); position: sticky; top: 0; background: #161616; z-index: 10; }
-        td { padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #e0e0e0; font-size: 13px; }
+        /* TABLA ADAPTATIVA Y COMPLETA */
+        .table-responsive { width: 100%; overflow-x: auto; max-height: 480px; overflow-y: auto; -webkit-overflow-scrolling: touch; border-radius: 10px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 480px; }
+        th { color: #81c784; padding: 12px 10px; font-size: 12px; text-transform: uppercase; border-bottom: 2px solid rgba(129,199,132,0.3); position: sticky; top: 0; background: #161616; z-index: 10; white-space: nowrap; }
+        td { padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #e0e0e0; font-size: 13px; word-break: break-word; }
         tr:hover td { background: rgba(129,199,132,0.04); color: #ffffff; }
 
-        .badge-tipo { padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; display: inline-block; }
+        .badge-tipo { padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; display: inline-block; white-space: nowrap; }
         .badge-gasto { background: rgba(239, 83, 80, 0.15); color: #ef5350; border: 1px solid rgba(239, 83, 80, 0.3); }
         .badge-ingreso { background: rgba(46, 125, 50, 0.2); color: #81c784; border: 1px solid rgba(129, 199, 132, 0.3); }
 
-        .btn-edit-gasto { background: rgba(129,199,132,0.1); color: #81c784; border: none; cursor: pointer; font-size: 12px; padding: 5px 10px; border-radius: 6px; transition: 0.2s; }
+        .btn-edit-gasto { background: rgba(129,199,132,0.1); color: #81c784; border: none; cursor: pointer; font-size: 12px; padding: 5px 10px; border-radius: 6px; transition: 0.2s; white-space: nowrap; }
         .btn-edit-gasto:hover { background: #2e7d32; color: white; }
         .sin-datos { text-align: center; padding: 30px; color: #888; font-style: italic; }
 
@@ -162,14 +162,11 @@
 
         /* DISEÑO RESPONSIVO MÓVIL (BARRA INFERIOR FLOTANTE) */
         @media (max-width: 900px) {
-            .navbar { padding: 0 15px; height: 60px; }
-            .menu a.nav-link { display: none; } /* Ocultar enlaces de texto en móvil para evitar amontonamiento */
-            
-            .main-layout { flex-direction: column; margin-top: 60px; min-height: auto; }
+            .main-layout { flex-direction: column; margin-top: 65px; min-height: auto; }
             
             .scrollable-content { 
                 height: auto; 
-                padding: 15px 12px 90px 12px; 
+                padding: 15px 12px 100px 12px; 
                 overflow-y: visible; 
             }
 
@@ -183,7 +180,7 @@
                 left: 0; 
                 width: 100%; 
                 min-width: 100%; 
-                height: 70px; 
+                height: 72px; 
                 background: rgba(14, 14, 14, 0.98); 
                 backdrop-filter: blur(15px);
                 border-right: none; 
@@ -207,19 +204,19 @@
                 width: auto; 
                 flex: 1; 
                 height: 100%; 
-                padding: 6px 2px; 
+                padding: 10px 2px; 
                 margin-bottom: 0; 
                 border: none; 
                 border-radius: 0; 
                 background: transparent; 
-                font-size: 9px; 
+                font-size: 10px; 
                 font-weight: 500; 
                 text-align: center; 
                 display: flex; 
                 flex-direction: column; 
                 align-items: center; 
                 justify-content: center; 
-                gap: 2px; 
+                gap: 3px; 
                 white-space: nowrap; 
                 color: #cccccc; 
             }
@@ -243,7 +240,7 @@
 
             .notif-dropdown {
                 position: fixed !important;
-                top: 65px !important;
+                top: 70px !important;
                 left: 10px !important;
                 right: 10px !important;
                 width: auto !important;
@@ -252,9 +249,16 @@
             
             .dropdown {
                 position: fixed !important;
-                top: 65px !important;
+                top: 70px !important;
                 right: 10px !important;
             }
+        }
+
+        @media (max-width: 600px) {
+            .navbar { padding: 0 15px; }
+            .menu { gap: 12px; }
+            .menu a { font-size: 13px; }
+            .titulo { font-size: 18px; }
         }
     </style>
 </head>
@@ -280,9 +284,9 @@
                 </div>
             </div>
 
-            <a href="menu.html" class="nav-link">Home</a>
-            <a href="nosotros.html" class="nav-link">Sobre nosotros</a>
-            <a href="ODS.html" class="nav-link">ODS</a>
+            <a href="menu.html">Home</a>
+            <a href="nosotros.html">Sobre nosotros</a>
+            <a href="ODS.html">ODS</a>
             
             <!-- MENÚ DE USUARIO Y CONFIGURACIÓN -->
             <div class="user-menu">
@@ -404,7 +408,6 @@
             const notifBtn = document.getElementById("notifBtn");
             const notifDropdown = document.getElementById("notifDropdown");
 
-            // Control robusto para abrir/cerrar menú de usuario (Configuración / Cerrar sesión)
             if (userBtn && dropdownMenu) {
                 userBtn.addEventListener("click", (e) => {
                     e.stopPropagation();
@@ -413,7 +416,6 @@
                 });
             }
 
-            // Control robusto para abrir/cerrar notificaciones
             if (notifBtn && notifDropdown) {
                 notifBtn.addEventListener("click", (e) => {
                     e.stopPropagation();
@@ -422,7 +424,6 @@
                 });
             }
 
-            // Cerrar menús al hacer clic fuera
             window.addEventListener("click", (e) => {
                 if (dropdownMenu && userBtn && !userBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
                     dropdownMenu.classList.remove("show");
@@ -759,5 +760,8 @@
             if(btnVerTodos) btnVerTodos.style.display = "inline-block";
         }
     </script>
+    
+    <!-- SCRIPT GLOBAL DE NOTIFICACIONES -->
+    <script src="global-notificaciones.js" defer></script>
 </body>
 </html>
