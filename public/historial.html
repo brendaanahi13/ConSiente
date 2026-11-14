@@ -410,12 +410,12 @@
             <p class="texto-eliminar" id="textoEliminarGastoAhorro">Este movimiento está relacionado con un ahorro o meta.</p>
             <p style="color:#81c784;font-weight:700;margin-bottom:8px;">¿Qué deseas hacer con el dinero?</p>
             <button class="opcion-eliminar" onclick="ejecutarEliminarGastoAhorro(true)">
-                Devolver el dinero al saldo general
-                <small>Se reintegra el monto a tu saldo disponible y se elimina el registro.</small>
+                Devolver el dinero al saldo general y descontar de la meta
+                <small>Se reintegra el monto a tu saldo disponible, se descuenta de los ahorros de la meta y se elimina el registro.</small>
             </button>
             <button class="opcion-eliminar" onclick="ejecutarEliminarGastoAhorro(false)">
-                No devolver el dinero
-                <small>Se elimina el movimiento sin modificar tu saldo general.</small>
+                No devolver al saldo general (solo descontar de la meta)
+                <small>Se descuenta el monto de la meta y se elimina el movimiento sin modificar tu saldo general.</small>
             </button>
             <div style="margin-top:16px;">
                 <button class="btn-modal-cancel" style="width:100%;" onclick="cerrarModalEliminarGastoAhorro()">Cancelar</button>
@@ -426,6 +426,7 @@
     <script>
         const API_URL = "";
         let todosLosGastos = [];
+        let listaMetasCache = [];
         let fechaActualVista = new Date();
         let gastoPendienteEliminar = null;
 
@@ -468,6 +469,7 @@
 
             cargarPerfilUsuario();
             cargarNotificacionesLocales();
+            cargarMetasCache();
             cargarDatos();
         });
 
@@ -488,6 +490,21 @@
                 }
             } catch (e) {
                 console.error("Error al cargar foto de perfil:", e);
+            }
+        }
+
+        async function cargarMetasCache() {
+            const token = localStorage.getItem("token");
+            if (!token) return;
+            try {
+                const res = await fetch(`${API_URL}/api/metas`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    listaMetasCache = await res.json();
+                }
+            } catch (e) {
+                console.error("Error cargando caché de metas:", e);
             }
         }
 
@@ -728,8 +745,8 @@
             }
 
             const categoria = (gasto.categoria || "").toLowerCase();
-            const metaId = gasto.meta_id || gasto.metaId;
-            const esAhorroMeta = categoria.includes("ahorro") || categoria.includes("meta") || (metaId && metaId !== null && metaId !== 'null' && metaId !== undefined);
+            const metaId = gasto.meta_id || gasto.metaId || gasto.id_meta;
+            const esAhorroMeta = categoria.includes("ahorro") || categoria.includes("meta") || metaId;
 
             if (esAhorroMeta) {
                 cerrarModal();
@@ -752,8 +769,17 @@
         async function ejecutarEliminarGastoAhorro(regresarSaldo) {
             if (!gastoPendienteEliminar) return;
             const id = gastoPendienteEliminar.id || gastoPendienteEliminar._id;
-            const metaId = gastoPendienteEliminar.meta_id || gastoPendienteEliminar.metaId || null;
+            let metaId = gastoPendienteEliminar.meta_id || gastoPendienteEliminar.metaId || gastoPendienteEliminar.id_meta || null;
             const monto = Number(gastoPendienteEliminar.monto || gastoPendienteEliminar.cantidad || 0);
+            const categoria = (gastoPendienteEliminar.categoria || "").toLowerCase();
+
+            // Si no tiene metaId pero la categoría coincide con alguna meta cargada, la resolvemos
+            if (!metaId && listaMetasCache.length > 0) {
+                const metaEncontrada = listaMetasCache.find(m => categoria.includes(m.nombre.toLowerCase()));
+                if (metaEncontrada) {
+                    metaId = metaEncontrada.id || metaEncontrada._id;
+                }
+            }
 
             cerrarModalEliminarGastoAhorro();
             await ejecutarEliminarGastoAPI(id, regresarSaldo, metaId, monto);
@@ -778,6 +804,7 @@
                 if(response.ok) {
                     alert("Movimiento eliminado correctamente.");
                     cerrarModal();
+                    cargarMetasCache();
                     cargarDatos(); 
                 } else {
                     const data = await response.json().catch(() => ({}));
@@ -824,5 +851,8 @@
             if(btnVerTodos) btnVerTodos.style.display = "inline-block";
         }
     </script>
+    
+    <!-- SCRIPT GLOBAL DE NOTIFICACIONES -->
+    <script src="global-notificaciones.js" defer></script>
 </body>
 </html>
