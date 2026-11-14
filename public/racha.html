@@ -61,7 +61,7 @@
         .notif-fecha { font-size: 10px; color: #81c784; margin-top: 4px; font-weight: 500; }
 
         /* USUARIO DROPDOWN */
-        .user-menu { position: relative; display: flex; align-items: center; }
+        .user-menu { position: relative; display: flex; align-items: center; cursor: pointer; }
         .user-icon { width: 38px; height: 38px; border-radius: 50%; cursor: pointer; border: 1.5px solid rgba(129, 199, 132, 0.5); transition: 0.3s ease; object-fit: cover; }
         .user-icon:hover { border-color: #81c784; box-shadow: 0 0 10px rgba(129, 199, 132, 0.4); }
         .dropdown {
@@ -343,8 +343,8 @@
             <a href="nosotros.html">Sobre nosotros</a>
             <a href="ODS.html">ODS</a>
             
-            <!-- MENÚ DE USUARIO -->
-            <div class="user-menu">
+            <!-- MENÚ DE USUARIO (Con función onclick directa para asegurar apertura) -->
+            <div class="user-menu" onclick="toggleUserMenu(event)">
                 <img src="imagenes/usuario.png" class="user-icon" id="userBtn" alt="Usuario">
                 <div class="dropdown" id="dropdownMenu">
                     <a href="config.html">Configuración</a>
@@ -421,6 +421,17 @@
             window.location.href = "index.html";
         }
 
+        // Función directa y segura para abrir/cerrar el menú de usuario al hacer clic en el avatar
+        function toggleUserMenu(e) {
+            e.stopPropagation();
+            const dropdownMenu = document.getElementById("dropdownMenu");
+            const notifDropdown = document.getElementById("notifDropdown");
+            if (notifDropdown) notifDropdown.classList.remove("show");
+            if (dropdownMenu) {
+                dropdownMenu.classList.toggle("show");
+            }
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
             // Cargar avatar inmediato desde localStorage si existe
             const avatarGuardado = localStorage.getItem("userAvatar");
@@ -429,19 +440,11 @@
                 if (imgUser) imgUser.src = avatarGuardado.trim();
             }
 
-            // Manejo robusto del menú desplegable del usuario (Configuración / Cerrar sesión)
-            const userBtn = document.getElementById("userBtn");
-            const dropdownMenu = document.getElementById("dropdownMenu");
-
-            if (userBtn && dropdownMenu) {
-                userBtn.addEventListener("click", (e) => {
-                    e.stopPropagation();
-                    dropdownMenu.classList.toggle("show");
-                });
-            }
-
+            // Cerrar menú de usuario al hacer clic fuera de él
             window.addEventListener("click", (e) => {
-                if (dropdownMenu && userBtn && !userBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                const dropdownMenu = document.getElementById("dropdownMenu");
+                const userMenu = document.querySelector(".user-menu");
+                if (dropdownMenu && userMenu && !userMenu.contains(e.target)) {
                     dropdownMenu.classList.remove("show");
                 }
             });
@@ -497,9 +500,8 @@
                 if (resGastos.ok) {
                     gastos = await resGastos.json();
                     
-                    // Cálculo inteligente de racha basado en la actividad real (historial de gastos)
                     if (gastos.length > 0 && diasRacha === 0) {
-                        diasRacha = 1; // Mínimo 1 día si hay gastos registrados
+                        diasRacha = 1;
                     }
                 }
 
@@ -512,7 +514,6 @@
 
             document.getElementById("txtRachaDiasHeader").innerText = diasRacha + " días";
 
-            // Sincronizar fueguitos semanales de forma robusta
             const cajasDias = document.querySelectorAll("#fuegosRachaHeader .dia-racha-box");
             cajasDias.forEach(caja => caja.classList.remove("activo"));
 
@@ -631,7 +632,7 @@
             const sufijoUser = `_${userId}`;
 
             localStorage.setItem(`reclamado_mision_${idMision}${sufijoUser}`, "true");
-            localStorage.setItem("userAvatar", iconoColor); // Guardar avatar seleccionado de inmediato
+            localStorage.setItem("userAvatar", iconoColor);
 
             try {
                 await fetch(`${API_URL}/api/premios/reclamar`, {
