@@ -548,6 +548,9 @@
                 return;
             }
 
+            // Cargar foto de perfil del usuario en el navbar
+            cargarPerfilUsuario();
+
             // Manejo de dropdowns en navbar
             const userBtn = document.getElementById("userBtn");
             const dropdownMenu = document.getElementById("dropdownMenu");
@@ -596,6 +599,26 @@
                 document.getElementById("tablaHistorial").innerHTML = `<tr><td colspan="4" class="sin-datos">No se pudo conectar con el servidor.</td></tr>`;
             }
         });
+
+        async function cargarPerfilUsuario() {
+            const token = localStorage.getItem("token");
+            if (!token) return;
+
+            try {
+                const response = await fetch(`${API_URL}/api/perfil`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    const perfil = await response.json();
+                    if (perfil.avatar) {
+                        const imgUser = document.getElementById("userBtn");
+                        if (imgUser) imgUser.src = perfil.avatar.trim();
+                    }
+                }
+            } catch (e) {
+                console.error("Error al cargar foto de perfil:", e);
+            }
+        }
 
         function cambiarMes(delta) {
             fechaCalendarioActiva.setMonth(fechaCalendarioActiva.getMonth() + delta);
