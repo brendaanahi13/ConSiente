@@ -17,7 +17,7 @@
             overflow-x: hidden;
         }
 
-        /* NAVBAR IDÉNTICO A CONSEJOS */
+        /* NAVBAR */
         .navbar { 
             position: fixed; 
             top: 0; 
@@ -505,22 +505,6 @@
                 return;
             }
 
-            const userBtn = document.getElementById("userBtn");
-            const dropdownMenu = document.getElementById("dropdownMenu");
-
-            if (userBtn && dropdownMenu) {
-                userBtn.addEventListener("click", (e) => {
-                    e.stopPropagation();
-                    dropdownMenu.classList.toggle("show");
-                });
-            }
-
-            window.addEventListener("click", (e) => {
-                if (dropdownMenu && userBtn && !userBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
-                    dropdownMenu.classList.remove("show");
-                }
-            });
-
             cargarPerfilUsuario();
 
             const inputFecha = document.getElementById('fechaGasto');
@@ -678,7 +662,7 @@
         }
     </script>
     
-    <!-- SCRIPT GLOBAL DE NOTIFICACIONES EXTERNO (Mantiene anti-duplicados, racha y multilínea intactos) -->
+    <!-- SCRIPT GLOBAL DE NOTIFICACIONES EXTERNO -->
     <script src="global-notificaciones.js" defer></script>
 </body>
 </html>
