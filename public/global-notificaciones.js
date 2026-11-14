@@ -1,6 +1,9 @@
 // --- GLOBAL NOTIFICACIONES.JS COMPLETO Y OPTIMIZADO ---
 
-const API_URL = "";
+// Declaración segura en el objeto global para evitar conflictos de duplicado
+if (typeof window.API_URL === 'undefined') {
+    window.API_URL = "";
+}
 
 function obtenerTokenNotif() {
     return localStorage.getItem("token");
@@ -38,7 +41,7 @@ async function cargarNotificacionesSistema() {
     if (!token) return;
 
     try {
-        const response = await fetch(`${API_URL}/api/notificaciones`, {
+        const response = await fetch(`${window.API_URL}/api/notificaciones`, {
             headers: { "Authorization": `Bearer ${token}` }
         });
         
@@ -95,13 +98,11 @@ async function cargarNotificacionesSistema() {
             detallesDiv.addEventListener("click", async (e) => {
                 e.stopPropagation();
                 
-                // 1. Marcar como leída de inmediato si no lo estaba
                 if (!esLeida) {
                     await marcarUnaLeida(idNotif);
                     item.classList.remove("unread");
                     esLeida = true;
                     
-                    // Actualizar contador visual del badge al momento
                     if (notifBadge) {
                         let badgeCount = parseInt(notifBadge.innerText) || 1;
                         badgeCount = Math.max(0, badgeCount - 1);
@@ -113,7 +114,6 @@ async function cargarNotificacionesSistema() {
                     }
                 }
 
-                // 2. Redirección inteligente según el contenido
                 const textoCompleto = ((notif.titulo || "") + " " + (notif.mensaje || "")).toLowerCase();
                 
                 if (textoCompleto.includes("meta") || textoCompleto.includes("abono") || textoCompleto.includes("ahorro")) {
@@ -155,7 +155,7 @@ async function marcarUnaLeida(idNotificacion) {
     if (!token) return;
 
     try {
-        await fetch(`${API_URL}/api/notificaciones/${idNotificacion}/leida`, {
+        await fetch(`${window.API_URL}/api/notificaciones/${idNotificacion}/leida`, {
             method: "PUT",
             headers: { "Authorization": `Bearer ${token}` }
         });
@@ -169,7 +169,7 @@ async function eliminarNotificacion(idNotificacion) {
     if (!token) return;
 
     try {
-        const res = await fetch(`${API_URL}/api/notificaciones/${idNotificacion}`, {
+        const res = await fetch(`${window.API_URL}/api/notificaciones/${idNotificacion}`, {
             method: "DELETE",
             headers: { "Authorization": `Bearer ${token}` }
         });
@@ -187,7 +187,7 @@ async function marcarTodasLeidas() {
     if (!token) return;
 
     try {
-        const res = await fetch(`${API_URL}/api/notificaciones/marcar-leidas`, {
+        const res = await fetch(`${window.API_URL}/api/notificaciones/marcar-leidas`, {
             method: "PUT",
             headers: { "Authorization": `Bearer ${token}` }
         });
@@ -233,7 +233,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Evitar que el menú se cierre al hacer clic dentro de él
     if (notifDropdown) {
         notifDropdown.addEventListener("click", (e) => {
             e.stopPropagation();
@@ -245,6 +244,5 @@ document.addEventListener("DOMContentLoaded", () => {
         if (dropdownMenu) dropdownMenu.classList.remove("show");
     });
 
-    // Cargar notificaciones automáticamente al abrir cualquier vista
     cargarNotificacionesSistema();
 });
