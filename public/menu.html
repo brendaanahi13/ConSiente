@@ -694,7 +694,6 @@
             .sidebar button { font-size: 9px; } 
             .sidebar button span { font-size: 15px; }
             
-            /* AJUSTE RESPONSIVO UNIFICADO PARA EL MENÚ DE NOTIFICACIONES */
             .notif-dropdown {
                 position: fixed !important;
                 top: 70px !important;
@@ -733,7 +732,6 @@
             <a href="nosotros.html">Sobre nosotros</a>
             <a href="ODS.html">ODS</a>
             
-            <!-- MENÚ DE USUARIO CON TOGGLE DIRECTO -->
             <div class="user-menu" onclick="toggleUserMenu(event)">
                 <img src="imagenes/usuario.png" class="user-icon" id="userBtn" alt="Usuario">
                 <div class="dropdown" id="dropdownMenu">
@@ -880,11 +878,15 @@
             });
         });
 
-        // --- CÁLCULO DE RACHA DIRECTO DE LA BASE DE DATOS ---
+        // --- CÁLCULO DE RACHA CORREGIDO Y ROBUSTO ---
         function calcularRachaYRenderizar(gastos, perfil) {
-            let diasRacha = Number(perfil.racha_dias || 0);
+            // Lectura robusta soportando tanto 'racha_dias' como 'racha'
+            let diasRacha = Number(perfil.racha_dias ?? perfil.racha ?? 0);
 
-            document.getElementById("txtRachaDiasHeader").innerText = diasRacha + " días";
+            const txtRacha = document.getElementById("txtRachaDiasHeader");
+            if (txtRacha) {
+                txtRacha.innerText = diasRacha + (diasRacha === 1 ? " día" : " días");
+            }
 
             const cajasDias = document.querySelectorAll("#fuegosRachaHeader .dia-racha-box");
             cajasDias.forEach(caja => caja.classList.remove("activo"));
@@ -893,10 +895,12 @@
                 let hoyBase = new Date();
                 const diasActivosIndices = new Set();
 
-                for (let i = 0; i < Math.min(diasRacha, 7); i++) {
+                // Marca los últimos días correspondientes hacia atrás (máximo 7 para la vista semanal)
+                let diasVisuales = Math.min(diasRacha, 7);
+                for (let i = 0; i < diasVisuales; i++) {
                     let dTemp = new Date(hoyBase);
                     dTemp.setDate(hoyBase.getDate() - i);
-                    diasActivosIndices.add(dTemp.getDay());
+                    diasActivosIndices.add(dTemp.getDay()); // 0 = Domingo, 1 = Lunes, etc.
                 }
 
                 cajasDias.forEach(caja => {
@@ -926,7 +930,7 @@
                 let infoUsuario = null;
                 if (resPerfil.ok) {
                     infoUsuario = await resPerfil.json();
-                    document.getElementById("nombreUsuario").innerText = infoUsuario.nombre;
+                    document.getElementById("nombreUsuario").innerText = infoUsuario.nombre || "Usuario";
                     saldoInicial = Number(infoUsuario.saldo) || 0;
                     if (infoUsuario.avatar) {
                         const imgUser = document.getElementById("userBtn");
