@@ -46,7 +46,7 @@ async function cargarNotificacionesSistema() {
             notificaciones = await response.json();
         }
 
-        // 2. Obtener también el perfil para inyectar la racha de hoy en el apartado visual
+        // 2. Obtener también el perfil para inyectar la racha de hoy si no existe en la BD
         try {
             const resPerfil = await fetch(`${window.API_URL}/api/perfil`, {
                 headers: { "Authorization": `Bearer ${token}` }
@@ -57,13 +57,11 @@ async function cargarNotificacionesSistema() {
                 const nombreUsuario = usuario.nombre || "Usuario";
                 const hoyStr = new Date().toISOString().split('T')[0];
 
-                // Verificar si ya existe una notificación de racha para el día de hoy en la BD
                 const existeHoy = notificaciones.some(n => 
                     (n.titulo || "").includes("Racha") && 
                     n.fecha && n.fecha.startsWith(hoyStr)
                 );
 
-                // Si no existe en la BD para hoy, la agregamos dinámicamente al inicio de la lista
                 if (!existeHoy) {
                     notificaciones.unshift({
                         id: 'local_racha_hoy',
@@ -130,25 +128,33 @@ async function cargarNotificacionesSistema() {
 
             const item = document.createElement("div");
             item.className = `notif-item ${esLeida ? '' : 'unread'}`;
+            item.style.cursor = "pointer"; // Cambia el cursor a puntero en toda la tarjeta
             
             item.innerHTML = `
                 <div class="notif-icon" style="font-size: 20px; margin-top: 2px; flex-shrink: 0;">🌿</div>
-                <a href="${destinoUrl}" onclick="marcarUnaLeida('${idNotif}')" class="notif-detalles" style="flex: 1; text-decoration: none; color: inherit; cursor: pointer; display: block; min-width: 0;">
+                <div class="notif-detalles" style="flex: 1; min-width: 0;">
                     <div class="notif-titulo-item" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${notif.titulo || 'Notificación'}</div>
                     <div class="notif-texto" style="word-break: break-word; overflow-wrap: break-word;">${notif.mensaje || notif.texto || ''}</div>
                     <div class="notif-fecha" style="font-size: 11px; color: #81c784; margin-top: 4px; font-weight: 500;">${tiempoRelativo}</div>
-                </a>
+                </div>
                 <button class="btn-eliminar-notif" title="Eliminar" style="background: transparent; border: none; color: #ffffff; cursor: pointer; font-size: 18px; padding: 4px 8px; font-weight: bold; opacity: 0.7; transition: 0.2s; flex-shrink: 0;">&times;</button>
             `;
+
+            // 🎯 Evento de clic en toda la tarjeta para marcar como leída y redirigir
+            item.addEventListener("click", async (e) => {
+                // Si hace clic en el botón de eliminar, evitamos que se abra el enlace
+                if (e.target.closest(".btn-eliminar-notif")) return;
+
+                await marcarUnaLeida(idNotif);
+                window.location.href = destinoUrl;
+            });
 
             const btnEliminar = item.querySelector(".btn-eliminar-notif");
             btnEliminar.addEventListener("mouseenter", () => { btnEliminar.style.opacity = "1"; btnEliminar.style.color = "#ef5350"; });
             btnEliminar.addEventListener("mouseleave", () => { btnEliminar.style.opacity = "0.7"; btnEliminar.style.color = "#ffffff"; });
 
             btnEliminar.addEventListener("click", async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                // Si es la notificación local de hoy, solo la removemos visualmente del DOM
+                e.stopPropagation(); // Evita que se propague al item principal
                 if (idNotif === 'local_racha_hoy') {
                     item.remove();
                     return;
@@ -235,7 +241,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (marcarTodasBtn) {
-        // Corrección del error de "click5" a "click"
         marcarTodasBtn.addEventListener("click", (e) => {
             e.stopPropagation();
             marcarTodasLeidas();
