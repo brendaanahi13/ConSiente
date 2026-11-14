@@ -878,7 +878,7 @@
             });
         });
 
-        // --- CÁLCULO DE RACHA INTELIGENTE Y CORREGIDO ---
+        // --- CÁLCULO DE RACHA ESTRICTO Y CONSECUTIVO ---
         function calcularRachaYRenderizar(gastos, perfil) {
             const fechasGastos = new Set();
             if (Array.isArray(gastos)) {
@@ -894,62 +894,63 @@
             hoy.setHours(0, 0, 0, 0);
             let hoyStr = hoy.toISOString().split('T')[0];
 
-            let rachaCalculada = 0;
-            let tieneHoy = fechasGastos.has(hoyStr);
-            
             let ayer = new Date(hoy);
             ayer.setDate(ayer.getDate() - 1);
             let ayerStr = ayer.toISOString().split('T')[0];
-            let tieneAyer = fechasGastos.has(ayerStr);
 
-            if (tieneHoy || tieneAyer || fechasGastos.size > 0) {
-                let fechaActual = new Date(hoy);
-                if (!tieneHoy && tieneAyer) {
-                    fechaActual.setDate(fechaActual.getDate() - 1);
-                } else if (!tieneHoy && !tieneAyer) {
-                    rachaCalculada = Number(perfil.racha_dias ?? perfil.racha ?? 0);
-                }
+            // Determinar punto de partida de la racha consecutiva
+            let fechaCursor = null;
+            if (fechasGastos.has(hoyStr)) {
+                fechaCursor = new Date(hoy);
+            } else if (fechasGastos.has(ayerStr)) {
+                fechaCursor = new Date(ayer);
+            }
 
-                if (tieneHoy || tieneAyer) {
-                    while (true) {
-                        let fStr = fechaActual.toISOString().split('T')[0];
-                        if (fechasGastos.has(fStr)) {
-                            rachaCalculada++;
-                            fechaActual.setDate(fechaActual.getDate() - 1);
-                        } else {
-                            break;
-                        }
+            // Recopilar únicamente los días estrictamente consecutivos hacia atrás
+            const fechasRachaActiva = new Set();
+            if (fechaCursor) {
+                let cursor = new Date(fechaCursor);
+                while (true) {
+                    let fStr = cursor.toISOString().split('T')[0];
+                    if (fechasGastos.has(fStr)) {
+                        fechasRachaActiva.add(fStr);
+                        cursor.setDate(cursor.getDate() - 1);
+                    } else {
+                        break;
                     }
                 }
             }
 
-            let diasRacha = Math.max(rachaCalculada, Number(perfil.racha_dias ?? perfil.racha ?? 0));
+            let diasRacha = Math.max(fechasRachaActiva.size, Number(perfil.racha_dias ?? perfil.racha ?? 0));
 
+            // Actualizar texto del contador
             const txtRacha = document.getElementById("txtRachaDiasHeader");
             if (txtRacha) {
                 txtRacha.innerText = diasRacha + (diasRacha === 1 ? " día" : " días");
             }
 
+            // Renderizar fuegos semanales: Solo enciende si la fecha exacta forma parte de la racha consecutiva
             const cajasDias = document.querySelectorAll("#fuegosRachaHeader .dia-racha-box");
             cajasDias.forEach(caja => caja.classList.remove("activo"));
 
-            let diaSemana = hoy.getDay(); 
-            let diasDesdeLunes = (diaSemana === 0) ? 6 : diaSemana - 1;
+            // Encontrar el Lunes de la semana actual
+            let diaSemanaHoy = hoy.getDay(); // 0=Dom, 1=Lun...
+            let diasDesdeLunes = (diaSemanaHoy === 0) ? 6 : diaSemanaHoy - 1;
             let lunesActual = new Date(hoy);
             lunesActual.setDate(hoy.getDate() - diasDesdeLunes);
 
             cajasDias.forEach(caja => {
-                const diaBoxNum = Number(caja.getAttribute("data-js-dia")); 
+                const diaBoxNum = Number(caja.getAttribute("data-js-dia")); // 0 al 6
                 
-                for (let i = 0; i <= diasDesdeLunes; i++) {
-                    let dSemana = new Date(lunesActual);
-                    dSemana.setDate(lunesActual.getDate() + i);
-                    if (dSemana.getDay() === diaBoxNum) {
-                        let fStr = dSemana.toISOString().split('T')[0];
-                        if (fechasGastos.has(fStr) || (i === diasDesdeLunes && diasRacha > 0)) {
-                            caja.classList.add("activo");
-                        }
-                    }
+                // Calcular la fecha exacta de este cuadro en la semana actual
+                let offset = (diaBoxNum === 0) ? 6 : diaBoxNum - 1;
+                let fechaCaja = new Date(lunesActual);
+                fechaCaja.setDate(lunesActual.getDate() + offset);
+                let fechaCajaStr = fechaCaja.toISOString().split('T')[0];
+
+                // Solo se activa si la fecha está dentro de la cadena consecutiva real de la racha
+                if (fechasRachaActiva.has(fechaCajaStr)) {
+                    caja.classList.add("activo");
                 }
             });
         }
