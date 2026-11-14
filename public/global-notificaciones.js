@@ -1,4 +1,3 @@
-
 if (typeof window.API_URL === 'undefined') {
     window.API_URL = "";
 }
@@ -57,12 +56,11 @@ async function cargarNotificacionesSistema() {
             return;
         }
 
-        // 🛡️ FILTRO INTELIGENTE: Evitar que salgan repetidas el mismo día con el mismo título
+        // Evitar que salgan repetidas el mismo día con el mismo título
         const unicasMap = new Map();
         notificaciones.forEach(notif => {
             const fechaDia = notif.fecha ? notif.fecha.split('T')[0] : '';
             const claveUnica = (notif.titulo || '').trim().toLowerCase() + '_' + fechaDia;
-            // Guardamos la más reciente o la única de ese día
             if (!unicasMap.has(claveUnica) || (notif.id > unicasMap.get(claveUnica).id)) {
                 unicasMap.set(claveUnica, notif);
             }
@@ -170,6 +168,97 @@ async function marcarTodasLeidas() {
 
 window.marcarTodasLeidas = marcarTodasLeidas;
 
+// 🌟 NUEVA FUNCIÓN: Notificación flotante de bienvenida y racha del día
+async function verificarBienvenidaYRachaHoy() {
+    const token = obtenerTokenNotif();
+    if (!token) return;
+
+    // Evita que aparezca múltiples veces en la misma pestaña abierta
+    if (sessionStorage.getItem("bienvenidaMostradaHoy") === "true") return;
+
+    try {
+        // Consulta tu ruta de perfil que ya actualiza y devuelve la racha actual
+        const response = await fetch(`${window.API_URL}/api/perfil`, {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+            const usuario = await response.json();
+            const nombre = usuario.nombre || "Usuario";
+            const racha = usuario.racha_dias || 1;
+
+            mostrarToastBienvenidaRacha(nombre, racha);
+            sessionStorage.setItem("bienvenidaMostradaHoy", "true");
+        }
+    } catch (error) {
+        console.error("Error al verificar bienvenida de racha:", error);
+    }
+}
+
+function mostrarToastBienvenidaRacha(nombre, racha) {
+    if (document.getElementById('toastBienvenidaRacha')) return;
+
+    const toastHTML = `
+        <div id="toastBienvenidaRacha" style="
+            position: fixed; 
+            bottom: 30px; 
+            right: 30px; 
+            background: linear-gradient(135deg, #162218 0%, #111412 100%); 
+            border: 1px solid rgba(129, 199, 132, 0.4); 
+            padding: 18px 22px; 
+            border-radius: 16px; 
+            color: #ffffff; 
+            z-index: 99999; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
+            display: flex; 
+            align-items: center; 
+            gap: 15px;
+            max-width: 380px;
+            animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        ">
+            <div style="font-size: 28px; background: rgba(129, 199, 132, 0.1); padding: 10px; border-radius: 12px; flex-shrink: 0;">
+                🔥
+            </div>
+            <div style="flex: 1;">
+                <h4 style="margin: 0; color: #81c784; font-size: 15px; font-weight: 600;">
+                    ¡Qué gusto verte, ${nombre}!
+                </h4>
+                <p style="margin: 4px 0 0 0; font-size: 13px; color: #cccccc; line-height: 1.4;">
+                    Hoy mantienes tu racha activa de <strong style="color: #ffb74d;">${racha} días</strong> seguidos en ConSiente.
+                </p>
+            </div>
+            <button onclick="document.getElementById('toastBienvenidaRacha').remove()" style="
+                background: none; 
+                border: none; 
+                color: #888888; 
+                font-size: 20px; 
+                cursor: pointer; 
+                padding: 0 5px;
+                transition: color 0.2s;
+            " onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#888'">&times;</button>
+        </div>
+        <style>
+            @keyframes slideUpFade {
+                from { opacity: 0; transform: translateY(20px) scale(0.95); }
+                to { opacity: 1; transform: translateY(0) scale(1); }
+            }
+        </style>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', toastHTML);
+
+    // Se desvanece automáticamente después de 6 segundos
+    setTimeout(() => {
+        const toast = document.getElementById('toastBienvenidaRacha');
+        if (toast) {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(10px)';
+            toast.style.transition = 'all 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }
+    }, 6000);
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     const notifBtn = document.getElementById("notifBtn");
     const notifDropdown = document.getElementById("notifDropdown");
@@ -195,7 +284,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (marcarTodasBtn) {
-        marcarTodasBtn.addEventListener("click5" || "click", (e) => {
+        // ✅ Corregido el error de "click5" a "click"
+        marcarTodasBtn.addEventListener("click", (e) => {
             e.stopPropagation();
             marcarTodasLeidas();
         });
@@ -210,4 +300,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     cargarNotificacionesSistema();
+
+    //Se ejecuta al cargar la página para mostrar el saludo y racha de hoy
+    verificarBienvenidaYRachaHoy();
 });
