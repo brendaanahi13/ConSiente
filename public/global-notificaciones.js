@@ -46,7 +46,7 @@ async function cargarNotificacionesSistema() {
             notificaciones = await response.json();
         }
 
-        // 2. Obtener también el perfil para inyectar la racha de hoy si no existe en la BD
+        // 2. Obtener perfil para inyectar la racha de hoy si no está registrada en BD
         try {
             const resPerfil = await fetch(`${window.API_URL}/api/perfil`, {
                 headers: { "Authorization": `Bearer ${token}` }
@@ -56,6 +56,9 @@ async function cargarNotificacionesSistema() {
                 const rachaActual = usuario.racha_dias || 1;
                 const nombreUsuario = usuario.nombre || "Usuario";
                 const hoyStr = new Date().toISOString().split('T')[0];
+                
+                // Verificar si ya fue leída hoy en localStorage
+                const rachaLeidaHoy = localStorage.getItem(`racha_leida_${hoyStr}`) === 'true';
 
                 const existeHoy = notificaciones.some(n => 
                     (n.titulo || "").includes("Racha") && 
@@ -67,7 +70,7 @@ async function cargarNotificacionesSistema() {
                         id: 'local_racha_hoy',
                         titulo: `🔥 ¡Hola ${nombreUsuario}, Racha Activa!`,
                         mensaje: `Felicidades por ingresar hoy a ConSiente. Tu racha actual es de ${rachaActual} días seguidos.`,
-                        leida: 0,
+                        leida: rachaLeidaHoy ? 1 : 0,
                         fecha: new Date().toISOString()
                     });
                 }
@@ -140,13 +143,23 @@ async function cargarNotificacionesSistema() {
                 <button class="btn-eliminar-notif" title="Eliminar" style="background: transparent; border: none; color: #ffffff; cursor: pointer; font-size: 18px; padding: 4px 8px; font-weight: bold; opacity: 0.7; transition: 0.2s; flex-shrink: 0;">&times;</button>
             `;
 
-            // 🎯 Evento de clic en toda la tarjeta
+            // 🎯 Evento de clic infalible para marcar como leída y redirigir con retardo seguro
             item.addEventListener("click", async (e) => {
                 if (e.target.closest(".btn-eliminar-notif")) return;
+                e.preventDefault();
 
-                // Marca como leída antes de irse (keepalive asegura que se envíe)
-                await marcarUnaLeida(idNotif);
-                window.location.href = destinoUrl;
+                const hoyStr = new Date().toISOString().split('T')[0];
+
+                if (idNotif === 'local_racha_hoy') {
+                    localStorage.setItem(`racha_leida_${hoyStr}`, 'true');
+                } else {
+                    await marcarUnaLeida(idNotif);
+                }
+
+                // Pausa de 150ms para permitir que la petición HTTP se despache al servidor antes de cambiar de página
+                setTimeout(() => {
+                    window.location.href = destinoUrl;
+                }, 150);
             });
 
             const btnEliminar = item.querySelector(".btn-eliminar-notif");
@@ -155,8 +168,11 @@ async function cargarNotificacionesSistema() {
 
             btnEliminar.addEventListener("click", async (e) => {
                 e.stopPropagation();
+                const hoyStr = new Date().toISOString().split('T')[0];
                 if (idNotif === 'local_racha_hoy') {
+                    localStorage.setItem(`racha_leida_${hoyStr}`, 'true');
                     item.remove();
+                    cargarNotificacionesSistema();
                     return;
                 }
                 await eliminarNotificacion(idNotif);
@@ -185,7 +201,7 @@ async function marcarUnaLeida(idNotificacion) {
         await fetch(`${window.API_URL}/api/notificaciones/${idNotificacion}/leida`, {
             method: "PUT",
             headers: { "Authorization": `Bearer ${token}` },
-            keepalive: true // 🚀 ESTO PERMITE QUE LA PETICIÓN SOBREVIVIDA A LA REDIRECCIÓN DE PÁGINA
+            keepalive: true // Mantiene viva la petición al cambiar de página
         });
     } catch (error) { console.error(error); }
 }
@@ -208,6 +224,9 @@ async function marcarTodasLeidas() {
     const token = obtenerTokenNotif();
     if (!token) return;
     try {
+        const hoyStr = new Date().toISOString().split('T')[0];
+        localStorage.setItem(`racha_leida_${hoyStr}`, 'true'); // Marca también la local como leída
+
         const res = await fetch(`${window.API_URL}/api/notificaciones/marcar-leidas`, {
             method: "PUT",
             headers: { "Authorization": `Bearer ${token}` }
