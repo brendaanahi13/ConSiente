@@ -46,19 +46,24 @@ async function cargarNotificacionesSistema() {
             notificaciones = await response.json();
         }
 
-        // 2. Obtener perfil para inyectar la racha de hoy si no está registrada en BD
+        let userId = 'user';
+
+        // 2. Obtener perfil para inyectar la racha de hoy y aislarla por ID de usuario
         try {
             const resPerfil = await fetch(`${window.API_URL}/api/perfil`, {
                 headers: { "Authorization": `Bearer ${token}` }
             });
             if (resPerfil.ok) {
                 const usuario = await resPerfil.json();
+                userId = usuario.id || usuario.usuario_id || 'user';
+                window.currentNotifUserId = userId; // Guardar globalmente para otras funciones
+
                 const rachaActual = usuario.racha_dias || 1;
                 const nombreUsuario = usuario.nombre || "Usuario";
                 const hoyStr = new Date().toISOString().split('T')[0];
                 
-                // Verificar si ya fue leída hoy en localStorage
-                const rachaLeidaHoy = localStorage.getItem(`racha_leida_${hoyStr}`) === 'true';
+                // Verificar si ya fue leída hoy por ESTE usuario específico
+                const rachaLeidaHoy = localStorage.getItem(`racha_leida_${userId}_${hoyStr}`) === 'true';
 
                 const existeHoy = notificaciones.some(n => 
                     (n.titulo || "").includes("Racha") && 
@@ -151,7 +156,7 @@ async function cargarNotificacionesSistema() {
                 const hoyStr = new Date().toISOString().split('T')[0];
 
                 if (idNotif === 'local_racha_hoy') {
-                    localStorage.setItem(`racha_leida_${hoyStr}`, 'true');
+                    localStorage.setItem(`racha_leida_${userId}_${hoyStr}`, 'true');
                 } else {
                     await marcarUnaLeida(idNotif);
                 }
@@ -170,7 +175,7 @@ async function cargarNotificacionesSistema() {
                 e.stopPropagation();
                 const hoyStr = new Date().toISOString().split('T')[0];
                 if (idNotif === 'local_racha_hoy') {
-                    localStorage.setItem(`racha_leida_${hoyStr}`, 'true');
+                    localStorage.setItem(`racha_leida_${userId}_${hoyStr}`, 'true');
                     item.remove();
                     cargarNotificacionesSistema();
                     return;
@@ -201,7 +206,7 @@ async function marcarUnaLeida(idNotificacion) {
         await fetch(`${window.API_URL}/api/notificaciones/${idNotificacion}/leida`, {
             method: "PUT",
             headers: { "Authorization": `Bearer ${token}` },
-            keepalive: true // Mantiene viva la petición al cambiar de página
+            keepalive: true
         });
     } catch (error) { console.error(error); }
 }
@@ -225,7 +230,8 @@ async function marcarTodasLeidas() {
     if (!token) return;
     try {
         const hoyStr = new Date().toISOString().split('T')[0];
-        localStorage.setItem(`racha_leida_${hoyStr}`, 'true'); // Marca también la local como leída
+        const userId = window.currentNotifUserId || 'user';
+        localStorage.setItem(`racha_leida_${userId}_${hoyStr}`, 'true');
 
         const res = await fetch(`${window.API_URL}/api/notificaciones/marcar-leidas`, {
             method: "PUT",
