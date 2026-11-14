@@ -128,7 +128,7 @@ async function cargarNotificacionesSistema() {
 
             const item = document.createElement("div");
             item.className = `notif-item ${esLeida ? '' : 'unread'}`;
-            item.style.cursor = "pointer"; // Cambia el cursor a puntero en toda la tarjeta
+            item.style.cursor = "pointer";
             
             item.innerHTML = `
                 <div class="notif-icon" style="font-size: 20px; margin-top: 2px; flex-shrink: 0;">🌿</div>
@@ -140,11 +140,11 @@ async function cargarNotificacionesSistema() {
                 <button class="btn-eliminar-notif" title="Eliminar" style="background: transparent; border: none; color: #ffffff; cursor: pointer; font-size: 18px; padding: 4px 8px; font-weight: bold; opacity: 0.7; transition: 0.2s; flex-shrink: 0;">&times;</button>
             `;
 
-            // 🎯 Evento de clic en toda la tarjeta para marcar como leída y redirigir
+            // 🎯 Evento de clic en toda la tarjeta
             item.addEventListener("click", async (e) => {
-                // Si hace clic en el botón de eliminar, evitamos que se abra el enlace
                 if (e.target.closest(".btn-eliminar-notif")) return;
 
+                // Marca como leída antes de irse (keepalive asegura que se envíe)
                 await marcarUnaLeida(idNotif);
                 window.location.href = destinoUrl;
             });
@@ -154,7 +154,7 @@ async function cargarNotificacionesSistema() {
             btnEliminar.addEventListener("mouseleave", () => { btnEliminar.style.opacity = "0.7"; btnEliminar.style.color = "#ffffff"; });
 
             btnEliminar.addEventListener("click", async (e) => {
-                e.stopPropagation(); // Evita que se propague al item principal
+                e.stopPropagation();
                 if (idNotif === 'local_racha_hoy') {
                     item.remove();
                     return;
@@ -184,7 +184,8 @@ async function marcarUnaLeida(idNotificacion) {
     try {
         await fetch(`${window.API_URL}/api/notificaciones/${idNotificacion}/leida`, {
             method: "PUT",
-            headers: { "Authorization": `Bearer ${token}` }
+            headers: { "Authorization": `Bearer ${token}` },
+            keepalive: true // 🚀 ESTO PERMITE QUE LA PETICIÓN SOBREVIVIDA A LA REDIRECCIÓN DE PÁGINA
         });
     } catch (error) { console.error(error); }
 }
@@ -196,7 +197,8 @@ async function eliminarNotificacion(idNotificacion) {
     try {
         const res = await fetch(`${window.API_URL}/api/notificaciones/${idNotificacion}`, {
             method: "DELETE",
-            headers: { "Authorization": `Bearer ${token}` }
+            headers: { "Authorization": `Bearer ${token}` },
+            keepalive: true
         });
         if (res.ok) cargarNotificacionesSistema();
     } catch (error) { console.error(error); }
