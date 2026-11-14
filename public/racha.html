@@ -343,6 +343,7 @@
             <a href="nosotros.html">Sobre nosotros</a>
             <a href="ODS.html">ODS</a>
             
+            <!-- MENÚ DE USUARIO -->
             <div class="user-menu">
                 <img src="imagenes/usuario.png" class="user-icon" id="userBtn" alt="Usuario">
                 <div class="dropdown" id="dropdownMenu">
@@ -430,17 +431,31 @@
 
             const userBtn = document.getElementById("userBtn");
             const dropdownMenu = document.getElementById("dropdownMenu");
+            const notifBtn = document.getElementById("notifBtn");
+            const notifDropdown = document.getElementById("notifDropdown");
 
             if (userBtn && dropdownMenu) {
                 userBtn.addEventListener("click", (e) => {
                     e.stopPropagation();
+                    if (notifDropdown) notifDropdown.classList.remove("show");
                     dropdownMenu.classList.toggle("show");
+                });
+            }
+
+            if (notifBtn && notifDropdown) {
+                notifBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    if (dropdownMenu) dropdownMenu.classList.remove("show");
+                    notifDropdown.classList.toggle("show");
                 });
             }
 
             window.addEventListener("click", (e) => {
                 if (dropdownMenu && userBtn && !userBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
                     dropdownMenu.classList.remove("show");
+                }
+                if (notifDropdown && notifBtn && !notifBtn.contains(e.target) && !notifDropdown.contains(e.target)) {
+                    notifDropdown.classList.remove("show");
                 }
             });
 
