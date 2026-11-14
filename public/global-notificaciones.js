@@ -1,4 +1,4 @@
-// --- GLOBAL NOTIFICACIONES.JS LIMPIO E INFALIBLE ---
+// --- GLOBAL NOTIFICACIONES.JS (VERSIÓN DEFINITIVA Y SEGURA) ---
 
 if (typeof window.API_URL === 'undefined') {
     window.API_URL = "";
@@ -8,6 +8,7 @@ function obtenerTokenNotif() {
     return localStorage.getItem("token");
 }
 
+// Formatear el tiempo de manera amigable
 function obtenerTiempoRelativo(fechaStr) {
     if (!fechaStr) return "Hace un momento";
     const fecha = new Date(fechaStr);
@@ -30,9 +31,10 @@ function obtenerTiempoRelativo(fechaStr) {
     if (meses < 12) return `Hace ${meses} ${meses === 1 ? 'mes' : 'meses'}`;
     
     const anos = Math.floor(meses / 12);
-    return `Hace ${anos} ${anos === 1 ? 'año' : 'años'}`;
+    return `Hace ${anos} ${anos === 1 ? 'año' : 'anos'}`;
 }
 
+// Cargar notificaciones y actualizar badge
 async function cargarNotificacionesSistema() {
     const token = obtenerTokenNotif();
     if (!token) return;
@@ -69,36 +71,64 @@ async function cargarNotificacionesSistema() {
             }
 
             const tiempoRelativo = obtenerTiempoRelativo(notif.fecha);
-            
-            // Determinar la URL de destino según el texto
-            const textoCompleto = ((notif.titulo || "") + " " + (notif.mensaje || "")).toLowerCase();
-            let destinoUrl = "menu.html";
-            
-            if (textoCompleto.includes("meta") || textoCompleto.includes("abono") || textoCompleto.includes("ahorro")) {
-                destinoUrl = "metas.html";
-            } else if (textoCompleto.includes("racha") || textoCompleto.includes("avatar") || textoCompleto.includes("puerquito")) {
-                destinoUrl = "racha.html";
-            } else if (textoCompleto.includes("gasto") || textoCompleto.includes("movimiento") || textoCompleto.includes("historial")) {
-                destinoUrl = "historial.html";
-            } else if (textoCompleto.includes("semáforo") || textoCompleto.includes("economico") || textoCompleto.includes("finanzas")) {
-                destinoUrl = "semaforo.html";
-            }
 
             const item = document.createElement("div");
             item.className = `notif-item ${esLeida ? '' : 'unread'}`;
+            item.style.cursor = "pointer";
             item.innerHTML = `
                 <div class="notif-icon" style="font-size: 18px; margin-top: 2px;">🌿</div>
-                <a href="${destinoUrl}" class="notif-detalles" onclick="marcarUnaLeida('${idNotif}')" style="flex: 1; text-decoration: none; color: inherit; cursor: pointer; display: block;">
+                <div class="notif-detalles" style="flex: 1;">
                     <div class="notif-titulo-item">${notif.titulo || 'Notificación'}</div>
                     <div class="notif-texto">${notif.mensaje || notif.texto || ''}</div>
                     <div class="notif-fecha" style="font-size: 11px; color: #81c784; margin-top: 4px; font-weight: 500;">${tiempoRelativo}</div>
-                </a>
-                <button class="btn-eliminar-notif" onclick="event.stopPropagation(); eliminarNotificacion('${idNotif}')" title="Eliminar notificación" style="background: transparent; border: none; color: #ffffff; cursor: pointer; font-size: 18px; padding: 4px 8px; font-weight: bold; opacity: 0.7; transition: 0.2s;">&times;</button>
+                </div>
+                <button class="btn-eliminar-notif" title="Eliminar notificación" style="background: transparent; border: none; color: #ffffff; cursor: pointer; font-size: 18px; padding: 4px 8px; font-weight: bold; opacity: 0.7; transition: 0.2s;">&times;</button>
             `;
 
             const btnEliminar = item.querySelector(".btn-eliminar-notif");
             btnEliminar.addEventListener("mouseenter", () => { btnEliminar.style.opacity = "1"; btnEliminar.style.color = "#ef5350"; });
             btnEliminar.addEventListener("mouseleave", () => { btnEliminar.style.opacity = "0.7"; btnEliminar.style.color = "#ffffff"; });
+
+            // Clic en la tarjeta de notificación
+            item.addEventListener("click", async (e) => {
+                if (e.target.closest(".btn-eliminar-notif")) return;
+
+                e.stopPropagation();
+                
+                if (!esLeida) {
+                    await marcarUnaLeida(idNotif);
+                    item.classList.remove("unread");
+                    esLeida = true;
+                    
+                    if (notifBadge) {
+                        let badgeCount = parseInt(notifBadge.innerText) || 1;
+                        badgeCount = Math.max(0, badgeCount - 1);
+                        if (badgeCount === 0) {
+                            notifBadge.style.display = "none";
+                        } else {
+                            notifBadge.innerText = badgeCount;
+                        }
+                    }
+                }
+
+                // Redirección inteligente
+                const textoCompleto = ((notif.titulo || "") + " " + (notif.mensaje || "")).toLowerCase();
+                
+                if (textoCompleto.includes("meta") || textoCompleto.includes("abono") || textoCompleto.includes("ahorro")) {
+                    window.location.href = "metas.html";
+                } else if (textoCompleto.includes("racha") || textoCompleto.includes("avatar") || textoCompleto.includes("puerquito")) {
+                    window.location.href = "racha.html";
+                } else if (textoCompleto.includes("gasto") || textoCompleto.includes("movimiento") || textoCompleto.includes("historial")) {
+                    window.location.href = "historial.html";
+                } else if (textoCompleto.includes("semáforo") || textoCompleto.includes("economico") || textoCompleto.includes("finanzas")) {
+                    window.location.href = "semaforo.html";
+                }
+            });
+
+            btnEliminar.addEventListener("click", async (e) => {
+                e.stopPropagation();
+                await eliminarNotificacion(idNotif);
+            });
 
             notifList.appendChild(item);
         });
@@ -167,6 +197,7 @@ async function marcarTodasLeidas() {
 
 window.marcarTodasLeidas = marcarTodasLeidas;
 
+// Inicialización de eventos en la barra superior
 document.addEventListener("DOMContentLoaded", () => {
     const notifBtn = document.getElementById("notifBtn");
     const notifDropdown = document.getElementById("notifDropdown");
@@ -198,12 +229,11 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    if (notifDropdown) {
-        notifDropdown.addEventListener("click", (e) => {
-            e.stopPropagation();
-        });
-    }
+    // Evitar que los clics dentro de los menús los cierren
+    if (notifDropdown) notifDropdown.addEventListener("click", (e) => e.stopPropagation());
+    if (dropdownMenu) dropdownMenu.addEventListener("click", (e) => e.stopPropagation());
 
+    // Cerrar menús al hacer clic fuera
     window.addEventListener("click", () => {
         if (notifDropdown) notifDropdown.classList.remove("show");
         if (dropdownMenu) dropdownMenu.classList.remove("show");
