@@ -104,7 +104,7 @@
             box-shadow: 0 15px 35px rgba(0,0,0,0.7);
             display: none;
             flex-direction: column;
-            z-index: 2500;
+            z-index: 3500;
             overflow: hidden;
         }
 
@@ -165,6 +165,8 @@
             position: relative;
             display: flex;
             align-items: center;
+            cursor: pointer;
+            z-index: 3000;
         }
         .user-icon {
             width: 38px;
@@ -186,13 +188,13 @@
             background: rgba(20, 20, 20, 0.98);
             backdrop-filter: blur(10px);
             border-radius: 12px;
-            border: 1px solid rgba(129, 199, 132, 0.2);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            border: 1px solid rgba(129, 199, 132, 0.3);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.8);
             display: none;
             flex-direction: column;
-            min-width: 160px;
+            min-width: 170px;
             overflow: hidden;
-            z-index: 2500;
+            z-index: 4000;
         }
         .dropdown a {
             padding: 12px 18px;
@@ -397,9 +399,13 @@
             .sidebar button { font-size: 9px; } 
             .sidebar button span { font-size: 15px; }
             .notif-dropdown {
-                width: calc(100vw - 30px);
-                right: -10px;
-                max-height: 280px;
+                position: fixed !important;
+                top: 70px !important;
+                left: 15px !important;
+                right: 15px !important;
+                width: auto !important;
+                max-width: none !important;
+                max-height: 75vh !important;
             }
         }
     </style>
@@ -431,7 +437,8 @@
             <a href="nosotros.html">Sobre nosotros</a>
             <a href="ODS.html" class="active">ODS</a>
             
-            <div class="user-menu">
+            <!-- MENÚ DE USUARIO -->
+            <div class="user-menu" onclick="toggleUserMenu(event)">
                 <img src="imagenes/usuario.png" class="user-icon" id="userBtn" alt="Usuario">
                 <div class="dropdown" id="dropdownMenu">
                     <a href="config.html">Configuración</a>
@@ -486,15 +493,24 @@
     <script>
         const API_URL = "";
 
-        function cerrarSesion(){
-            sessionStorage.removeItem("sesionActiva");
-            localStorage.removeItem("token");
-            localStorage.removeItem("userAvatar");
-            window.location.href = "index.html";
+        function toggleUserMenu(e) {
+            e.stopPropagation();
+            const dropdownMenu = document.getElementById("dropdownMenu");
+            if (dropdownMenu) {
+                dropdownMenu.classList.toggle("show");
+            }
         }
 
         document.addEventListener("DOMContentLoaded", () => {
-            // Cargar avatar guardado de inmediato desde localStorage para que no parpadee o falte
+            window.addEventListener("click", (e) => {
+                const dropdownMenu = document.getElementById("dropdownMenu");
+                const userMenu = document.querySelector(".user-menu");
+                if (dropdownMenu && userMenu && !userMenu.contains(e.target)) {
+                    dropdownMenu.classList.remove("show");
+                }
+            });
+
+            // Cargar avatar guardado de inmediato desde localStorage
             const avatarGuardado = localStorage.getItem("userAvatar");
             if (avatarGuardado) {
                 const imgUser = document.getElementById("userBtn");
@@ -505,22 +521,6 @@
             if (token) {
                 cargarPerfilUsuario();
             }
-            
-            const userBtn = document.getElementById("userBtn");
-            const dropdownMenu = document.getElementById("dropdownMenu");
-
-            if (userBtn && dropdownMenu) {
-                userBtn.addEventListener("click", (e) => {
-                    e.stopPropagation();
-                    dropdownMenu.classList.toggle("show");
-                });
-            }
-
-            window.addEventListener("click", (e) => {
-                if (dropdownMenu && userBtn && !userBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
-                    dropdownMenu.classList.remove("show");
-                }
-            });
         });
 
         async function cargarPerfilUsuario() {
@@ -544,10 +544,15 @@
                 console.error("Error al cargar foto de perfil:", e);
             }
         }
+
+        function cerrarSesion(){
+            localStorage.clear();
+            window.location.href = "index.html";
+        }
     </script>
     
     <!-- SCRIPT GLOBAL DE NOTIFICACIONES -->
-    <script src="/global-notificaciones.js" defer></script>
+    <script src="global-notificaciones.js" defer></script>
 
 </body>
 </html>
