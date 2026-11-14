@@ -172,7 +172,7 @@
             background: #1c2d20; 
             color: #81c784; 
             border-bottom: 1px solid rgba(130,199,132,0.5); 
-            padding-left: 22px;
+            padding-left: 22px; 
         }
         .sidebar button.btn-active {
             color: #81c784;
@@ -225,7 +225,7 @@
         .btn-eliminar:hover { background: #ef5350; color: white; }
         .sin-datos { text-align: center; padding: 30px; color: #888; font-style: italic; }
 
-        /* CALENDARIO ESTÁTICO INTERACTIVO CON NAVEGACIÓN */
+        /* CALENDARIO ESTÁTICO INTERACTIVO CON NAVEGACIÓN Y SELECTOR */
         .cal-estatico-box {
             background: #1b1b1b;
             border-radius: 14px;
@@ -237,13 +237,32 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
+            gap: 8px;
+            flex-wrap: wrap;
         }
-        .cal-mes-titulo {
-            font-weight: bold;
-            text-transform: capitalize;
-            font-size: 14px;
+        .cal-nav-grupo {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .input-mes-custom {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(129, 199, 132, 0.3);
             color: #ffffff;
-            margin: 0;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            outline: none;
+            transition: 0.2s ease;
+        }
+        .input-mes-custom::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+        .input-mes-custom:hover {
+            border-color: #81c784;
+            background: rgba(129, 199, 132, 0.1);
         }
         .btn-mes-nav {
             background: rgba(255, 255, 255, 0.05);
@@ -257,6 +276,22 @@
         }
         .btn-mes-nav:hover {
             background: rgba(129, 199, 132, 0.2);
+            border-color: #81c784;
+        }
+        .btn-hoy {
+            background: rgba(46, 125, 50, 0.25);
+            border: 1px solid rgba(129, 199, 132, 0.4);
+            color: #81c784;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+        .btn-hoy:hover {
+            background: #2e7d32;
+            color: #ffffff;
             border-color: #81c784;
         }
         .cal-grid-estatico {
@@ -475,14 +510,17 @@
                     </div>
                 </div>
 
-                <!-- CAJA DEL CALENDARIO CON NAVEGACIÓN DE MESES -->
+                <!-- CAJA DEL CALENDARIO CON NAVEGACIÓN, HOY Y SELECTOR DE MES -->
                 <div class="box">
                     <h3>Calendario de Actividad</h3>
                     <div class="cal-estatico-box">
                         <div class="cal-mes-header">
-                            <button class="btn-mes-nav" onclick="cambiarMes(-1)" title="Mes anterior">&lt;</button>
-                            <div class="cal-mes-titulo" id="calEstaticoMes"></div>
-                            <button class="btn-mes-nav" onclick="cambiarMes(1)" title="Mes siguiente">&gt;</button>
+                            <div class="cal-nav-grupo">
+                                <button class="btn-mes-nav" onclick="cambiarMes(-1)" title="Mes anterior">&lt;</button>
+                                <input type="month" id="inputMesSelector" class="input-mes-custom" onchange="seleccionarMesManual(this.value)" title="Seleccionar mes y año">
+                                <button class="btn-mes-nav" onclick="cambiarMes(1)" title="Mes siguiente">&gt;</button>
+                            </div>
+                            <button class="btn-hoy" onclick="irAlDiaHoy()" title="Ir al día y mes actual">Hoy</button>
                         </div>
                         <div class="cal-grid-estatico" id="calGridEstatico"></div>
                     </div>
@@ -564,6 +602,18 @@
             generarCalendarioEstatico(listaGastosGlobal);
         }
 
+        function seleccionarMesManual(valorYYYYMM) {
+            if (!valorYYYYMM) return;
+            const [anio, mes] = valorYYYYMM.split('-');
+            fechaCalendarioActiva = new Date(Number(anio), Number(mes) - 1, 1);
+            generarCalendarioEstatico(listaGastosGlobal);
+        }
+
+        function irAlDiaHoy() {
+            fechaCalendarioActiva = new Date();
+            generarCalendarioEstatico(listaGastosGlobal);
+        }
+
         function renderizarTabla(gastos) {
             const tbody = document.getElementById("tablaHistorial");
             tbody.innerHTML = "";
@@ -593,7 +643,13 @@
             const mes = fechaCalendarioActiva.getMonth();
             const anio = fechaCalendarioActiva.getFullYear();
 
-            document.getElementById("calEstaticoMes").innerText = fechaCalendarioActiva.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+            // Sincronizar el valor del input de mes/año manual (YYYY-MM)
+            const inputMes = document.getElementById("inputMesSelector");
+            if (inputMes) {
+                const mesStr = String(mes + 1).padStart(2, '0');
+                inputMes.value = `${anio}-${mesStr}`;
+            }
+
             grid.innerHTML = '';
 
             ['Do','Lu','Ma','Mi','Ju','Vi','Sá'].forEach(d => {
