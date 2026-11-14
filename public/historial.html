@@ -160,18 +160,6 @@
         .btn-eliminar-modal { background: #951b1b; color: #ffdfda; }
         .btn-eliminar-modal:hover { background: #b71c1c; }
 
-        /* MODAL ELIMINAR GASTO DE AHORRO / META */
-        .modal-eliminar-contenido {
-            background: linear-gradient(145deg, rgba(22, 28, 24, 0.98) 0%, rgba(12, 16, 13, 0.99) 100%);
-            border: 1px solid rgba(129, 199, 132, 0.4); border-radius: 22px; padding: 30px; width: 90%; max-width: 440px; box-shadow: 0 25px 60px rgba(0,0,0,0.85); color: #fff;
-        }
-        .texto-eliminar { font-size: 12px; color: #aaaaaa; line-height: 1.5; margin-bottom: 15px; }
-        .opcion-eliminar { display:block; width:100%; text-align:left; padding:14px; margin-top:10px; border:1px solid rgba(129,199,132,.35); border-radius:12px; background:#18211a; color:#fff; cursor:pointer; transition: 0.2s; }
-        .opcion-eliminar:hover { border-color:#81c784; background:#203324; }
-        .opcion-eliminar small { display:block; color:#b8c7b9; margin-top:4px; }
-        .btn-modal-cancel { flex: 1; padding: 12px; background: #1f2421; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #cccccc; font-weight: 600; cursor: pointer; text-align: center; }
-        .btn-modal-cancel:hover { background: #2a322d; color: #fff; }
-
         /* DISEÑO RESPONSIVO MÓVIL (BARRA INFERIOR FLOTANTE) */
         @media (max-width: 900px) {
             .main-layout { flex-direction: column; margin-top: 65px; min-height: auto; }
@@ -358,7 +346,7 @@
                     </div>
                 </div>
 
-                <!-- CAJA DEL CALENDARIO -->
+                <!-- CAJA DEL CALENDario -->
                 <div class="box box-calendario">
                     <div class="cal-header">
                         <h3 id="calMesAnio">Calendario</h3>
@@ -403,32 +391,10 @@
         </div>
     </div>
 
-    <!-- MODAL ELIMINAR GASTO DE AHORRO / META -->
-    <div class="modal-overlay" id="modalEliminarGastoAhorro">
-        <div class="modal-eliminar-contenido">
-            <div class="modal-title">Eliminar movimiento de ahorro</div>
-            <p class="texto-eliminar" id="textoEliminarGastoAhorro">Este movimiento está relacionado con un ahorro o meta.</p>
-            <p style="color:#81c784;font-weight:700;margin-bottom:8px;">¿Qué deseas hacer con el dinero?</p>
-            <button class="opcion-eliminar" onclick="ejecutarEliminarGastoAhorro(true)">
-                Devolver el dinero al saldo general y descontar de la meta
-                <small>Se reintegra el monto a tu saldo disponible, se descuenta de los ahorros de la meta y se elimina el registro.</small>
-            </button>
-            <button class="opcion-eliminar" onclick="ejecutarEliminarGastoAhorro(false)">
-                No devolver al saldo general (solo descontar de la meta)
-                <small>Se descuenta el monto de la meta y se elimina el movimiento sin modificar tu saldo general.</small>
-            </button>
-            <div style="margin-top:16px;">
-                <button class="btn-modal-cancel" style="width:100%;" onclick="cerrarModalEliminarGastoAhorro()">Cancelar</button>
-            </div>
-        </div>
-    </div>
-
     <script>
         const API_URL = "";
         let todosLosGastos = [];
-        let listaMetasCache = [];
         let fechaActualVista = new Date();
-        let gastoPendienteEliminar = null;
 
         document.addEventListener("DOMContentLoaded", () => {
             const token = localStorage.getItem("token");
@@ -469,7 +435,6 @@
 
             cargarPerfilUsuario();
             cargarNotificacionesLocales();
-            cargarMetasCache();
             cargarDatos();
         });
 
@@ -490,21 +455,6 @@
                 }
             } catch (e) {
                 console.error("Error al cargar foto de perfil:", e);
-            }
-        }
-
-        async function cargarMetasCache() {
-            const token = localStorage.getItem("token");
-            if (!token) return;
-            try {
-                const res = await fetch(`${API_URL}/api/metas`, {
-                    headers: { "Authorization": `Bearer ${token}` }
-                });
-                if (res.ok) {
-                    listaMetasCache = await res.json();
-                }
-            } catch (e) {
-                console.error("Error cargando caché de metas:", e);
             }
         }
 
@@ -745,66 +695,32 @@
             }
 
             const categoria = (gasto.categoria || "").toLowerCase();
-            const metaId = gasto.meta_id || gasto.metaId || gasto.id_meta;
-            const esAhorroMeta = categoria.includes("ahorro") || categoria.includes("meta") || metaId;
+            const esAhorroMeta = categoria.includes("ahorro") || categoria.includes("meta");
 
+            // SEGURIDAD: Evita desincronizar la BD ya que el servidor actual no procesa borrados de metas desde el historial
             if (esAhorroMeta) {
+                alert("💡 Para mantener tus metas perfectamente sincronizadas con la base de datos, los abonos y registros de ahorro deben administrarse directamente desde la sección de **Metas**.");
                 cerrarModal();
-                gastoPendienteEliminar = gasto;
-                const monto = Number(gasto.monto || gasto.cantidad || 0);
-                document.getElementById("textoEliminarGastoAhorro").textContent =
-                    `Vas a eliminar "${gasto.categoria || 'Ahorro / Meta'}" por un monto de $${monto.toFixed(2)}.`;
-                document.getElementById("modalEliminarGastoAhorro").style.display = "flex";
-            } else {
-                if(!confirm("¿Deseas eliminar este movimiento?")) return;
-                ejecutarEliminarGastoAPI(id, false, null, 0);
-            }
-        }
-
-        function cerrarModalEliminarGastoAhorro() {
-            document.getElementById("modalEliminarGastoAhorro").style.display = "none";
-            gastoPendienteEliminar = null;
-        }
-
-        async function ejecutarEliminarGastoAhorro(regresarSaldo) {
-            if (!gastoPendienteEliminar) return;
-            const id = gastoPendienteEliminar.id || gastoPendienteEliminar._id;
-            let metaId = gastoPendienteEliminar.meta_id || gastoPendienteEliminar.metaId || gastoPendienteEliminar.id_meta || null;
-            const monto = Number(gastoPendienteEliminar.monto || gastoPendienteEliminar.cantidad || 0);
-            const categoria = (gastoPendienteEliminar.categoria || "").toLowerCase();
-
-            // Si no tiene metaId pero la categoría coincide con alguna meta cargada, la resolvemos
-            if (!metaId && listaMetasCache.length > 0) {
-                const metaEncontrada = listaMetasCache.find(m => categoria.includes(m.nombre.toLowerCase()));
-                if (metaEncontrada) {
-                    metaId = metaEncontrada.id || metaEncontrada._id;
-                }
+                return;
             }
 
-            cerrarModalEliminarGastoAhorro();
-            await ejecutarEliminarGastoAPI(id, regresarSaldo, metaId, monto);
+            if(!confirm("¿Deseas eliminar este movimiento?")) return;
+            ejecutarEliminarGastoAPI(id);
         }
 
-        async function ejecutarEliminarGastoAPI(id, regresarSaldo, metaId, monto) {
+        async function ejecutarEliminarGastoAPI(id) {
             const token = localStorage.getItem("token");
             try {
                 const response = await fetch(`${API_URL}/api/lista-gastos/${id}`, {
                     method: "DELETE",
                     headers: { 
-                        "Content-Type": "application/json",
                         "Authorization": `Bearer ${token}` 
-                    },
-                    body: JSON.stringify({ 
-                        regresarSaldo: regresarSaldo, 
-                        metaId: metaId, 
-                        monto: monto 
-                    })
+                    }
                 });
 
                 if(response.ok) {
                     alert("Movimiento eliminado correctamente.");
                     cerrarModal();
-                    cargarMetasCache();
                     cargarDatos(); 
                 } else {
                     const data = await response.json().catch(() => ({}));
