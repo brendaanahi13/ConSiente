@@ -305,7 +305,6 @@
             .sidebar button { font-size: 9px; } 
             .sidebar button span { font-size: 15px; }
             
-            /* AJUSTE RESPONSIVO PARA EL MENÚ DE NOTIFICACIONES EN MÓVIL */
             .notif-dropdown {
                 position: fixed !important;
                 top: 70px !important;
@@ -343,7 +342,7 @@
             <a href="nosotros.html">Sobre nosotros</a>
             <a href="ODS.html">ODS</a>
             
-            <!-- MENÚ DE USUARIO (Con función onclick directa para asegurar apertura) -->
+            <!-- MENÚ DE USUARIO -->
             <div class="user-menu" onclick="toggleUserMenu(event)">
                 <img src="imagenes/usuario.png" class="user-icon" id="userBtn" alt="Usuario">
                 <div class="dropdown" id="dropdownMenu">
@@ -416,12 +415,19 @@
     <script>
         const API_URL = "";
 
+        // Función auxiliar para obtener la fecha local exacta (YYYY-MM-DD) evitando desfase UTC
+        function obtenerFechaLocalStr(dateObj) {
+            const year = dateObj.getFullYear();
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
         function cerrarSesion(){
             localStorage.clear();
             window.location.href = "index.html";
         }
 
-        // Función directa y segura para abrir/cerrar el menú de usuario al hacer clic en el avatar
         function toggleUserMenu(e) {
             e.stopPropagation();
             const dropdownMenu = document.getElementById("dropdownMenu");
@@ -433,14 +439,12 @@
         }
 
         document.addEventListener("DOMContentLoaded", () => {
-            // Cargar avatar inmediato desde localStorage si existe
             const avatarGuardado = localStorage.getItem("userAvatar");
             if (avatarGuardado) {
                 const imgUser = document.getElementById("userBtn");
                 if (imgUser) imgUser.src = avatarGuardado.trim();
             }
 
-            // Cerrar menú de usuario al hacer clic fuera de él
             window.addEventListener("click", (e) => {
                 const dropdownMenu = document.getElementById("dropdownMenu");
                 const userMenu = document.querySelector(".user-menu");
@@ -491,7 +495,7 @@
                 if (resPerfil.ok) {
                     const perfil = window.infoUsuario = await resPerfil.json();
                     userId = perfil.id || perfil.usuario_id || "7";
-                    diasRacha = Number(perfil.racha_dias || 0);
+                    diasRacha = Number(perfil.racha_dias || perfil.racha || 0);
                 }
 
                 const resGastos = await fetch(`${API_URL}/api/lista-gastos`, {
@@ -499,10 +503,6 @@
                 });
                 if (resGastos.ok) {
                     gastos = await resGastos.json();
-                    
-                    if (gastos.length > 0 && diasRacha === 0) {
-                        diasRacha = 1;
-                    }
                 }
 
                 const resMetas = await fetch(`${API_URL}/api/metas`, {
@@ -512,28 +512,74 @@
 
             } catch (e) { console.error("Error al cargar datos del usuario:", e); }
 
-            document.getElementById("txtRachaDiasHeader").innerText = diasRacha + " días";
+            // --- CÁLCULO DE RACHA ESTRICTO Y CONSECUTIVO (ACTUALIZADO) ---
+            const fechasGastos = new Set();
+            if (Array.isArray(gastos)) {
+                gastos.forEach(g => {
+                    if (g.fecha) {
+                        const fechaStr = String(g.fecha).split('T')[0].split(' ')[0];
+                        fechasGastos.add(fechaStr);
+                    }
+                });
+            }
+
+            let hoy = new Date();
+            hoy.setHours(0, 0, 0, 0);
+            let hoyStr = obtenerFechaLocalStr(hoy);
+
+            let ayer = new Date(hoy);
+            ayer.setDate(ayer.getDate() - 1);
+            let ayerStr = obtenerFechaLocalStr(ayer);
+
+            // Consideramos el día actual activo al abrir la app para que la racha no requiera un gasto forzoso
+            fechasGastos.add(hoyStr);
+
+            let fechaCursor = null;
+            if (fechasGastos.has(hoyStr)) {
+                fechaCursor = new Date(hoy);
+            } else if (fechasGastos.has(ayerStr)) {
+                fechaCursor = new Date(ayer);
+            }
+
+            const fechasRachaActiva = new Set();
+            if (fechaCursor) {
+                let cursor = new Date(fechaCursor);
+                while (true) {
+                    let fStr = obtenerFechaLocalStr(cursor);
+                    if (fechasGastos.has(fStr)) {
+                        fechasRachaActiva.add(fStr);
+                        cursor.setDate(cursor.getDate() - 1);
+                    } else {
+                        break;
+                    }
+                }
+            }
+
+            diasRacha = Math.max(fechasRachaActiva.size, diasRacha);
+
+            document.getElementById("txtRachaDiasHeader").innerText = diasRacha + (diasRacha === 1 ? " día" : " días");
 
             const cajasDias = document.querySelectorAll("#fuegosRachaHeader .dia-racha-box");
             cajasDias.forEach(caja => caja.classList.remove("activo"));
 
-            if (diasRacha > 0) {
-                let hoyBase = new Date();
-                const diasActivosIndices = new Set();
+            // Encontrar el Lunes de la semana actual
+            let diaSemanaHoy = hoy.getDay(); // 0=Dom, 1=Lun...
+            let diasDesdeLunes = (diaSemanaHoy === 0) ? 6 : diaSemanaHoy - 1;
+            let lunesActual = new Date(hoy);
+            lunesActual.setDate(hoy.getDate() - diasDesdeLunes);
 
-                for (let i = 0; i < Math.min(diasRacha, 7); i++) {
-                    let dTemp = new Date(hoyBase);
-                    dTemp.setDate(hoyBase.getDate() - i);
-                    diasActivosIndices.add(dTemp.getDay());
+            cajasDias.forEach(caja => {
+                const diaBoxNum = Number(caja.getAttribute("data-js-dia")); // 0 al 6
+                
+                let offset = (diaBoxNum === 0) ? 6 : diaBoxNum - 1;
+                let fechaCaja = new Date(lunesActual);
+                fechaCaja.setDate(lunesActual.getDate() + offset);
+                let fechaCajaStr = obtenerFechaLocalStr(fechaCaja);
+
+                if (fechasRachaActiva.has(fechaCajaStr)) {
+                    caja.classList.add("activo");
                 }
-
-                cajasDias.forEach(caja => {
-                    const diaBoxNum = Number(caja.getAttribute("data-js-dia"));
-                    if (diasActivosIndices.has(diaBoxNum)) {
-                        caja.classList.add("activo");
-                    }
-                });
-            }
+            });
 
             const metasCumplidas = metas.filter(m => Number(m.monto_ahorrado) >= Number(m.monto_target)).length;
             const metasSimultaneas = metas.filter(m => Number(m.monto_ahorrado) < Number(m.monto_target)).length;
