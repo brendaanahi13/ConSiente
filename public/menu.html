@@ -849,6 +849,14 @@
     <script>
         const API_URL = "";
 
+        // Función auxiliar para obtener la fecha local exacta (YYYY-MM-DD) evitando desfase UTC
+        function obtenerFechaLocalStr(dateObj) {
+            const year = dateObj.getFullYear();
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
         function cerrarSesion(){
             sessionStorage.removeItem("sesionActiva");
             localStorage.removeItem("token");
@@ -878,13 +886,13 @@
             });
         });
 
-        // --- CÁLCULO DE RACHA ESTRICTO Y CONSECUTIVO ---
+        // --- CÁLCULO DE RACHA ESTRICTO Y CONSECUTIVO (SIN DESFASE UTC) ---
         function calcularRachaYRenderizar(gastos, perfil) {
             const fechasGastos = new Set();
             if (Array.isArray(gastos)) {
                 gastos.forEach(g => {
                     if (g.fecha) {
-                        const fechaStr = String(g.fecha).split('T')[0];
+                        const fechaStr = String(g.fecha).split('T')[0].split(' ')[0];
                         fechasGastos.add(fechaStr);
                     }
                 });
@@ -892,13 +900,13 @@
 
             let hoy = new Date();
             hoy.setHours(0, 0, 0, 0);
-            let hoyStr = hoy.toISOString().split('T')[0];
+            let hoyStr = obtenerFechaLocalStr(hoy);
 
             let ayer = new Date(hoy);
             ayer.setDate(ayer.getDate() - 1);
-            let ayerStr = ayer.toISOString().split('T')[0];
+            let ayerStr = obtenerFechaLocalStr(ayer);
 
-            // Determinar punto de partida de la racha consecutiva
+            // Determinar punto de partida de la racha consecutiva contando desde hoy
             let fechaCursor = null;
             if (fechasGastos.has(hoyStr)) {
                 fechaCursor = new Date(hoy);
@@ -911,7 +919,7 @@
             if (fechaCursor) {
                 let cursor = new Date(fechaCursor);
                 while (true) {
-                    let fStr = cursor.toISOString().split('T')[0];
+                    let fStr = obtenerFechaLocalStr(cursor);
                     if (fechasGastos.has(fStr)) {
                         fechasRachaActiva.add(fStr);
                         cursor.setDate(cursor.getDate() - 1);
@@ -929,7 +937,7 @@
                 txtRacha.innerText = diasRacha + (diasRacha === 1 ? " día" : " días");
             }
 
-            // Renderizar fuegos semanales: Solo enciende si la fecha exacta forma parte de la racha consecutiva
+            // Renderizar fuegos semanales
             const cajasDias = document.querySelectorAll("#fuegosRachaHeader .dia-racha-box");
             cajasDias.forEach(caja => caja.classList.remove("activo"));
 
@@ -942,13 +950,11 @@
             cajasDias.forEach(caja => {
                 const diaBoxNum = Number(caja.getAttribute("data-js-dia")); // 0 al 6
                 
-                // Calcular la fecha exacta de este cuadro en la semana actual
                 let offset = (diaBoxNum === 0) ? 6 : diaBoxNum - 1;
                 let fechaCaja = new Date(lunesActual);
                 fechaCaja.setDate(lunesActual.getDate() + offset);
-                let fechaCajaStr = fechaCaja.toISOString().split('T')[0];
+                let fechaCajaStr = obtenerFechaLocalStr(fechaCaja);
 
-                // Solo se activa si la fecha está dentro de la cadena consecutiva real de la racha
                 if (fechasRachaActiva.has(fechaCajaStr)) {
                     caja.classList.add("activo");
                 }
@@ -1004,7 +1010,7 @@
 
                 const gastosUltimos3Meses = todosLosGastos.filter(g => {
                     if (!g.fecha) return false;
-                    const partesFecha = String(g.fecha).split('T')[0].split('-');
+                    const partesFecha = String(g.fecha).split('T')[0].split(' ')[0].split('-');
                     if (partesFecha.length < 3) return false;
                     const gAnio = parseInt(partesFecha[0], 10);
                     const gMes = parseInt(partesFecha[1], 10) - 1;
@@ -1084,7 +1090,7 @@
 
                 const totalGastosMesActual = todosLosGastos.reduce((suma, g) => {
                     if (!g.fecha) return suma;
-                    const partesFecha = String(g.fecha).split('T')[0].split('-');
+                    const partesFecha = String(g.fecha).split('T')[0].split(' ')[0].split('-');
                     if (partesFecha.length < 3) return suma;
                     const gAnio = parseInt(partesFecha[0], 10);
                     const gMes = parseInt(partesFecha[1], 10) - 1;
@@ -1151,7 +1157,7 @@
             for(let d = 1; d <= totalDias; d++) {
                 const tieneGasto = gastos.some(g => {
                     if (!g.fecha) return false;
-                    const partesFecha = String(g.fecha).split('T')[0].split('-');
+                    const partesFecha = String(g.fecha).split('T')[0].split(' ')[0].split('-');
                     if (partesFecha.length < 3) return false;
                     return parseInt(partesFecha[2], 10) === d && (parseInt(partesFecha[1], 10) - 1) === mes && parseInt(partesFecha[0], 10) === anio;
                 });
@@ -1185,7 +1191,7 @@
 
             gastos.forEach(g => {
                 if (!g.fecha) return;
-                const partesFecha = String(g.fecha).split('T')[0].split('-');
+                const partesFecha = String(g.fecha).split('T')[0].split(' ')[0].split('-');
                 if (partesFecha.length < 3) return;
                 const gAnio = parseInt(partesFecha[0], 10);
                 const gMes = parseInt(partesFecha[1], 10) - 1;
