@@ -886,7 +886,7 @@
             });
         });
 
-        // --- CÁLCULO DE RACHA ESTRICTO Y CONSECUTIVO (SIN DESFASE UTC) ---
+        // --- CÁLCULO DE RACHA ESTRICTO Y CONSECUTIVO (ACTUALIZADO) ---
         function calcularRachaYRenderizar(gastos, perfil) {
             const fechasGastos = new Set();
             if (Array.isArray(gastos)) {
@@ -905,6 +905,9 @@
             let ayer = new Date(hoy);
             ayer.setDate(ayer.getDate() - 1);
             let ayerStr = obtenerFechaLocalStr(ayer);
+
+            // Consideramos el día actual activo al abrir la app para que la racha no requiera un gasto forzoso
+            fechasGastos.add(hoyStr);
 
             // Determinar punto de partida de la racha consecutiva contando desde hoy
             let fechaCursor = null;
