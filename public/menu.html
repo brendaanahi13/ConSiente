@@ -886,7 +886,7 @@
             });
         });
 
-        // --- CÁLCULO DE RACHA ESTRICTO Y CONSECUTIVO (ACTUALIZADO) ---
+        // --- CÁLCULO DE RACHA ESTRICTO Y SINCRONIZADO ---
         function calcularRachaYRenderizar(gastos, perfil) {
             const fechasGastos = new Set();
             if (Array.isArray(gastos)) {
@@ -906,10 +906,9 @@
             ayer.setDate(ayer.getDate() - 1);
             let ayerStr = obtenerFechaLocalStr(ayer);
 
-            // Consideramos el día actual activo al abrir la app para que la racha no requiera un gasto forzoso
+            // Abrir la app hoy mantiene el día actual activo
             fechasGastos.add(hoyStr);
 
-            // Determinar punto de partida de la racha consecutiva contando desde hoy
             let fechaCursor = null;
             if (fechasGastos.has(hoyStr)) {
                 fechaCursor = new Date(hoy);
@@ -917,7 +916,6 @@
                 fechaCursor = new Date(ayer);
             }
 
-            // Recopilar únicamente los días estrictamente consecutivos hacia atrás
             const fechasRachaActiva = new Set();
             if (fechaCursor) {
                 let cursor = new Date(fechaCursor);
@@ -932,7 +930,8 @@
                 }
             }
 
-            let diasRacha = Math.max(fechasRachaActiva.size, Number(perfil.racha_dias ?? perfil.racha ?? 0));
+            // Sincronizado: el contador numérico es exactamente el tamaño de la cadena consecutiva activa
+            let diasRacha = fechasRachaActiva.size;
 
             // Actualizar texto del contador
             const txtRacha = document.getElementById("txtRachaDiasHeader");
