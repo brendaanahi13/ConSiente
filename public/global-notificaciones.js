@@ -6,6 +6,14 @@ function obtenerTokenNotif() {
     return localStorage.getItem("token");
 }
 
+// 🌟 Función auxiliar para extraer la fecha local exacta (YYYY-MM-DD) evitando desfase UTC
+function obtenerFechaLocalStr(dateObj) {
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
 function obtenerTiempoRelativo(fechaStr) {
     if (!fechaStr) return "Hace un momento";
     const fecha = new Date(fechaStr);
@@ -48,7 +56,7 @@ async function cargarNotificacionesSistema() {
 
         let userId = 'user';
 
-        // 2. Obtener perfil para inyectar la racha de hoy y aislarla por ID de usuario
+        // 2. Obtener perfil para inyectar la racha de hoy y aislarla por ID de usuario con fecha local
         try {
             const resPerfil = await fetch(`${window.API_URL}/api/perfil`, {
                 headers: { "Authorization": `Bearer ${token}` }
@@ -58,9 +66,11 @@ async function cargarNotificacionesSistema() {
                 userId = usuario.id || usuario.usuario_id || 'user';
                 window.currentNotifUserId = userId; // Guardar globalmente para otras funciones
 
-                const rachaActual = usuario.racha_dias || 1;
+                const rachaActual = Number(usuario.racha_dias || usuario.racha || 1);
                 const nombreUsuario = usuario.nombre || "Usuario";
-                const hoyStr = new Date().toISOString().split('T')[0];
+                
+                // Usamos la fecha local exacta para evitar problemas de zona horaria
+                const hoyStr = obtenerFechaLocalStr(new Date());
                 
                 // Verificar si ya fue leída hoy por ESTE usuario específico
                 const rachaLeidaHoy = localStorage.getItem(`racha_leida_${userId}_${hoyStr}`) === 'true';
@@ -74,7 +84,7 @@ async function cargarNotificacionesSistema() {
                     notificaciones.unshift({
                         id: 'local_racha_hoy',
                         titulo: `🔥 ¡Hola ${nombreUsuario}, Racha Activa!`,
-                        mensaje: `Felicidades por ingresar hoy a ConSiente. Tu racha actual es de ${rachaActual} días seguidos.`,
+                        mensaje: `Felicidades por ingresar hoy a ConSiente. Tu racha actual es de ${rachaActual} ${rachaActual === 1 ? 'día seguido' : 'días seguidos'}.`,
                         leida: rachaLeidaHoy ? 1 : 0,
                         fecha: new Date().toISOString()
                     });
@@ -153,7 +163,7 @@ async function cargarNotificacionesSistema() {
                 if (e.target.closest(".btn-eliminar-notif")) return;
                 e.preventDefault();
 
-                const hoyStr = new Date().toISOString().split('T')[0];
+                const hoyStr = obtenerFechaLocalStr(new Date());
 
                 if (idNotif === 'local_racha_hoy') {
                     localStorage.setItem(`racha_leida_${userId}_${hoyStr}`, 'true');
@@ -173,7 +183,7 @@ async function cargarNotificacionesSistema() {
 
             btnEliminar.addEventListener("click", async (e) => {
                 e.stopPropagation();
-                const hoyStr = new Date().toISOString().split('T')[0];
+                const hoyStr = obtenerFechaLocalStr(new Date());
                 if (idNotif === 'local_racha_hoy') {
                     localStorage.setItem(`racha_leida_${userId}_${hoyStr}`, 'true');
                     item.remove();
@@ -229,7 +239,7 @@ async function marcarTodasLeidas() {
     const token = obtenerTokenNotif();
     if (!token) return;
     try {
-        const hoyStr = new Date().toISOString().split('T')[0];
+        const hoyStr = obtenerFechaLocalStr(new Date());
         const userId = window.currentNotifUserId || 'user';
         localStorage.setItem(`racha_leida_${userId}_${hoyStr}`, 'true');
 
