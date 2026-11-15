@@ -6,7 +6,7 @@ function obtenerTokenNotif() {
     return localStorage.getItem("token");
 }
 
-// 🌟 Función auxiliar para extraer la fecha local exacta (YYYY-MM-DD) evitando desfase UTC
+// Función auxiliar para extraer la fecha local exacta
 function obtenerFechaLocalStr(dateObj) {
     const year = dateObj.getFullYear();
     const month = String(dateObj.getMonth() + 1).padStart(2, '0');
@@ -56,21 +56,69 @@ async function cargarNotificacionesSistema() {
 
         let userId = 'user';
 
-        // 2. Obtener perfil para inyectar la racha de hoy y aislarla por ID de usuario con fecha local
+        // 2. Obtener perfil y gastos de manera simultánea para calcular la racha real y dinámica por usuario
         try {
-            const resPerfil = await fetch(`${window.API_URL}/api/perfil`, {
-                headers: { "Authorization": `Bearer ${token}` }
-            });
+            const [resPerfil, resGastos] = await Promise.all([
+                fetch(`${window.API_URL}/api/perfil`, { headers: { "Authorization": `Bearer ${token}` } }),
+                fetch(`${window.API_URL}/api/lista-gastos`, { headers: { "Authorization": `Bearer ${token}` } })
+            ]);
+
             if (resPerfil.ok) {
                 const usuario = await resPerfil.json();
                 userId = usuario.id || usuario.usuario_id || 'user';
-                window.currentNotifUserId = userId; // Guardar globalmente para otras funciones
+                window.currentNotifUserId = userId; 
 
-                const rachaActual = Number(usuario.racha_dias || usuario.racha || 1);
                 const nombreUsuario = usuario.nombre || "Usuario";
-                
-                // Usamos la fecha local exacta para evitar problemas de zona horaria
-                const hoyStr = obtenerFechaLocalStr(new Date());
+                let gastos = [];
+                if (resGastos.ok) {
+                    gastos = await resGastos.json();
+                }
+
+                // --- CÁLCULO DE RACHA DINÁMICO Y SINCRONIZADO ---
+                const fechasGastos = new Set();
+                if (Array.isArray(gastos)) {
+                    gastos.forEach(g => {
+                        if (g.fecha) {
+                            const fechaStr = String(g.fecha).split('T')[0].split(' ')[0];
+                            fechasGastos.add(fechaStr);
+                        }
+                    });
+                }
+
+                let hoy = new Date();
+                hoy.setHours(0, 0, 0, 0);
+                let hoyStr = obtenerFechaLocalStr(hoy);
+
+                let ayer = new Date(hoy);
+                ayer.setDate(ayer.getDate() - 1);
+                let ayerStr = obtenerFechaLocalStr(ayer);
+
+                // Mantener el día actual activo al abrir la app
+                fechasGastos.add(hoyStr);
+
+                let fechaCursor = null;
+                if (fechasGastos.has(hoyStr)) {
+                    fechaCursor = new Date(hoy);
+                } else if (fechasGastos.has(ayerStr)) {
+                    fechaCursor = new Date(ayer);
+                }
+
+                const fechasRachaActiva = new Set();
+                if (fechaCursor) {
+                    let cursor = new Date(fechaCursor);
+                    while (true) {
+                        let fStr = obtenerFechaLocalStr(cursor);
+                        if (fechasGastos.has(fStr)) {
+                            fechasRachaActiva.add(fStr);
+                            cursor.setDate(cursor.getDate() - 1);
+                        } else {
+                            break;
+                        }
+                    }
+                }
+
+                // Racha exacta calculada al momento
+                const rachaActual = Math.max(fechasRachaActiva.size, Number(usuario.racha_dias || usuario.racha || 1));
                 
                 // Verificar si ya fue leída hoy por ESTE usuario específico
                 const rachaLeidaHoy = localStorage.getItem(`racha_leida_${userId}_${hoyStr}`) === 'true';
@@ -171,7 +219,6 @@ async function cargarNotificacionesSistema() {
                     await marcarUnaLeida(idNotif);
                 }
 
-                // Pausa de 150ms para permitir que la petición HTTP se despache al servidor antes de cambiar de página
                 setTimeout(() => {
                     window.location.href = destinoUrl;
                 }, 150);
