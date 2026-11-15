@@ -484,7 +484,6 @@
             if (!token) return window.location.href = "index.html";
 
             let userId = "7";
-            let diasRacha = 0;
             let gastos = [];
             let metas = [];
 
@@ -495,7 +494,6 @@
                 if (resPerfil.ok) {
                     const perfil = window.infoUsuario = await resPerfil.json();
                     userId = perfil.id || perfil.usuario_id || "7";
-                    diasRacha = Number(perfil.racha_dias || perfil.racha || 0);
                 }
 
                 const resGastos = await fetch(`${API_URL}/api/lista-gastos`, {
@@ -512,7 +510,7 @@
 
             } catch (e) { console.error("Error al cargar datos del usuario:", e); }
 
-            // --- CÁLCULO DE RACHA ESTRICTO Y CONSECUTIVO (ACTUALIZADO) ---
+            // --- CÁLCULO DE RACHA ESTRICTO Y SINCRONIZADO ---
             const fechasGastos = new Set();
             if (Array.isArray(gastos)) {
                 gastos.forEach(g => {
@@ -531,7 +529,7 @@
             ayer.setDate(ayer.getDate() - 1);
             let ayerStr = obtenerFechaLocalStr(ayer);
 
-            // Consideramos el día actual activo al abrir la app para que la racha no requiera un gasto forzoso
+            // Abrir la app hoy mantiene el día actual activo
             fechasGastos.add(hoyStr);
 
             let fechaCursor = null;
@@ -555,7 +553,8 @@
                 }
             }
 
-            diasRacha = Math.max(fechasRachaActiva.size, diasRacha);
+            // Sincronizado: el contador numérico es exactamente el tamaño de la cadena consecutiva activa
+            let diasRacha = fechasRachaActiva.size;
 
             document.getElementById("txtRachaDiasHeader").innerText = diasRacha + (diasRacha === 1 ? " día" : " días");
 
