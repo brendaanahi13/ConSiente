@@ -483,7 +483,22 @@
             const token = localStorage.getItem("token");
             if (!token) return window.location.href = "index.html";
 
+            // 🌟 Extracción segura del ID real desde el token JWT para aislar misiones reclamadas por usuario
             let userId = "7";
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                const payloadToken = JSON.parse(jsonPayload);
+                if (payloadToken && payloadToken.id) {
+                    userId = payloadToken.id;
+                }
+            } catch (errToken) {
+                console.error("No se pudo leer el ID del token:", errToken);
+            }
+
             let gastos = [];
             let metas = [];
 
@@ -493,7 +508,9 @@
                 });
                 if (resPerfil.ok) {
                     const perfil = window.infoUsuario = await resPerfil.json();
-                    userId = perfil.id || perfil.usuario_id || "7";
+                    if (perfil.id || perfil.usuario_id) {
+                        userId = perfil.id || perfil.usuario_id;
+                    }
                 }
 
                 const resGastos = await fetch(`${API_URL}/api/lista-gastos`, {
@@ -553,7 +570,6 @@
                 }
             }
 
-            // Sincronizado: el contador numérico es exactamente el tamaño de la cadena consecutiva activa
             let diasRacha = fechasRachaActiva.size;
 
             document.getElementById("txtRachaDiasHeader").innerText = diasRacha + (diasRacha === 1 ? " día" : " días");
@@ -561,14 +577,13 @@
             const cajasDias = document.querySelectorAll("#fuegosRachaHeader .dia-racha-box");
             cajasDias.forEach(caja => caja.classList.remove("activo"));
 
-            // Encontrar el Lunes de la semana actual
-            let diaSemanaHoy = hoy.getDay(); // 0=Dom, 1=Lun...
+            let diaSemanaHoy = hoy.getDay(); 
             let diasDesdeLunes = (diaSemanaHoy === 0) ? 6 : diaSemanaHoy - 1;
             let lunesActual = new Date(hoy);
             lunesActual.setDate(hoy.getDate() - diasDesdeLunes);
 
             cajasDias.forEach(caja => {
-                const diaBoxNum = Number(caja.getAttribute("data-js-dia")); // 0 al 6
+                const diaBoxNum = Number(caja.getAttribute("data-js-dia")); 
                 
                 let offset = (diaBoxNum === 0) ? 6 : diaBoxNum - 1;
                 let fechaCaja = new Date(lunesActual);
@@ -670,7 +685,20 @@
         }
 
         async function reclamarMisionDinamica(idMision, premio, iconoColor) {
+            let token = localStorage.getItem("token");
             let userId = "7";
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                const payloadToken = JSON.parse(jsonPayload);
+                if (payloadToken && payloadToken.id) {
+                    userId = payloadToken.id;
+                }
+            } catch (errToken) {}
+
             if (window.infoUsuario && (window.infoUsuario.id || window.infoUsuario.usuario_id)) {
                 userId = window.infoUsuario.id || window.infoUsuario.usuario_id;
             }
@@ -684,7 +712,7 @@
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${localStorage.getItem("token")}`
+                        "Authorization": `Bearer ${token}`
                     },
                     body: JSON.stringify({
                         mision_titulo: "Misión #" + idMision,
@@ -697,7 +725,7 @@
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${localStorage.getItem("token")}`
+                        "Authorization": `Bearer ${token}`
                     },
                     body: JSON.stringify({
                         titulo: "¡Recompensa Desbloqueada!",
