@@ -432,7 +432,7 @@ app.put("/api/perfil", verificarToken, (req, res) => {
 });
 
 // ==========================================
-// SOLICITAR RECUPERACIÓN DE CONTRASEÑA
+// SOLICITAR RECUPERACIÓN DE CONTRASEÑA (Corregido para producción)
 // ==========================================
 app.post("/api/solicitar-recuperacion", (req, res) => {
     const { correo } = req.body;
@@ -488,18 +488,22 @@ app.post("/api/solicitar-recuperacion", (req, res) => {
                         }
                     });
 
+                    // Dinámico: Funciona en local y en producción (Render) sin romper rutas
+                    const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
+
                     const mailOptions = {
                         from: `"Equipo ConSiente" <${process.env.EMAIL_USER}>`,
                         to: correo,
                         subject: "Recuperación de Contraseña - ConSiente",
                         html: `
-                            <div style="font-family: Arial; padding: 25px;">
-                                <h2>Recuperación de cuenta</h2>
+                            <div style="font-family: Arial; padding: 25px; background: #f9f9f9; border-radius: 10px;">
+                                <h2 style="color: #2e7d32;">Recuperación de cuenta</h2>
                                 <p>Hola <b>${usuarioNombre}</b>,</p>
-                                <p>Solicitaste restablecer tu contraseña.</p>
-                                <a href="http://localhost:3000/restablecer.html?token=${token}">
+                                <p>Solicitaste restablecer tu contraseña en ConSiente.</p>
+                                <a href="${baseUrl}/restablecer.html?token=${token}" style="background: #2e7d32; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 15px;">
                                     Restablecer mi contraseña
                                 </a>
+                                <p style="margin-top: 20px; font-size: 12px; color: #666;">Si no solicitaste este cambio, puedes ignorar este mensaje.</p>
                             </div>
                         `
                     };
@@ -1060,7 +1064,7 @@ function abonarMetaLogica(req, res) {
 }
 
 // ==========================================
-// RUTAS DE ADMINISTRACIÓN (Panel Admin Pro)
+// RUTAS DE ADMINISTRACIÓN (Panel Admin Pro - Corregido)
 // ==========================================
 app.get("/api/admin/usuarios", verificarToken, (req, res) => {
     db.query("SELECT rol FROM usuarios WHERE id = ?", [req.user.id], (err, results) => {
@@ -1071,7 +1075,7 @@ app.get("/api/admin/usuarios", verificarToken, (req, res) => {
         const buscar = req.query.buscar ? `%${req.query.buscar}%` : '%%';
 
         const sql = `
-            SELECT u.id, u.nombre, u.correo, u.saldo, u.rol, u.racha_dias,
+            SELECT u.id, u.nombre, u.correo, COALESCE(u.saldo, 0) AS saldo, u.rol, COALESCE(u.racha_dias, 0) AS racha_dias,
                    DATE_FORMAT(u.ultimo_acceso, '%d/%m/%Y') AS ultimo_ingreso,
                    (SELECT COUNT(*) FROM metas m WHERE m.usuario_id = u.id) AS total_metas
             FROM usuarios u
@@ -1079,7 +1083,10 @@ app.get("/api/admin/usuarios", verificarToken, (req, res) => {
         `;
 
         db.query(sql, [buscar, buscar], (errUsers, usuarios) => {
-            if (errUsers) return res.status(500).json({ error: "Error al obtener lista de usuarios" });
+            if (errUsers) {
+                console.error("❌ Error detallado en SQL de usuarios admin:", errUsers);
+                return res.status(500).json({ error: "Error al obtener lista de usuarios", detalle: errUsers.message });
+            }
             res.json(usuarios);
         });
     });
