@@ -432,7 +432,7 @@ app.put("/api/perfil", verificarToken, (req, res) => {
 });
 
 // ==========================================
-// SOLICITAR RECUPERACIÓN DE CONTRASEÑA (Corregido para producción)
+// SOLICITAR RECUPERACIÓN DE CONTRASEÑA
 // ==========================================
 app.post("/api/solicitar-recuperacion", (req, res) => {
     const { correo } = req.body;
@@ -488,7 +488,6 @@ app.post("/api/solicitar-recuperacion", (req, res) => {
                         }
                     });
 
-                    // Dinámico: Funciona en local y en producción (Render) sin romper rutas
                     const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
 
                     const mailOptions = {
@@ -1064,7 +1063,7 @@ function abonarMetaLogica(req, res) {
 }
 
 // ==========================================
-// RUTAS DE ADMINISTRACIÓN (Panel Admin Pro - Corregido)
+// RUTAS DE ADMINISTRACIÓN (Panel Admin Pro - Corregido sin ultimo_acceso)
 // ==========================================
 app.get("/api/admin/usuarios", verificarToken, (req, res) => {
     db.query("SELECT rol FROM usuarios WHERE id = ?", [req.user.id], (err, results) => {
@@ -1075,8 +1074,10 @@ app.get("/api/admin/usuarios", verificarToken, (req, res) => {
         const buscar = req.query.buscar ? `%${req.query.buscar}%` : '%%';
 
         const sql = `
-            SELECT u.id, u.nombre, u.correo, COALESCE(u.saldo, 0) AS saldo, u.rol, COALESCE(u.racha_dias, 0) AS racha_dias,
-                   DATE_FORMAT(u.ultimo_acceso, '%d/%m/%Y') AS ultimo_ingreso,
+            SELECT u.id, u.nombre, u.correo, 
+                   COALESCE(u.saldo, 0) AS saldo, 
+                   u.rol, 
+                   COALESCE(u.racha_dias, 0) AS racha_dias,
                    (SELECT COUNT(*) FROM metas m WHERE m.usuario_id = u.id) AS total_metas
             FROM usuarios u
             WHERE u.nombre LIKE ? OR u.correo LIKE ?
@@ -1084,7 +1085,7 @@ app.get("/api/admin/usuarios", verificarToken, (req, res) => {
 
         db.query(sql, [buscar, buscar], (errUsers, usuarios) => {
             if (errUsers) {
-                console.error("❌ Error detallado en SQL de usuarios admin:", errUsers);
+                console.error("❌ Error SQL en admin usuarios:", errUsers);
                 return res.status(500).json({ error: "Error al obtener lista de usuarios", detalle: errUsers.message });
             }
             res.json(usuarios);
