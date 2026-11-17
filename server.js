@@ -1527,6 +1527,36 @@ app.get("/api/admin/premios-reclamados", verificarToken, (req, res) => {
     });
 });
 
+// ==========================================
+// ELIMINAR PREMIO RECLAMADO (CRUD Admin)
+// ==========================================
+app.delete("/api/admin/premios-reclamados/:id", verificarToken, (req, res) => {
+    const adminId = req.user.id;
+    const premioId = req.params.id;
+
+    db.query("SELECT rol FROM usuarios WHERE id = ?", [adminId], (err, results) => {
+        if (err || results.length === 0 || results[0].rol !== 'admin') {
+            return res.status(403).json({ error: "Acceso denegado." });
+        }
+
+        db.query("DELETE FROM premios_reclamados WHERE id = ?", [premioId], (errDel, resultado) => {
+            if (errDel) {
+                console.error("Error al eliminar premio reclamado:", errDel);
+                return res.status(500).json({ error: "Error al eliminar el registro." });
+            }
+
+            if (resultado.affectedRows === 0) {
+                return res.status(404).json({ error: "Premio no encontrado." });
+            }
+
+            res.json({ mensaje: "Premio reclamado eliminado correctamente del historial." });
+        });
+    });
+});
+
+// ==========================================
+// RECLAMAR PREMIO (Con validación anti-duplicados)
+// ==========================================
 app.post("/api/premios/reclamar", verificarToken, (req, res) => {
     const usuarioId = req.user.id;
     const { mision_titulo, premio_reclamado, iconoUrl } = req.body;
@@ -1535,20 +1565,38 @@ app.post("/api/premios/reclamar", verificarToken, (req, res) => {
         return res.status(400).json({ error: "Faltan datos del premio." });
     }
 
-    const sql = `INSERT INTO premios_reclamados (usuario_id, mision_titulo, premio_reclamado) VALUES (?, ?, ?)`;
-    db.query(sql, [usuarioId, mision_titulo, premio_reclamado], (err) => {
-        if (err) {
-            console.error("Error al registrar el premio:", err);
-            return res.status(500).json({ error: "Error al registrar el premio." });
+    // 🛡️ Verificar si el usuario ya reclamó este premio o misión para evitar duplicados en BD
+    const sqlVerificar = `SELECT id FROM premios_reclamados WHERE usuario_id = ? AND (mision_titulo = ? OR premio_reclamado = ?)`;
+    
+    db.query(sqlVerificar, [usuarioId, mision_titulo, premio_reclamado], (errCheck, existentes) => {
+        if (errCheck) {
+            console.error("Error al verificar premio existente:", errCheck);
+            return res.status(500).json({ error: "Error al validar el premio." });
         }
 
-        if (iconoUrl) {
-            db.query("UPDATE usuarios SET avatar = ? WHERE id = ?", [iconoUrl, usuarioId], (errAvatar) => {
-                if (errAvatar) console.error("Error al actualizar avatar por misión:", errAvatar);
-            });
+        if (existentes.length > 0) {
+            if (iconoUrl) {
+                db.query("UPDATE usuarios SET avatar = ? WHERE id = ?", [iconoUrl, usuarioId]);
+            }
+            return res.status(200).json({ mensaje: "El premio ya había sido registrado anteriormente." });
         }
 
-        res.status(201).json({ mensaje: "¡Premio e icono desbloqueados y registrados con éxito!" });
+        // Insertar si no existe
+        const sqlInsert = `INSERT INTO premios_reclamados (usuario_id, mision_titulo, premio_reclamado) VALUES (?, ?, ?)`;
+        db.query(sqlInsert, [usuarioId, mision_titulo, premio_reclamado], (err) => {
+            if (err) {
+                console.error("Error al registrar el premio:", err);
+                return res.status(500).json({ error: "Error al registrar el premio." });
+            }
+
+            if (iconoUrl) {
+                db.query("UPDATE usuarios SET avatar = ? WHERE id = ?", [iconoUrl, usuarioId], (errAvatar) => {
+                    if (errAvatar) console.error("Error al actualizar avatar por misión:", errAvatar);
+                });
+            }
+
+            res.status(201).json({ mensaje: "¡Premio e icono desbloqueados y registrados con éxito!" });
+        });
     });
 });
 
