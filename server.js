@@ -204,51 +204,58 @@ app.post("/login", (req, res) => {
 });
 
 // ==========================================
-// OBTENER PERFIL (CON CONTROL DE RACHAS Y AVATAR)
+// OBTENER PERFIL (CON CÁLCULO Y SINCRONIZACIÓN AUTOMÁTICA DE RACHA)
 // ==========================================
 app.get("/api/perfil", verificarToken, (req, res) => {
     const usuarioId = req.user.id; 
-    const hoy = new Date().toISOString().split('T')[0]; 
 
-    db.query('SELECT racha_dias, DATE_FORMAT(ultimo_acceso, "%Y-%m-%d") AS ultimo_acceso FROM usuarios WHERE id = ?', [usuarioId], (err, results) => {
-        if (!err && results && results.length > 0) {
-            const usuario = results[0];
-            const racha_dias = usuario.racha_dias || 0;
-            const ultimo_acceso = usuario.ultimo_acceso;
+    db.query('SELECT fecha FROM movimientos WHERE usuario_id = ? ORDER BY fecha DESC', [usuarioId], (errMov, movs) => {
+        let diasRachaCalculada = 0;
 
-            let nuevaRacha = racha_dias;
-            let enviarAlertaRacha = false;
+        if (!errMov && movs) {
+            const fechasGastos = new Set();
+            movs.forEach(g => {
+                if (g.fecha) {
+                    const fechaStr = String(g.fecha).split('T')[0].split(' ')[0];
+                    fechasGastos.add(fechaStr);
+                }
+            });
 
-            if (!ultimo_acceso) {
-                nuevaRacha = 1;
-                enviarAlertaRacha = true;
-            } else if (ultimo_acceso !== hoy) {
-                const fechaUltimaObjeto = new Date(ultimo_acceso);
-                const fechaHoyObjeto = new Date(hoy);
-                const diferenciaDias = Math.floor((fechaHoyObjeto - fechaUltimaObjeto) / (1000 * 60 * 60 * 24));
+            const hoyObj = new Date();
+            hoyObj.setHours(0, 0, 0, 0);
+            const hoyStr = hoyObj.toISOString().split('T')[0];
 
-                if (diferenciaDias === 1) {
-                    nuevaRacha = racha_dias + 1;
-                    enviarAlertaRacha = true;
-                } else if (diferenciaDias > 1) {
-                    nuevaRacha = 1;
-                    enviarAlertaRacha = true;
+            const ayerObj = new Date(hoyObj);
+            ayerObj.setDate(ayerObj.getDate() - 1);
+            const ayerStr = ayerObj.toISOString().split('T')[0];
+
+            fechasGastos.add(hoyStr);
+
+            let fechaCursor = null;
+            if (fechasGastos.has(hoyStr)) {
+                fechaCursor = new Date(hoyObj);
+            } else if (fechasGastos.has(ayerStr)) {
+                fechaCursor = new Date(ayerObj);
+            }
+
+            if (fechaCursor) {
+                let cursor = new Date(fechaCursor);
+                while (true) {
+                    const fStr = cursor.toISOString().split('T')[0];
+                    if (fechasGastos.has(fStr)) {
+                        diasRachaCalculada++;
+                        cursor.setDate(cursor.getDate() - 1);
+                    } else {
+                        break;
+                    }
                 }
             }
-
-            if (nuevaRacha !== racha_dias || ultimo_acceso !== hoy) {
-                db.query('UPDATE usuarios SET racha_dias = ?, ultimo_acceso = ? WHERE id = ?', [nuevaRacha, hoy, usuarioId], (errUpdate) => {
-                    if (enviarAlertaRacha && !errUpdate) {
-                        const titulo = '🔥 ¡Mantienes tu Racha Activa!';
-                        const mensaje = `Felicidades por ingresar hoy a ConSiente. Tu racha actual es de ${nuevaRacha} días seguidos.`;
-                        
-                        db.query('INSERT INTO notificaciones (usuario_id, titulo, mensaje, leida) VALUES (?, ?, ?, 0)', [usuarioId, titulo, mensaje], (err) => {
-                            if (err) console.error("Error silencioso al guardar notificación:", err.message);
-                        });
-                    }
-                });
-            }
         }
+
+        const hoyStrSql = new Date().toISOString().split('T')[0];
+        db.query('UPDATE usuarios SET racha_dias = ?, ultimo_acceso = ? WHERE id = ?', [diasRachaCalculada, hoyStrSql, usuarioId], (errUpdate) => {
+            if (errUpdate) console.error("Error al sincronizar racha en BD:", errUpdate);
+        });
 
         db.query(
             "SELECT nombre, saldo, rol, racha_dias, avatar FROM usuarios WHERE id = ?",
@@ -1063,7 +1070,7 @@ function abonarMetaLogica(req, res) {
 }
 
 // ==========================================
-// RUTAS DE ADMINISTRACIÓN (Panel Admin Pro - Rachas Correctas)
+// RUTAS DE ADMINISTRACIÓN (Panel Admin Pro - Con Racha Sincronizada)
 // ==========================================
 app.get("/api/admin/usuarios", verificarToken, (req, res) => {
     db.query("SELECT rol FROM usuarios WHERE id = ?", [req.user.id], (err, results) => {
