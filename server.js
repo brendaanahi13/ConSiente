@@ -1063,7 +1063,7 @@ function abonarMetaLogica(req, res) {
 }
 
 // ==========================================
-// RUTAS DE ADMINISTRACIÓN (Panel Admin Pro - Corregido sin ultimo_acceso)
+// RUTAS DE ADMINISTRACIÓN (Panel Admin Pro - Rachas Correctas)
 // ==========================================
 app.get("/api/admin/usuarios", verificarToken, (req, res) => {
     db.query("SELECT rol FROM usuarios WHERE id = ?", [req.user.id], (err, results) => {
