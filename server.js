@@ -1100,6 +1100,9 @@ app.get("/api/admin/usuarios", verificarToken, (req, res) => {
     });
 });
 
+// ==========================================
+// DETALLE DE USUARIO PARA ADMIN (Con cálculo exacto de racha y movimientos propios)
+// ==========================================
 app.get("/api/admin/usuarios/:id/detalle", verificarToken, (req, res) => {
     const adminId = req.user.id;
     const usuarioId = req.params.id;
@@ -1109,19 +1112,70 @@ app.get("/api/admin/usuarios/:id/detalle", verificarToken, (req, res) => {
             return res.status(403).json({ error: "Acceso denegado." });
         }
 
-        db.query("SELECT id, nombre, correo, rol, racha_dias, saldo FROM usuarios WHERE id = ?", [usuarioId], (errUser, userRes) => {
-            if (errUser || userRes.length === 0) return res.status(404).json({ error: "Usuario no encontrado" });
-            const usuario = userRes[0];
+        // 1. Obtener los movimientos del usuario específico seleccionado
+        db.query('SELECT fecha FROM movimientos WHERE usuario_id = ? ORDER BY fecha DESC', [usuarioId], (errMov, movs) => {
+            let diasRachaCalculada = 0;
 
-            db.query("SELECT COUNT(*) AS totalMetas FROM metas WHERE usuario_id = ?", [usuarioId], (errMeta, metaRes) => {
-                db.query("SELECT COUNT(*) AS totalMovimientos, SUM(CASE WHEN tipo = 'Gasto' THEN monto ELSE 0 END) AS sumaGastos FROM movimientos WHERE usuario_id = ?", [usuarioId], (errMov, movRes) => {
-                    res.json({
-                        usuario: usuario,
-                        estadisticas: {
-                            totalMetas: metaRes[0]?.totalMetas || 0,
-                            totalMovimientos: movRes[0]?.totalMovimientos || 0,
-                            sumaGastos: movRes[0]?.sumaGastos || 0
+            if (!errMov && movs) {
+                const fechasGastos = new Set();
+                movs.forEach(g => {
+                    if (g.fecha) {
+                        const fechaStr = String(g.fecha).split('T')[0].split(' ')[0];
+                        fechasGastos.add(fechaStr);
+                    }
+                });
+
+                const hoyObj = new Date();
+                hoyObj.setHours(0, 0, 0, 0);
+                const hoyStr = hoyObj.toISOString().split('T')[0];
+
+                const ayerObj = new Date(hoyObj);
+                ayerObj.setDate(ayerObj.getDate() - 1);
+                const ayerStr = ayerObj.toISOString().split('T')[0];
+
+                fechasGastos.add(hoyStr);
+
+                let fechaCursor = null;
+                if (fechasGastos.has(hoyStr)) {
+                    fechaCursor = new Date(hoyObj);
+                } else if (fechasGastos.has(ayerStr)) {
+                    fechaCursor = new Date(ayerObj);
+                }
+
+                if (fechaCursor) {
+                    let cursor = new Date(fechaCursor);
+                    while (true) {
+                        const fStr = cursor.toISOString().split('T')[0];
+                        if (fechasGastos.has(fStr)) {
+                            diasRachaCalculada++;
+                            cursor.setDate(cursor.getDate() - 1);
+                        } else {
+                            break;
                         }
+                    }
+                }
+            }
+
+            // Actualizar la racha en la tabla usuarios para mantener consistencia
+            db.query('UPDATE usuarios SET racha_dias = ? WHERE id = ?', [diasRachaCalculada, usuarioId]);
+
+            // 2. Obtener los datos generales del usuario
+            db.query("SELECT id, nombre, correo, rol, saldo FROM usuarios WHERE id = ?", [usuarioId], (errUser, userRes) => {
+                if (errUser || userRes.length === 0) return res.status(404).json({ error: "Usuario no encontrado" });
+                const usuario = userRes[0];
+                usuario.racha_dias = diasRachaCalculada; // Inyectar racha calculada
+
+                db.query("SELECT COUNT(*) AS totalMetas FROM metas WHERE usuario_id = ?", [usuarioId], (errMeta, metaRes) => {
+                    db.query("SELECT COUNT(*) AS totalMovimientos, SUM(CASE WHEN tipo = 'Gasto' THEN monto ELSE 0 END) AS sumaGastos FROM movimientos WHERE usuario_id = ?", [usuarioId], (errMovsCount, movRes) => {
+                        res.json({
+                            usuario: usuario,
+                            movimientos: movs || [], // Devolvemos los movimientos propios del usuario seleccionado
+                            estadisticas: {
+                                totalMetas: metaRes[0]?.totalMetas || 0,
+                                totalMovimientos: movRes[0]?.totalMovimientos || 0,
+                                sumaGastos: movRes[0]?.sumaGastos || 0
+                            }
+                        });
                     });
                 });
             });
