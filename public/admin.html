@@ -546,13 +546,11 @@
         let chartUsoInstance = null;
         let todosLosUsuariosBD = [];
 
-        // Validación corregida y normalizada a minúsculas
         if (!token || !rolUsuario || rolUsuario.toLowerCase() !== 'admin') {
             alert("Acceso no autorizado.");
             window.location.href = "index.html";
         }
 
-        // CONTROL DE PESTAÑAS (TABS)
         function cambiarTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active-tab'));
             document.querySelectorAll('.sidebar-menu button').forEach(el => el.classList.remove('active'));
@@ -615,7 +613,6 @@
                         if(u.total_metas) metasSuma += Number(u.total_metas);
 
                         const tr = document.createElement("tr");
-                        // Corrección aplicada: se usa .closest('button') para evitar fallos si se hace clic dentro del botón
                         tr.onclick = (e) => {
                             if(!e.target.closest('button')) seleccionarUsuarioPorId(u.id);
                         };
@@ -625,7 +622,7 @@
                             <td><strong style="color: #fff;">${u.nombre}</strong></td>
                             <td style="color: #a0a0a0;">${u.correo}</td>
                             <td>${u.rol === 'admin' ? '<span class="badge-admin">Admin</span>' : '<span class="badge-corriente">Usuario</span>'}</td>
-                            <td style="color: #ffb74d; font-weight: 600;">${u.racha_dias || 0}d</td>
+                            <td style="color: #ffb74d; font-weight: 600;">🔥 ${u.racha_dias || 0}d</td>
                             <td style="color: #81c784; font-weight: 600;">$${Number(u.saldo || 0).toFixed(2)}</td>
                             <td>
                                 <div style="display: flex; gap: 8px;">
