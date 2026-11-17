@@ -455,7 +455,7 @@ app.post("/api/solicitar-recuperacion", (req, res) => {
         [correo.trim().toLowerCase()],
         (err, results) => {
             if (err) {
-                console.error(err);
+                console.error("Error en BD durante recuperación:", err);
                 return res.status(500).json({
                     message: "Error del servidor"
                 });
@@ -478,14 +478,17 @@ app.post("/api/solicitar-recuperacion", (req, res) => {
                 [token, expiracion, correo.trim().toLowerCase()],
                 (errUpdate) => {
                     if (errUpdate) {
-                        console.error(errUpdate);
+                        console.error("Error al guardar token:", errUpdate);
                         return res.status(500).json({
                             message: "Error al guardar el token temporal"
                         });
                     }
 
+                    // Configuración robusta de Nodemailer optimizada para Render
                     const transporter = nodemailer.createTransport({
-                        service: "gmail",
+                        host: "smtp.gmail.com",
+                        port: 465,
+                        secure: true,
                         auth: {
                             user: process.env.EMAIL_USER,
                             pass: process.env.EMAIL_PASS
@@ -499,7 +502,7 @@ app.post("/api/solicitar-recuperacion", (req, res) => {
 
                     const mailOptions = {
                         from: `"Equipo ConSiente" <${process.env.EMAIL_USER}>`,
-                        to: correo,
+                        to: correo.trim().toLowerCase(),
                         subject: "Recuperación de Contraseña - ConSiente",
                         html: `
                             <div style="font-family: Arial; padding: 25px; background: #f9f9f9; border-radius: 10px;">
@@ -514,14 +517,15 @@ app.post("/api/solicitar-recuperacion", (req, res) => {
                         `
                     };
 
-                    transporter.sendMail(mailOptions, (error) => {
+                    transporter.sendMail(mailOptions, (error, info) => {
                         if (error) {
-                            console.error(error);
+                            console.error("❌ ERROR DETALLADO DE NODEMAILER EN RENDER:", error);
                             return res.status(500).json({
-                                message: "No se pudo enviar el correo de recuperación"
+                                message: "No se pudo enviar el correo de recuperación. Revisa las credenciales."
                             });
                         }
 
+                        console.log("Correo enviado con éxito:", info.response);
                         res.json({
                             message: "Correo enviado. Revisa tu bandeja de entrada o spam."
                         });
