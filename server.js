@@ -1555,6 +1555,26 @@ app.delete("/api/admin/premios-reclamados/:id", verificarToken, (req, res) => {
 });
 
 // ==========================================
+// OBTENER PREMIOS RECLAMADOS DEL USUARIO ACTUAL
+// ==========================================
+app.get("/api/mis-premios", verificarToken, (req, res) => {
+    const usuarioId = req.user.id;
+
+    const sql = `
+        SELECT mision_titulo, premio_reclamado, fecha_reclamado 
+        FROM premios_reclamados 
+        WHERE usuario_id = ?
+    `;
+    db.query(sql, [usuarioId], (err, premios) => {
+        if (err) {
+            console.error("Error al obtener premios del usuario:", err);
+            return res.status(500).json({ error: "Error al obtener historial." });
+        }
+        res.json(premios);
+    });
+});
+
+// ==========================================
 // RECLAMAR PREMIO (Con validación anti-duplicados)
 // ==========================================
 app.post("/api/premios/reclamar", verificarToken, (req, res) => {
