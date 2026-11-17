@@ -501,6 +501,7 @@
 
             let gastos = [];
             let metas = [];
+            let premiosReclamadosServidor = [];
 
             try {
                 const resPerfil = await fetch(`${API_URL}/api/perfil`, {
@@ -525,7 +526,30 @@
                 });
                 if (resMetas.ok) metas = await resMetas.json();
 
+                // 🌟 Consultar al servidor los premios reales del usuario para sincronizar localStorage
+                const resPremios = await fetch(`${API_URL}/api/mis-premios`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (resPremios.ok) {
+                    premiosReclamadosServidor = await resPremios.json();
+                }
+
             } catch (e) { console.error("Error al cargar datos del usuario:", e); }
+
+            // Sincronizar el localStorage con la base de datos del servidor automáticamente tras iniciar sesión
+            const sufijoUser = `_${userId}`;
+            if (Array.isArray(premiosReclamadosServidor)) {
+                premiosReclamadosServidor.forEach(p => {
+                    if (p.mision_titulo) {
+                        const matchId = p.mision_titulo.match(/\d+/);
+                        if (matchId) {
+                            const idMisionBD = matchId[0];
+                            localStorage.setItem(`reclamado_mision_${idMisionBD}${sufijoUser}`, "true");
+                            localStorage.setItem(`reclamado_mision_${idMisionBD}`, "true");
+                        }
+                    }
+                });
+            }
 
             // --- CÁLCULO DE RACHA ESTRICTO Y SINCRONIZADO ---
             const fechasGastos = new Set();
@@ -651,11 +675,12 @@
                             }
                         }
 
-                        // 🛡️ Validación robusta con doble respaldo para evitar que se reactive al recargar
-                        const sufijoUser = `_${userId}`;
+                        // 🛡️ Validación robusta combinando localStorage y respaldo del Servidor
                         const yaReclamadoLocal = localStorage.getItem(`reclamado_mision_${m.id}${sufijoUser}`) === "true";
                         const yaReclamadoGeneral = localStorage.getItem(`reclamado_mision_${m.id}`) === "true";
-                        const yaReclamado = yaReclamadoLocal || yaReclamadoGeneral;
+                        const reclamadoEnServidor = premiosReclamadosServidor.some(p => p.mision_titulo && p.mision_titulo.includes(String(m.id)));
+                        
+                        const yaReclamado = yaReclamadoLocal || yaReclamadoGeneral || reclamadoEnServidor;
                         
                         const imgGris = m.imagen_gris || 'imagenes/perfiles/puerquito_gris.png';
                         const imgColor = m.imagen_color || 'imagenes/perfiles/puerquito_color.png';
