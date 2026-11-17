@@ -483,8 +483,8 @@
             const token = localStorage.getItem("token");
             if (!token) return window.location.href = "index.html";
 
-            // 🌟 Extracción segura del ID real desde el token JWT para aislar misiones reclamadas por usuario
-            let userId = "7";
+            // 🌟 Extracción segura del ID real desde el token JWT
+            let userId = "usuario_actual";
             try {
                 const base64Url = token.split('.')[1];
                 const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -546,7 +546,6 @@
             ayer.setDate(ayer.getDate() - 1);
             let ayerStr = obtenerFechaLocalStr(ayer);
 
-            // Abrir la app hoy mantiene el día actual activo
             fechasGastos.add(hoyStr);
 
             let fechaCursor = null;
@@ -652,8 +651,11 @@
                             }
                         }
 
+                        // 🛡️ Validación robusta con doble respaldo para evitar que se reactive al recargar
                         const sufijoUser = `_${userId}`;
-                        const yaReclamado = localStorage.getItem(`reclamado_mision_${m.id}${sufijoUser}`) === "true";
+                        const yaReclamadoLocal = localStorage.getItem(`reclamado_mision_${m.id}${sufijoUser}`) === "true";
+                        const yaReclamadoGeneral = localStorage.getItem(`reclamado_mision_${m.id}`) === "true";
+                        const yaReclamado = yaReclamadoLocal || yaReclamadoGeneral;
                         
                         const imgGris = m.imagen_gris || 'imagenes/perfiles/puerquito_gris.png';
                         const imgColor = m.imagen_color || 'imagenes/perfiles/puerquito_color.png';
@@ -686,7 +688,7 @@
 
         async function reclamarMisionDinamica(idMision, premio, iconoColor) {
             let token = localStorage.getItem("token");
-            let userId = "7";
+            let userId = "usuario_actual";
             try {
                 const base64Url = token.split('.')[1];
                 const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -702,9 +704,11 @@
             if (window.infoUsuario && (window.infoUsuario.id || window.infoUsuario.usuario_id)) {
                 userId = window.infoUsuario.id || window.infoUsuario.usuario_id;
             }
+            
+            // 🛡️ Guardado seguro con doble llave para persistencia absoluta
             const sufijoUser = `_${userId}`;
-
             localStorage.setItem(`reclamado_mision_${idMision}${sufijoUser}`, "true");
+            localStorage.setItem(`reclamado_mision_${idMision}`, "true");
             localStorage.setItem("userAvatar", iconoColor);
 
             try {
