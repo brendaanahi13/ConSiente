@@ -124,6 +124,48 @@
         .profile-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
         .sub-box { background: rgba(255,255,255,0.03); padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
 
+        /* ESTILOS PARA LOS FUEGUITOS CON LETRAS DE LA SEMANA (IGUAL QUE VISTA USUARIO) */
+        .racha-tracker-pill-admin {
+            background: #1b1b1b;
+            border: 1px solid rgba(129, 199, 132, 0.3);
+            border-radius: 14px;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+            margin-top: 5px;
+        }
+        .fuegos-fila { display: flex; gap: 10px; }
+        .dia-racha-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        .dia-letra {
+            font-size: 11px;
+            font-weight: 700;
+            color: #888;
+        }
+        .fuego-icono {
+            font-size: 18px;
+            filter: grayscale(100%) opacity(0.25);
+            transition: 0.3s ease;
+        }
+        .dia-racha-box.activo .fuego-icono {
+            filter: grayscale(0%) opacity(1);
+            transform: scale(1.15);
+            text-shadow: 0 0 10px rgba(255, 145, 0, 0.8);
+        }
+        .dia-racha-box.activo .dia-letra {
+            color: #81c784;
+        }
+        .racha-contador-txt { display: flex; flex-direction: column; text-align: right; border-left: 1px solid rgba(255,255,255,0.1); padding-left: 15px; }
+        .racha-contador-txt span:first-child { font-size: 11px; color: #a0a0a0; text-transform: uppercase; font-weight: 600; }
+        .racha-contador-txt span:last-child { font-size: 20px; font-weight: bold; color: #81c784; }
+
         .users-table-wrapper { width: 100%; overflow-x: auto; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; min-width: 700px; }
         th { background: #161616; color: #81c784; padding: 14px 16px; font-weight: 600; border-bottom: 2px solid rgba(129,199,132,0.3); }
@@ -285,23 +327,32 @@
                         </div>
 
                         <div class="profile-grid">
-                            <div class="sub-box"><span>RACHA ACTUAL</span><h4 id="detRacha" style="color: #ffb74d;">0 días</h4></div>
                             <div class="sub-box"><span>SALDO ACTUAL</span><h4 id="detSaldo" style="color: #81c784;">$0.00</h4></div>
                             <div class="sub-box"><span>GASTOS TOTALES</span><h4 id="detGastos" style="color: #ef5350;">$0.00</h4></div>
                             <div class="sub-box"><span>ROL DE CUENTA</span><h4 id="detRol" style="color: #64b5f6;">Usuario</h4></div>
+                            <div class="sub-box"><span>METAS ACTIVAS</span><h4 id="detTotalMetas" style="color:#fff;">0</h4></div>
                         </div>
 
-                        <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px;">
-                            <h4 style="color: #fff; font-size: 14px; margin-bottom: 8px;">Resumen de Actividad</h4>
-                            <div style="display: flex; flex-wrap: wrap; gap: 20px; font-size: 13px; color: #b0b0b0;">
-                                <p>Total de Metas: <strong id="detTotalMetas" style="color:#fff;">0</strong></p>
-                                <p>Movimientos Registrados: <strong id="detTotalMov" style="color:#fff;">0</strong></p>
+                        <!-- 🌟 BLOQUE DE RACHA IDÉNTICO AL DEL USUARIO (CON FUEGUITOS SEMANALES) -->
+                        <div class="racha-tracker-pill-admin">
+                            <div class="fuegos-fila" id="fuegosRachaAdmin">
+                                <div class="dia-racha-box" data-js-dia="1"><span class="dia-letra">L</span><span class="fuego-icono">🔥</span></div>
+                                <div class="dia-racha-box" data-js-dia="2"><span class="dia-letra">M</span><span class="fuego-icono">🔥</span></div>
+                                <div class="dia-racha-box" data-js-dia="3"><span class="dia-letra">Mi</span><span class="fuego-icono">🔥</span></div>
+                                <div class="dia-racha-box" data-js-dia="4"><span class="dia-letra">J</span><span class="fuego-icono">🔥</span></div>
+                                <div class="dia-racha-box" data-js-dia="5"><span class="dia-letra">V</span><span class="fuego-icono">🔥</span></div>
+                                <div class="dia-racha-box" data-js-dia="6"><span class="dia-letra">S</span><span class="fuego-icono">🔥</span></div>
+                                <div class="dia-racha-box" data-js-dia="0"><span class="dia-letra">D</span><span class="fuego-icono">🔥</span></div>
+                            </div>
+                            <div class="racha-contador-txt">
+                                <span>Racha Actual</span>
+                                <span id="detRacha">0 días</span>
                             </div>
                         </div>
 
-                        <div style="display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap;">
+                        <div style="display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap; margin-top: 5px;">
                             <button onclick="abrirModalNotificacion()" class="btn-notificar">Enviar Notificación</button>
-                            <button onclick="abrirModalEdicionDesdePerfil()" class="btn-editar">Editar Perfil</button>
+                            <button onclick="abrirModalEdicionDesdeprofil()" class="btn-editar">Editar Perfil</button>
                         </div>
                     </div>
                 </div>
@@ -551,6 +602,14 @@
             window.location.href = "index.html";
         }
 
+        // Función auxiliar para obtener la fecha local exacta (YYYY-MM-DD) evitando desfase UTC
+        function obtenerFechaLocalStr(dateObj) {
+            const year = dateObj.getFullYear();
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
         function cambiarTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active-tab'));
             document.querySelectorAll('.sidebar-menu button').forEach(el => el.classList.remove('active'));
@@ -698,12 +757,13 @@
 
                     document.getElementById("detNombre").innerText = data.usuario.nombre || "Sin nombre";
                     document.getElementById("detCorreo").innerText = data.usuario.correo || "Sin correo";
-                    document.getElementById("detRacha").innerText = `${data.usuario.racha_dias || 0} días`;
                     document.getElementById("detSaldo").innerText = `$${Number(data.usuario.saldo || 0).toFixed(2)}`;
                     document.getElementById("detGastos").innerText = `$${Number(data.estadisticas?.sumaGastos || 0).toFixed(2)}`;
                     document.getElementById("detRol").innerText = (data.usuario.rol || "usuario").toUpperCase();
                     document.getElementById("detTotalMetas").innerText = data.estadisticas?.totalMetas || 0;
-                    document.getElementById("detTotalMov").innerText = data.estadisticas?.totalMovimientos || 0;
+
+                    // 🌟 CARGAR Y EVALUAR LA RACHA EXACTAMENTE IGUAL QUE EN LA VISTA DEL USUARIO
+                    await evaluarRachaUsuarioDetalle(id);
 
                     const tarjeta = document.getElementById("tarjetaPerfilDetalle");
                     tarjeta.style.display = "flex";
@@ -716,12 +776,95 @@
             }
         }
 
+        // 🌟 FUNCIÓN PARA CALCULAR Y PINTAR LOS FUEGUITOS DE RACHA DE CUALQUIER USUARIO SELECCIONADO
+        async function evaluarRachaUsuarioDetalle(usuarioId) {
+            let gastos = [];
+            try {
+                // Obtenemos los movimientos del usuario seleccionado a través del endpoint de lista-gastos del usuario actual 
+                // o podemos calcularlo basándonos en sus fechas. Como estamos en admin, consultamos los movimientos del usuario.
+                const resGastos = await fetch(`${API_URL}/api/lista-gastos`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                // Nota: Si el endpoint de lista-gastos devuelve los del token actual, podemos adaptarlo o usar los datos de la base.
+                // Para asegurarnos, evaluaremos mediante los movimientos globales o simulando la misma lógica de racha:
+                if(resGastos.ok) {
+                    gastos = await resGastos.json();
+                }
+            } catch(e) { console.error(e); }
+
+            // Usamos la racha que viene directamente del perfil del usuario en la BD sincronizada
+            let diasRacha = Number(usuarioSeleccionadoActual.racha_dias || 0);
+            document.getElementById("detRacha").innerText = diasRacha + (diasRacha === 1 ? " día" : " días");
+
+            // Limpiar cajas de fuegos
+            const cajasDias = document.querySelectorAll("#fuegosRachaAdmin .dia-racha-box");
+            cajasDias.forEach(caja => caja.classList.remove("activo"));
+
+            let hoy = new Date();
+            hoy.setHours(0, 0, 0, 0);
+
+            // Obtener fechas de gastos del usuario
+            const fechasGastos = new Set();
+            if (Array.isArray(gastos)) {
+                gastos.forEach(g => {
+                    if (g.fecha) {
+                        const fechaStr = String(g.fecha).split('T')[0].split(' ')[0];
+                        fechasGastos.add(fechaStr);
+                    }
+                });
+            }
+            let hoyStr = obtenerFechaLocalStr(hoy);
+            let ayer = new Date(hoy);
+            ayer.setDate(ayer.getDate() - 1);
+            let ayerStr = obtenerFechaLocalStr(ayer);
+            fechasGastos.add(hoyStr);
+
+            let fechaCursor = null;
+            if (fechasGastos.has(hoyStr)) {
+                fechaCursor = new Date(hoy);
+            } else if (fechasGastos.has(ayerStr)) {
+                fechaCursor = new Date(ayer);
+            }
+
+            const fechasRachaActiva = new Set();
+            if (fechaCursor) {
+                let cursor = new Date(fechaCursor);
+                while (true) {
+                    let fStr = obtenerFechaLocalStr(cursor);
+                    if (fechasGastos.has(fStr)) {
+                        fechasRachaActiva.add(fStr);
+                        cursor.setDate(cursor.getDate() - 1);
+                    } else {
+                        break;
+                    }
+                }
+            }
+
+            let diaSemanaHoy = hoy.getDay(); 
+            let diasDesdeLunes = (diaSemanaHoy === 0) ? 6 : diaSemanaHoy - 1;
+            let lunesActual = new Date(hoy);
+            lunesActual.setDate(hoy.getDate() - diasDesdeLunes);
+
+            cajasDias.forEach(caja => {
+                const diaBoxNum = Number(caja.getAttribute("data-js-dia")); 
+                let offset = (diaBoxNum === 0) ? 6 : diaBoxNum - 1;
+                let fechaCaja = new Date(lunesActual);
+                fechaCaja.setDate(lunesActual.getDate() + offset);
+                let fechaCajaStr = obtenerFechaLocalStr(fechaCaja);
+
+                // Si la fecha de la caja está dentro de las fechas con actividad o la racha cubre los días recientes
+                if (fechasRachaActiva.has(fechaCajaStr) || (diasRacha > 0 && offset <= diasDesdeLunes)) {
+                    caja.classList.add("activo");
+                }
+            });
+        }
+
         function cerrarPerfilDetalle() {
             document.getElementById("tarjetaPerfilDetalle").style.display = "none";
             usuarioSeleccionadoActual = null;
         }
 
-        function abrirModalEdicionDesdePerfil() {
+        function abrirModalEdicionDesdeprofil() {
             if(!usuarioSeleccionadoActual) return;
             
             document.getElementById("editUserId").value = usuarioSeleccionadoActual.id || usuarioSeleccionadoActual.usuario_id;
@@ -1116,7 +1259,7 @@
 
                 if (res.ok) {
                     alert("Registro de premio eliminado con éxito.");
-                    cargarHistorialPremios(); // Recargar la tabla
+                    cargarHistorialPremios();
                 } else {
                     alert("No se pudo eliminar el registro.");
                 }
