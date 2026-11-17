@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const crypto = require("crypto");
-const nodemailer = require("nodemailer");
+const { Resend } = require('resend');
 const webpush = require('web-push');
 const multer = require('multer');
 const path = require('path');
@@ -16,6 +16,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
+
+// Inicializar Resend con tu clave de entorno en Render
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Configuración de almacenamiento inteligente con Multer para avatares duales (gris y color)
 const storage = multer.diskStorage({
@@ -439,9 +442,9 @@ app.put("/api/perfil", verificarToken, (req, res) => {
 });
 
 // ==========================================
-// SOLICITAR RECUPERACIÓN DE CONTRASEÑA
+// SOLICITAR RECUPERACIÓN DE CONTRASEÑA (Con Resend)
 // ==========================================
-app.post("/api/solicitar-recuperacion", (req, res) => {
+app.post("/api/solicitar-recuperacion", async (req, res) => {
     const { correo } = req.body;
 
     if (!correo) {
@@ -453,7 +456,7 @@ app.post("/api/solicitar-recuperacion", (req, res) => {
     db.query(
         "SELECT id, nombre FROM usuarios WHERE correo = ?",
         [correo.trim().toLowerCase()],
-        (err, results) => {
+        async (err, results) => {
             if (err) {
                 console.error("Error en BD durante recuperación:", err);
                 return res.status(500).json({
@@ -476,7 +479,7 @@ app.post("/api/solicitar-recuperacion", (req, res) => {
                  SET reset_token = ?, reset_expiracion = ?
                  WHERE correo = ?`,
                 [token, expiracion, correo.trim().toLowerCase()],
-                (errUpdate) => {
+                async (errUpdate) => {
                     if (errUpdate) {
                         console.error("Error al guardar token:", errUpdate);
                         return res.status(500).json({
@@ -484,52 +487,44 @@ app.post("/api/solicitar-recuperacion", (req, res) => {
                         });
                     }
 
-                    // Configuración robusta de Nodemailer optimizada para Render
-                    const transporter = nodemailer.createTransport({
-                        host: "smtp.gmail.com",
-                        port: 465,
-                        secure: true,
-                        auth: {
-                            user: process.env.EMAIL_USER,
-                            pass: process.env.EMAIL_PASS
-                        },
-                        tls: {
-                            rejectUnauthorized: false
-                        }
-                    });
+                    try {
+                        const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
 
-                    const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
+                        const { data, error } = await resend.emails.send({
+                            from: 'ConSiente <onboarding@resend.dev>',
+                            to: [correo.trim().toLowerCase()],
+                            subject: 'Recuperación de Contraseña - ConSiente',
+                            html: `
+                                <div style="font-family: Arial; padding: 25px; background: #f9f9f9; border-radius: 10px;">
+                                    <h2 style="color: #2e7d32;">Recuperación de cuenta</h2>
+                                    <p>Hola <b>${usuarioNombre}</b>,</p>
+                                    <p>Solicitaste restablecer tu contraseña en ConSiente.</p>
+                                    <a href="${baseUrl}/restablecer.html?token=${token}" style="background: #2e7d32; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 15px;">
+                                        Restablecer mi contraseña
+                                    </a>
+                                    <p style="margin-top: 20px; font-size: 12px; color: #666;">Si no solicitaste este cambio, puedes ignorar este mensaje.</p>
+                                </div>
+                            `
+                        });
 
-                    const mailOptions = {
-                        from: `"Equipo ConSiente" <${process.env.EMAIL_USER}>`,
-                        to: correo.trim().toLowerCase(),
-                        subject: "Recuperación de Contraseña - ConSiente",
-                        html: `
-                            <div style="font-family: Arial; padding: 25px; background: #f9f9f9; border-radius: 10px;">
-                                <h2 style="color: #2e7d32;">Recuperación de cuenta</h2>
-                                <p>Hola <b>${usuarioNombre}</b>,</p>
-                                <p>Solicitaste restablecer tu contraseña en ConSiente.</p>
-                                <a href="${baseUrl}/restablecer.html?token=${token}" style="background: #2e7d32; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 15px;">
-                                    Restablecer mi contraseña
-                                </a>
-                                <p style="margin-top: 20px; font-size: 12px; color: #666;">Si no solicitaste este cambio, puedes ignorar este mensaje.</p>
-                            </div>
-                        `
-                    };
-
-                    transporter.sendMail(mailOptions, (error, info) => {
                         if (error) {
-                            console.error("❌ ERROR DETALLADO DE NODEMAILER EN RENDER:", error);
+                            console.error("❌ Error de Resend en Render:", error);
                             return res.status(500).json({
-                                message: "No se pudo enviar el correo de recuperación. Revisa las credenciales."
+                                message: "No se pudo enviar el correo de recuperación."
                             });
                         }
 
-                        console.log("Correo enviado con éxito:", info.response);
+                        console.log("Correo enviado con éxito mediante Resend:", data);
                         res.json({
                             message: "Correo enviado. Revisa tu bandeja de entrada o spam."
                         });
-                    });
+
+                    } catch (mailError) {
+                        console.error("❌ Excepción al enviar correo:", mailError);
+                        res.status(500).json({
+                            message: "Error al procesar el envío de correo."
+                        });
+                    }
                 }
             );
         }
