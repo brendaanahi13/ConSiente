@@ -124,39 +124,6 @@
         .profile-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
         .sub-box { background: rgba(255,255,255,0.03); padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
 
-        /* ESTILOS SIN FUEGUITOS PARA LA VISTA DE ADMIN */
-        .racha-tracker-pill-admin {
-            background: #1b1b1b;
-            border: 1px solid rgba(129, 199, 132, 0.3);
-            border-radius: 14px;
-            padding: 15px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 20px;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
-            margin-top: 5px;
-        }
-        .fuegos-fila { display: flex; gap: 15px; }
-        .dia-racha-box {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-        }
-        .dia-letra {
-            font-size: 13px;
-            font-weight: 700;
-            color: #888;
-        }
-        .dia-racha-box.activo .dia-letra {
-            color: #81c784;
-            text-shadow: 0 0 8px rgba(129, 199, 132, 0.8);
-        }
-        .racha-contador-txt { display: flex; flex-direction: column; text-align: right; border-left: 1px solid rgba(255,255,255,0.1); padding-left: 15px; }
-        .racha-contador-txt span:first-child { font-size: 11px; color: #a0a0a0; text-transform: uppercase; font-weight: 600; }
-        .racha-contador-txt span:last-child { font-size: 20px; font-weight: bold; color: #81c784; }
-
         .users-table-wrapper { width: 100%; overflow-x: auto; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; min-width: 700px; }
         th { background: #161616; color: #81c784; padding: 14px 16px; font-weight: 600; border-bottom: 2px solid rgba(129,199,132,0.3); }
@@ -307,7 +274,7 @@
                         <div id="listaCoincidencias" class="search-results-container"></div>
                     </div>
 
-                    <!-- TARJETA DE PERFIL DETALLADO -->
+                    <!-- TARJETA DE PERFIL DETALLADO (SOLO NÚMERO DE RACHA, SIN CALENDARIO VISUAL) -->
                     <div id="tarjetaPerfilDetalle" class="user-profile-card">
                         <div class="profile-header">
                             <div>
@@ -321,24 +288,7 @@
                             <div class="sub-box"><span>SALDO ACTUAL</span><h4 id="detSaldo" style="color: #81c784;">$0.00</h4></div>
                             <div class="sub-box"><span>GASTOS TOTALES</span><h4 id="detGastos" style="color: #ef5350;">$0.00</h4></div>
                             <div class="sub-box"><span>ROL DE CUENTA</span><h4 id="detRol" style="color: #64b5f6;">Usuario</h4></div>
-                            <div class="sub-box"><span>METAS ACTIVAS</span><h4 id="detTotalMetas" style="color:#fff;">0</h4></div>
-                        </div>
-
-                        <!-- CALENDARIO DE DIAS DE LA SEMANA (SIN FUEGUITOS) -->
-                        <div class="racha-tracker-pill-admin">
-                            <div class="fuegos-fila" id="fuegosRachaAdmin">
-                                <div class="dia-racha-box" data-js-dia="1"><span class="dia-letra">L</span></div>
-                                <div class="dia-racha-box" data-js-dia="2"><span class="dia-letra">M</span></div>
-                                <div class="dia-racha-box" data-js-dia="3"><span class="dia-letra">Mi</span></div>
-                                <div class="dia-racha-box" data-js-dia="4"><span class="dia-letra">J</span></div>
-                                <div class="dia-racha-box" data-js-dia="5"><span class="dia-letra">V</span></div>
-                                <div class="dia-racha-box" data-js-dia="6"><span class="dia-letra">S</span></div>
-                                <div class="dia-racha-box" data-js-dia="0"><span class="dia-letra">D</span></div>
-                            </div>
-                            <div class="racha-contador-txt">
-                                <span>Racha Actual</span>
-                                <span id="detRacha">0 días</span>
-                            </div>
+                            <div class="sub-box"><span>RACHA ACTUAL</span><h4 id="detRacha" style="color: #ffb74d;">0 días</h4></div>
                         </div>
 
                         <div style="display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap; margin-top: 5px;">
@@ -593,13 +543,6 @@
             window.location.href = "index.html";
         }
 
-        function obtenerFechaLocalStr(dateObj) {
-            const year = dateObj.getFullYear();
-            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-            const day = String(dateObj.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
-
         function cambiarTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active-tab'));
             document.querySelectorAll('.sidebar-menu button').forEach(el => el.classList.remove('active'));
@@ -750,9 +693,9 @@
                     document.getElementById("detSaldo").innerText = `$${Number(data.usuario.saldo || 0).toFixed(2)}`;
                     document.getElementById("detGastos").innerText = `$${Number(data.estadisticas?.sumaGastos || 0).toFixed(2)}`;
                     document.getElementById("detRol").innerText = (data.usuario.rol || "usuario").toUpperCase();
-                    document.getElementById("detTotalMetas").innerText = data.estadisticas?.totalMetas || 0;
-
-                    await evaluarRachaUsuarioDetalle(id);
+                    
+                    let diasRacha = Number(data.usuario.racha_dias || 0);
+                    document.getElementById("detRacha").innerText = diasRacha + (diasRacha === 1 ? " día" : " días");
 
                     const tarjeta = document.getElementById("tarjetaPerfilDetalle");
                     tarjeta.style.display = "flex";
@@ -763,80 +706,6 @@
             } catch(e) { 
                 console.error("Error al obtener detalle del usuario:", e); 
             }
-        }
-
-        async function evaluarRachaUsuarioDetalle(usuarioId) {
-            let gastos = [];
-            try {
-                const resGastos = await fetch(`${API_URL}/api/lista-gastos`, {
-                    headers: { "Authorization": `Bearer ${token}` }
-                });
-                if(resGastos.ok) {
-                    gastos = await resGastos.json();
-                }
-            } catch(e) { console.error(e); }
-
-            let diasRacha = Number(usuarioSeleccionadoActual.racha_dias || 0);
-            document.getElementById("detRacha").innerText = diasRacha + (diasRacha === 1 ? " día" : " días");
-
-            const cajasDias = document.querySelectorAll("#fuegosRachaAdmin .dia-racha-box");
-            cajasDias.forEach(caja => caja.classList.remove("activo"));
-
-            let hoy = new Date();
-            hoy.setHours(0, 0, 0, 0);
-
-            const fechasGastos = new Set();
-            if (Array.isArray(gastos)) {
-                gastos.forEach(g => {
-                    if (g.fecha) {
-                        const fechaStr = String(g.fecha).split('T')[0].split(' ')[0];
-                        fechasGastos.add(fechaStr);
-                    }
-                });
-            }
-            let hoyStr = obtenerFechaLocalStr(hoy);
-            let ayer = new Date(hoy);
-            ayer.setDate(ayer.getDate() - 1);
-            let ayerStr = obtenerFechaLocalStr(ayer);
-            fechasGastos.add(hoyStr);
-
-            let fechaCursor = null;
-            if (fechasGastos.has(hoyStr)) {
-                fechaCursor = new Date(hoy);
-            } else if (fechasGastos.has(ayerStr)) {
-                fechaCursor = new Date(ayer);
-            }
-
-            const fechasRachaActiva = new Set();
-            if (fechaCursor) {
-                let cursor = new Date(fechaCursor);
-                while (true) {
-                    let fStr = obtenerFechaLocalStr(cursor);
-                    if (fechasGastos.has(fStr)) {
-                        fechasRachaActiva.add(fStr);
-                        cursor.setDate(cursor.getDate() - 1);
-                    } else {
-                        break;
-                    }
-                }
-            }
-
-            let diaSemanaHoy = hoy.getDay(); 
-            let diasDesdeLunes = (diaSemanaHoy === 0) ? 6 : diaSemanaHoy - 1;
-            let lunesActual = new Date(hoy);
-            lunesActual.setDate(hoy.getDate() - diasDesdeLunes);
-
-            cajasDias.forEach(caja => {
-                const diaBoxNum = Number(caja.getAttribute("data-js-dia")); 
-                let offset = (diaBoxNum === 0) ? 6 : diaBoxNum - 1;
-                let fechaCaja = new Date(lunesActual);
-                fechaCaja.setDate(lunesActual.getDate() + offset);
-                let fechaCajaStr = obtenerFechaLocalStr(fechaCaja);
-
-                if (fechasRachaActiva.has(fechaCajaStr) || (diasRacha > 0 && offset <= diasDesdeLunes)) {
-                    caja.classList.add("activo");
-                }
-            });
         }
 
         function cerrarPerfilDetalle() {
