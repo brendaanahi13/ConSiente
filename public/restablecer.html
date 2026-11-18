@@ -2,37 +2,68 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Restablecer Contraseña - ConSiente</title>
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; font-family:"Segoe UI",sans-serif; }
+  *, *::before, *::after { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+    font-family: "Segoe UI", sans-serif; 
+  }
+
   body {
-    height: 100vh;
+    min-height: 100vh;
     background: #27312a;
     display: flex;
     justify-content: center;
     align-items: center;
     color: white;
+    padding: 20px; /* Margen de seguridad para pantallas móviles */
   }
+
   .card-restablecer {
     background: #111111;
     border-radius: 20px;
-    padding: 40px;
-    width: 400px;
-    max-width: 90%;
+    padding: 30px 20px; /* Padding adaptable */
+    width: 100%;
+    max-width: 420px; /* Tamaño máximo ideal en PC */
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     border: 1px solid rgba(129, 199, 132, 0.2);
     text-align: center;
   }
-  h2 { color: #81c784; margin-bottom: 20px; font-size: 24px; }
-  p { font-size: 14px; color: #ccc; margin-bottom: 25px; line-height: 1.5; }
-  .input-group { margin-bottom: 20px; text-align: left; }
-  label { display: block; font-size: 14px; color: #81c784; margin-bottom: 5px; }
+
+  h2 { 
+    color: #81c784; 
+    margin-bottom: 15px; 
+    font-size: clamp(20px, 5vw, 24px); /* Tamaño fluido según pantalla */
+  }
+
+  p { 
+    font-size: clamp(13px, 3.5vw, 14px); 
+    color: #ccc; 
+    margin-bottom: 20px; 
+    line-height: 1.5; 
+  }
+
+  .input-group { 
+    margin-bottom: 20px; 
+    text-align: left; 
+  }
+
+  label { 
+    display: block; 
+    font-size: 14px; 
+    color: #81c784; 
+    margin-bottom: 8px; 
+  }
   
   /* Contenedor relativo para posicionar el ojo */
   .password-wrapper {
     position: relative;
     width: 100%;
   }
+
   input { 
     width: 100%; 
     padding: 12px; 
@@ -41,8 +72,14 @@
     border: 1px solid #333; 
     background: #1b1b1b; 
     color: white; 
+    font-size: 16px; /* Evita zoom automático en iOS */
   }
   
+  input:focus {
+    outline: none;
+    border-color: #81c784;
+  }
+
   /* Botón contenedor del SVG */
   .toggle-password {
     position: absolute;
@@ -59,33 +96,87 @@
     opacity: 0.6;
     transition: opacity 0.2s, transform 0.1s;
   }
+
   .toggle-password:hover {
     opacity: 1;
   }
+
   .toggle-password:active {
-    transform: translateY(-50%) scale(0.9); /* Efecto sutil al hacer clic */
+    transform: translateY(-50%) scale(0.9);
   }
-  /* Estilo para los trazos del SVG */
+
   .toggle-password svg {
     width: 22px;
     height: 22px;
-    stroke: #81c784; /* Color verde de tu diseño */
+    stroke: #81c784;
     stroke-width: 2;
     fill: none;
     stroke-linecap: round;
     stroke-linejoin: round;
   }
 
-  .password-rules { list-style: none; margin-top: 8px; font-size: 13px; padding-left: 5px; }
-  .password-rules li { color: #999999; margin-bottom: 4px; }
-  .password-rules li.valid { color: #43a047; }
-  .password-rules li::before { content: "\2022  "; font-weight: bold; }
-  .password-rules li.valid::before { content: "\2713  "; font-weight: bold; }
+  .password-rules { 
+    list-style: none; 
+    margin-top: 10px; 
+    font-size: 13px; 
+    padding-left: 5px; 
+  }
 
-  .btn { width: 100%; padding: 14px; background: #2e7d32; border: none; border-radius: 12px; color: white; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.3s; margin-top: 15px; }
-  .btn:hover { background: #388e3c; }
-  .back-link { display: inline-block; margin-top: 20px; color: #ccc; text-decoration: none; font-size: 14px; }
-  .back-link:hover { color: white; }
+  .password-rules li { 
+    color: #999999; 
+    margin-bottom: 5px; 
+  }
+
+  .password-rules li.valid { 
+    color: #43a047; 
+  }
+
+  .password-rules li::before { 
+    content: "\2022  "; 
+    font-weight: bold; 
+  }
+
+  .password-rules li.valid::before { 
+    content: "\2713  "; 
+    font-weight: bold; 
+  }
+
+  .btn { 
+    width: 100%; 
+    padding: 14px; 
+    background: #2e7d32; 
+    border: none; 
+    border-radius: 12px; 
+    color: white; 
+    cursor: pointer; 
+    font-size: 16px; 
+    font-weight: bold; 
+    transition: background 0.3s; 
+    margin-top: 10px; 
+  }
+
+  .btn:hover { 
+    background: #388e3c; 
+  }
+
+  .back-link { 
+    display: inline-block; 
+    margin-top: 20px; 
+    color: #ccc; 
+    text-decoration: none; 
+    font-size: 14px; 
+  }
+
+  .back-link:hover { 
+    color: white; 
+  }
+
+  /* Ajustes extra para pantallas muy pequeñas (celulares compactos) */
+  @media (min-width: 480px) {
+    .card-restablecer {
+      padding: 40px;
+    }
+  }
 </style>
 </head>
 <body>
@@ -106,8 +197,8 @@
             <circle cx="12" cy="12" r="3"></circle>
           </svg>
         </button>
-
       </div>
+
       <ul class="password-rules" id="passwordRules">
         <li id="rule-length">Mínimo 8 caracteres</li>
         <li id="rule-uppercase">Al menos 1 mayúscula</li>
