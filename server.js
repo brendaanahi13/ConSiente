@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const crypto = require("crypto");
-const { Resend } = require('resend');
+const emailjs = require('@emailjs/nodejs');
 const webpush = require('web-push');
 const multer = require('multer');
 const path = require('path');
@@ -16,9 +16,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
-
-// Inicializar Resend con tu clave de entorno en Render
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Configuración de almacenamiento inteligente con Multer para avatares duales (gris y color)
 const storage = multer.diskStorage({
@@ -442,7 +439,7 @@ app.put("/api/perfil", verificarToken, (req, res) => {
 });
 
 // ==========================================
-// SOLICITAR RECUPERACIÓN DE CONTRASEÑA (Con Resend)
+// SOLICITAR RECUPERACIÓN DE CONTRASEÑA (Con EmailJS)
 // ==========================================
 app.post("/api/solicitar-recuperacion", async (req, res) => {
     const { correo } = req.body;
@@ -489,38 +486,31 @@ app.post("/api/solicitar-recuperacion", async (req, res) => {
 
                     try {
                         const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
+                        const linkRestablecer = `${baseUrl}/restablecer.html?token=${token}`;
 
-                        const { data, error } = await resend.emails.send({
-                            from: 'ConSiente <onboarding@resend.dev>',
-                            to: [correo.trim().toLowerCase()],
-                            subject: 'Recuperación de Contraseña - ConSiente',
-                            html: `
-                                <div style="font-family: Arial; padding: 25px; background: #f9f9f9; border-radius: 10px;">
-                                    <h2 style="color: #2e7d32;">Recuperación de cuenta</h2>
-                                    <p>Hola <b>${usuarioNombre}</b>,</p>
-                                    <p>Solicitaste restablecer tu contraseña en ConSiente.</p>
-                                    <a href="${baseUrl}/restablecer.html?token=${token}" style="background: #2e7d32; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 15px;">
-                                        Restablecer mi contraseña
-                                    </a>
-                                    <p style="margin-top: 20px; font-size: 12px; color: #666;">Si no solicitaste este cambio, puedes ignorar este mensaje.</p>
-                                </div>
-                            `
-                        });
+                        const templateParams = {
+                            to_email: correo.trim().toLowerCase(),
+                            to_name: usuarioNombre,
+                            reset_link: linkRestablecer
+                        };
 
-                        if (error) {
-                            console.error("❌ Error de Resend en Render:", error);
-                            return res.status(500).json({
-                                message: "No se pudo enviar el correo de recuperación."
-                            });
-                        }
+                        await emailjs.send(
+                            process.env.EMAILJS_SERVICE_ID,
+                            process.env.EMAILJS_TEMPLATE_ID,
+                            templateParams,
+                            {
+                                publicKey: process.env.EMAILJS_PUBLIC_KEY,
+                                privateKey: process.env.EMAILJS_PRIVATE_KEY
+                            }
+                        );
 
-                        console.log("Correo enviado con éxito mediante Resend:", data);
+                        console.log("Correo enviado con éxito mediante EmailJS a:", correo);
                         res.json({
                             message: "Correo enviado. Revisa tu bandeja de entrada o spam."
                         });
 
                     } catch (mailError) {
-                        console.error("❌ Excepción al enviar correo:", mailError);
+                        console.error("❌ Error al enviar correo con EmailJS:", mailError);
                         res.status(500).json({
                             message: "Error al procesar el envío de correo."
                         });
@@ -1111,7 +1101,6 @@ app.get("/api/admin/usuarios/:id/detalle", verificarToken, (req, res) => {
             return res.status(403).json({ error: "Acceso denegado." });
         }
 
-        // 1. Obtener los movimientos del usuario específico seleccionado
         db.query('SELECT fecha FROM movimientos WHERE usuario_id = ? ORDER BY fecha DESC', [usuarioId], (errMov, movs) => {
             let diasRachaCalculada = 0;
 
@@ -1138,7 +1127,7 @@ app.get("/api/admin/usuarios/:id/detalle", verificarToken, (req, res) => {
                 if (fechasGastos.has(hoyStr)) {
                     fechaCursor = new Date(hoyObj);
                 } else if (fechasGastos.has(ayerStr)) {
-                    fechaCursor = new Date(ayerObj);
+                    fechaCursor = new Date(ayerStr);
                 }
 
                 if (fechaCursor) {
@@ -1155,20 +1144,18 @@ app.get("/api/admin/usuarios/:id/detalle", verificarToken, (req, res) => {
                 }
             }
 
-            // Actualizar la racha en la tabla usuarios para mantener consistencia
             db.query('UPDATE usuarios SET racha_dias = ? WHERE id = ?', [diasRachaCalculada, usuarioId]);
 
-            // 2. Obtener los datos generales del usuario
             db.query("SELECT id, nombre, correo, rol, saldo FROM usuarios WHERE id = ?", [usuarioId], (errUser, userRes) => {
                 if (errUser || userRes.length === 0) return res.status(404).json({ error: "Usuario no encontrado" });
                 const usuario = userRes[0];
-                usuario.racha_dias = diasRachaCalculada; // Inyectar racha calculada
+                usuario.racha_dias = diasRachaCalculada;
 
                 db.query("SELECT COUNT(*) AS totalMetas FROM metas WHERE usuario_id = ?", [usuarioId], (errMeta, metaRes) => {
                     db.query("SELECT COUNT(*) AS totalMovimientos, SUM(CASE WHEN tipo = 'Gasto' THEN monto ELSE 0 END) AS sumaGastos FROM movimientos WHERE usuario_id = ?", [usuarioId], (errMovsCount, movRes) => {
                         res.json({
                             usuario: usuario,
-                            movimientos: movs || [], // Devolvemos los movimientos propios del usuario seleccionado
+                            movimientos: movs || [],
                             estadisticas: {
                                 totalMetas: metaRes[0]?.totalMetas || 0,
                                 totalMovimientos: movRes[0]?.totalMovimientos || 0,
@@ -1638,7 +1625,6 @@ app.post("/api/premios/reclamar", verificarToken, (req, res) => {
         return res.status(400).json({ error: "Faltan datos del premio." });
     }
 
-    // 🛡️ Verificar si el usuario ya reclamó este premio o misión para evitar duplicados en BD
     const sqlVerificar = `SELECT id FROM premios_reclamados WHERE usuario_id = ? AND (mision_titulo = ? OR premio_reclamado = ?)`;
     
     db.query(sqlVerificar, [usuarioId, mision_titulo, premio_reclamado], (errCheck, existentes) => {
@@ -1654,7 +1640,6 @@ app.post("/api/premios/reclamar", verificarToken, (req, res) => {
             return res.status(200).json({ mensaje: "El premio ya había sido registrado anteriormente." });
         }
 
-        // Insertar si no existe
         const sqlInsert = `INSERT INTO premios_reclamados (usuario_id, mision_titulo, premio_reclamado) VALUES (?, ?, ?)`;
         db.query(sqlInsert, [usuarioId, mision_titulo, premio_reclamado], (err) => {
             if (err) {
