@@ -6,7 +6,7 @@
     <title>ConSiente - Panel de Admin</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Segoe UI", sans-serif; }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; font-family: "Segoe UI", sans-serif; }
         
         body { 
             background: radial-gradient(circle at 50% 50%, #27312a 0%, #111412 100%); 
@@ -124,7 +124,7 @@
         .profile-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
         .sub-box { background: rgba(255,255,255,0.03); padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
 
-        /* ESTILOS PARA LOS FUEGUITOS CON LETRAS DE LA SEMANA (IGUAL QUE VISTA USUARIO) */
+        /* ESTILOS PARA LOS FUEGUITOS CON LETRAS DE LA SEMANA */
         .racha-tracker-pill-admin {
             background: #1b1b1b;
             border: 1px solid rgba(129, 199, 132, 0.3);
@@ -333,7 +333,7 @@
                             <div class="sub-box"><span>METAS ACTIVAS</span><h4 id="detTotalMetas" style="color:#fff;">0</h4></div>
                         </div>
 
-                        <!-- 🌟 BLOQUE DE RACHA IDÉNTICO AL DEL USUARIO (CON FUEGUITOS SEMANALES) -->
+                        <!-- BLOQUE DE RACHA CON FUEGUITOS SEMANALES -->
                         <div class="racha-tracker-pill-admin">
                             <div class="fuegos-fila" id="fuegosRachaAdmin">
                                 <div class="dia-racha-box" data-js-dia="1"><span class="dia-letra">L</span><span class="fuego-icono">🔥</span></div>
@@ -602,7 +602,6 @@
             window.location.href = "index.html";
         }
 
-        // Función auxiliar para obtener la fecha local exacta (YYYY-MM-DD) evitando desfase UTC
         function obtenerFechaLocalStr(dateObj) {
             const year = dateObj.getFullYear();
             const month = String(dateObj.getMonth() + 1).padStart(2, '0');
@@ -681,7 +680,7 @@
                             <td><strong style="color: #fff;">${u.nombre}</strong></td>
                             <td style="color: #a0a0a0;">${u.correo}</td>
                             <td>${u.rol === 'admin' ? '<span class="badge-admin">Admin</span>' : '<span class="badge-corriente">Usuario</span>'}</td>
-                            <td style="color: #ffb74d; font-weight: 600;">🔥 ${u.racha_dias || 0}d</td>
+                            <td style="color: #ffb74d; font-weight: 600;">${u.racha_dias || 0}d</td>
                             <td style="color: #81c784; font-weight: 600;">$${Number(u.saldo || 0).toFixed(2)}</td>
                             <td>
                                 <div style="display: flex; gap: 8px;">
@@ -762,7 +761,6 @@
                     document.getElementById("detRol").innerText = (data.usuario.rol || "usuario").toUpperCase();
                     document.getElementById("detTotalMetas").innerText = data.estadisticas?.totalMetas || 0;
 
-                    // 🌟 CARGAR Y EVALUAR LA RACHA EXACTAMENTE IGUAL QUE EN LA VISTA DEL USUARIO
                     await evaluarRachaUsuarioDetalle(id);
 
                     const tarjeta = document.getElementById("tarjetaPerfilDetalle");
@@ -776,34 +774,26 @@
             }
         }
 
-        // 🌟 FUNCIÓN PARA CALCULAR Y PINTAR LOS FUEGUITOS DE RACHA DE CUALQUIER USUARIO SELECCIONADO
         async function evaluarRachaUsuarioDetalle(usuarioId) {
             let gastos = [];
             try {
-                // Obtenemos los movimientos del usuario seleccionado a través del endpoint de lista-gastos del usuario actual 
-                // o podemos calcularlo basándonos en sus fechas. Como estamos en admin, consultamos los movimientos del usuario.
                 const resGastos = await fetch(`${API_URL}/api/lista-gastos`, {
                     headers: { "Authorization": `Bearer ${token}` }
                 });
-                // Nota: Si el endpoint de lista-gastos devuelve los del token actual, podemos adaptarlo o usar los datos de la base.
-                // Para asegurarnos, evaluaremos mediante los movimientos globales o simulando la misma lógica de racha:
                 if(resGastos.ok) {
                     gastos = await resGastos.json();
                 }
             } catch(e) { console.error(e); }
 
-            // Usamos la racha que viene directamente del perfil del usuario en la BD sincronizada
             let diasRacha = Number(usuarioSeleccionadoActual.racha_dias || 0);
             document.getElementById("detRacha").innerText = diasRacha + (diasRacha === 1 ? " día" : " días");
 
-            // Limpiar cajas de fuegos
             const cajasDias = document.querySelectorAll("#fuegosRachaAdmin .dia-racha-box");
             cajasDias.forEach(caja => caja.classList.remove("activo"));
 
             let hoy = new Date();
             hoy.setHours(0, 0, 0, 0);
 
-            // Obtener fechas de gastos del usuario
             const fechasGastos = new Set();
             if (Array.isArray(gastos)) {
                 gastos.forEach(g => {
@@ -852,7 +842,6 @@
                 fechaCaja.setDate(lunesActual.getDate() + offset);
                 let fechaCajaStr = obtenerFechaLocalStr(fechaCaja);
 
-                // Si la fecha de la caja está dentro de las fechas con actividad o la racha cubre los días recientes
                 if (fechasRachaActiva.has(fechaCajaStr) || (diasRacha > 0 && offset <= diasDesdeLunes)) {
                     caja.classList.add("activo");
                 }
