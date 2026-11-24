@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ConSiente - Consejos</title>
     <style>
-        * { margin:0; padding:0; box-sizing:border-box; font-family:"Segoe UI",sans-serif; }
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; font-family:"Segoe UI",sans-serif; }
         
         body { 
             background: radial-gradient(circle at 50% 50%, #27312a 0%, #111412 100%); 
@@ -31,15 +31,36 @@
             z-index: 2000; 
             border-bottom: 1px solid rgba(129, 199, 132, 0.25); 
         }
-        .logo-nombre { display: flex; align-items: center; gap: 10px; }
+        .logo-nombre { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
         .titulo { font-size: 20px; font-weight: bold; color: #ffffff; letter-spacing: 0.5px; }
         .logo { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; }
-        .menu { display: flex; align-items: center; gap: 20px; }
-        .menu a { text-decoration: none; color: #e0e0e0; font-size: 14px; transition: 0.3s ease; white-space: nowrap; }
+        .menu { display: flex; align-items: center; gap: 18px; min-width: 0; }
+        .menu a { text-decoration: none; color: #e0e0e0; font-size: 14px; transition: 0.3s ease; white-space: nowrap; cursor: pointer; }
         .menu a:hover { color: #81c784; }
 
+        .btn-volver-admin-menu {
+            display: none;
+            align-items: center;
+            gap: 5px;
+            background: rgba(46, 125, 50, 0.25);
+            color: #81c784 !important;
+            border: 1px solid rgba(129, 199, 132, 0.45);
+            padding: 6px 11px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px !important;
+            flex-shrink: 0;
+        }
+        .btn-volver-admin-menu:hover {
+            background: #2e7d32;
+            color: #ffffff !important;
+        }
+        .admin-texto-corto {
+            display: none;
+        }
+
         /* NOTIFICACIONES */
-        .notif-wrapper { position: relative; display: flex; align-items: center; }
+        .notif-wrapper { position: relative; display: flex; align-items: center; flex-shrink: 0; }
         .notif-icon-img {
             width: 38px; height: 38px; border-radius: 50%; cursor: pointer;
             border: 1.5px solid rgba(129, 199, 132, 0.5); padding: 6px; object-fit: contain;
@@ -81,6 +102,7 @@
             display: flex;
             align-items: center;
             cursor: pointer;
+            flex-shrink: 0;
         }
         .user-icon {
             width: 38px;
@@ -162,6 +184,9 @@
             text-align: left; 
             border-bottom: 1px solid rgba(130,199,132,0.2); 
             transition: 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         .sidebar button:hover, .sidebar button.btn-active { 
             background: #1c2d20; 
@@ -172,6 +197,10 @@
         .sidebar button.btn-active {
             color: #81c784;
             font-weight: bold;
+        }
+
+        .label-movil {
+            display: none;
         }
 
         /* Política de privacidad */
@@ -270,24 +299,32 @@
             }
             .sidebar-menu { flex-direction: row; width: 100%; height: 100%; justify-content: space-around; align-items: center; }
             .sidebar button { 
-                width: auto; flex: 1; height: 100%; padding: 10px 2px; margin-bottom: 0; border: none; 
+                width: auto; flex: 1; height: 100%; padding: 8px 2px; margin-bottom: 0; border: none; 
                 border-radius: 0; background: transparent; font-size: 10px; font-weight: 500; text-align: center; 
                 display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; 
                 white-space: nowrap; color: #cccccc; 
             }
-            .sidebar button span { font-size: 16px; }
+            .sidebar button span:first-child { font-size: 16px; line-height: 1; }
+            .label-escritorio { display: none; }
+            .label-movil { display: inline; }
             .sidebar button:hover, .sidebar button.btn-active { background: rgba(255, 255, 255, 0.03); color: #81c784; padding-left: 2px; }
             .sidebar button.btn-active { color: #81c784; font-weight: bold; }
             .footer-privacidad { display: none; }
         }
 
         @media (max-width: 600px) {
-            .navbar { padding: 0 15px; }
-            .menu { gap: 12px; }
-            .menu a { font-size: 13px; }
-            .titulo { font-size: 18px; }
+            .navbar { padding: 0 10px; }
+            .logo { width: 24px; height: 24px; }
+            .titulo { font-size: 16px; }
+            .menu { gap: 8px; }
+            .menu a { font-size: 11px; }
+            .btn-volver-admin-menu { padding: 5px 7px; font-size: 10.5px !important; gap: 3px; }
+            .admin-texto-largo { display: none; }
+            .admin-texto-corto { display: inline; }
+            .notif-icon-img, .user-icon { width: 32px; height: 32px; }
+            .notif-icon-img { padding: 5px; }
             .sidebar button { font-size: 9px; } 
-            .sidebar button span { font-size: 15px; }
+            .sidebar button span:first-child { font-size: 15px; }
             
             /* AJUSTE RESPONSIVO UNIFICADO PARA EL MENÚ DE NOTIFICACIONES */
             .notif-dropdown {
@@ -311,6 +348,11 @@
         </div>
         
         <div class="menu">
+            <a id="btnVolverAdminMenu" class="btn-volver-admin-menu" onclick="volverAlPanelAdmin()">
+                <span class="admin-texto-largo">Panel Admin</span>
+                <span class="admin-texto-corto">Admin</span>
+            </a>
+
             <!-- NOTIFICACIONES -->
             <div class="notif-wrapper">
                 <img src="imagenes/notificacion.png" class="notif-icon-img" id="notifBtn" alt="Notificaciones" title="Notificaciones">
@@ -345,13 +387,17 @@
         <!-- SIDEBAR -->
         <div class="sidebar">
             <div class="sidebar-menu">
-                <button onclick="window.location.href='menu.html'"><span>📊</span> Estadísticas</button>
-                <button onclick="window.location.href='agregar.html'"><span>➕</span> Agregar</button>
-                <button onclick="window.location.href='historial.html'"><span>📅</span> Historial</button>
-                <button onclick="window.location.href='semaforo.html'"><span>🚦</span> Semáforo</button>
-                <button onclick="window.location.href='metas.html'"><span>🎯</span> Metas</button>
-                <button onclick="window.location.href='racha.html'"><span>🔥</span> Racha</button>
-                <button onclick="window.location.href='consejos.html'" class="btn-active"><span>💡</span> Consejos</button>
+                <button onclick="window.location.href='menu.html'"><span>📊</span> <span>Estadísticas</span></button>
+                <button onclick="window.location.href='agregar.html'">
+                    <span>➕</span>
+                    <span class="label-escritorio">Agregar gasto</span>
+                    <span class="label-movil">Agregar</span>
+                </button>
+                <button onclick="window.location.href='historial.html'"><span>📅</span> <span>Historial</span></button>
+                <button onclick="window.location.href='semaforo.html'"><span>🚦</span> <span>Semáforo</span></button>
+                <button onclick="window.location.href='metas.html'"><span>🎯</span> <span>Metas</span></button>
+                <button onclick="window.location.href='racha.html'"><span>🔥</span> <span>Racha</span></button>
+                <button onclick="window.location.href='consejos.html'" class="btn-active"><span>💡</span> <span>Consejos</span></button>
             </div>
             <div class="footer-privacidad">
                 <a href="privacidadentro.html">Políticas de Privacidad</a>
@@ -470,6 +516,26 @@
     <script>
         const API_URL = "";
 
+        function volverAlPanelAdmin() {
+            localStorage.removeItem("modoVistaAdmin");
+            window.location.href = "admin.html";
+        }
+
+        function evaluarVisibilidadBotonAdmin(rolDesdePerfil = "") {
+            const rolStorage = (localStorage.getItem("rol") || "").toLowerCase();
+            const rolPerfil = String(rolDesdePerfil || "").toLowerCase();
+            const modoVistaAdmin = localStorage.getItem("modoVistaAdmin");
+            const btnAdmin = document.getElementById("btnVolverAdminMenu");
+
+            if (!btnAdmin) return;
+
+            if (rolStorage === "admin" || rolPerfil === "admin" || modoVistaAdmin === "activo") {
+                btnAdmin.style.display = "inline-flex";
+            } else {
+                btnAdmin.style.display = "none";
+            }
+        }
+
         // Función segura para desplegar el menú de usuario y configuración
         function toggleUserMenu(e) {
             e.stopPropagation();
@@ -480,6 +546,8 @@
         }
 
         document.addEventListener("DOMContentLoaded", () => {
+            evaluarVisibilidadBotonAdmin();
+
             // Cerrar menú de usuario al hacer clic fuera de él
             window.addEventListener("click", (e) => {
                 const dropdownMenu = document.getElementById("dropdownMenu");
@@ -509,6 +577,10 @@
                 });
                 if (response.ok) {
                     const perfil = await response.json();
+                    if (perfil.rol) {
+                        localStorage.setItem("rol", perfil.rol);
+                    }
+                    evaluarVisibilidadBotonAdmin(perfil.rol);
                     if (perfil.avatar) {
                         const rutaAvatar = perfil.avatar.trim();
                         localStorage.setItem("userAvatar", rutaAvatar);
