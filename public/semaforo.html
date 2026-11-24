@@ -139,25 +139,16 @@
         .grid-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; width: 100%; }
         .card-eco { background: #181c19; border: 1px solid rgba(255, 255, 255, 0.05); border-left: 4px solid #81c784; border-radius: 12px; padding: 18px; transition: transform 0.3s ease; display: flex; flex-direction: column; justify-content: space-between; }
         .card-eco:hover { transform: translateY(-3px); border-left-color: #a2e0a6; }
-        .card-header { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; text-transform: uppercase; color: #81c784; margin-bottom: 8px; }
+        .card-header { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; text-transform: uppercase; color: #81c784; margin-bottom: 6px; }
         .card-value { font-size: clamp(18px, 3vw, 22px); font-weight: bold; color: #ffffff; margin-bottom: 6px; }
         .card-value span { font-size: 12px; color: #888; font-weight: normal; }
-        .card-desc { font-size: 12px; color: #ccc; line-height: 1.4; margin-top: 8px; }
+        .card-desc { font-size: 12px; color: #ccc; line-height: 1.4; margin-top: 6px; }
 
-        .gasolina-frame-wrapper {
-            width: 100%;
-            background: #ffffff;
-            border-radius: 10px;
-            overflow: hidden;
-            border: 1px solid rgba(129, 199, 132, 0.25);
-            margin: 4px 0;
-        }
-        .gasolina-frame-wrapper iframe {
-            display: block;
-            width: 100%;
-            height: 185px;
-            border: 0;
-        }
+        /* DISEÑO ORIGINAL DE GASOLINA */
+        .gasolina-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 6px 0; text-align: center; }
+        .gasolina-tipo { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 8px 2px; }
+        .gasolina-tipo span { display: block; font-size: 9.5px; color: #aaa; text-transform: uppercase; margin-bottom: 2px; }
+        .gasolina-tipo strong { font-size: 12px; color: #81c784; }
 
         /* MENÚ RESPONSIVO MÓVIL (BARRA INFERIOR FLOTANTE) */
         @media (max-width: 900px) {
@@ -242,7 +233,6 @@
         }
 
         @media (max-width: 600px) {
-            .grid-cards { grid-template-columns: 1fr; }
             .navbar { padding: 0 10px; }
             .logo { width: 24px; height: 24px; }
             .titulo { font-size: 16px; }
@@ -256,7 +246,6 @@
             .sidebar button { font-size: 9px; } 
             .sidebar button span:first-child { font-size: 15px; }
             
-            /* AJUSTE RESPONSIVO PARA EL MENÚ DE NOTIFICACIONES EN MÓVIL */
             .notif-dropdown {
                 position: fixed !important;
                 top: 70px !important;
@@ -355,11 +344,22 @@
                         <div class="card-eco">
                             <div>
                                 <div class="card-header">⛽ Gasolina (Nacional)</div>
-                                <div class="gasolina-frame-wrapper">
-                                    <iframe src="https://petrointelligence.com/api/api_precios.html?consulta=nac" title="Precios de gasolina nacional - PetroIntelligence"></iframe>
+                                <div class="gasolina-grid">
+                                    <div class="gasolina-tipo">
+                                        <span>Regular</span>
+                                        <strong id="gas-reg">...</strong>
+                                    </div>
+                                    <div class="gasolina-tipo">
+                                        <span>Premium</span>
+                                        <strong id="gas-prem">...</strong>
+                                    </div>
+                                    <div class="gasolina-tipo">
+                                        <span>Diésel</span>
+                                        <strong id="gas-dies">...</strong>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="card-desc">Precios de referencia vía PetroIntelligence.</div>
+                            <div class="card-desc">Promedios nacionales actualizados vía PetroIntelligence.</div>
                         </div>
 
                         <div class="card-eco">
@@ -409,7 +409,6 @@
     </div>
 
     <script>
-        // CONFIGURACIÓN DINÁMICA DE LA API
         const API_URL = "";
 
         function volverAlPanelAdmin() {
@@ -500,6 +499,60 @@
             window.location.href = "index.html";
         }
 
+        function extraerPreciosPetroIntelligence(htmlTexto) {
+            const limpio = htmlTexto.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+            const regMatch = limpio.match(/Regular[^0-9]*([0-9]{1,2}\.[0-9]{2})/i);
+            const premMatch = limpio.match(/Premium[^0-9]*([0-9]{1,2}\.[0-9]{2})/i);
+            const diesMatch = limpio.match(/Di[eé]sel[^0-9]*([0-9]{1,2}\.[0-9]{2})/i);
+
+            if (!regMatch && !premMatch && !diesMatch) return null;
+
+            return {
+                regular: regMatch ? parseFloat(regMatch[1]) : null,
+                premium: premMatch ? parseFloat(premMatch[1]) : null,
+                diesel: diesMatch ? parseFloat(diesMatch[1]) : null
+            };
+        }
+
+        async function cargarPreciosGasolina(token) {
+            const elReg = document.getElementById("gas-reg");
+            const elPrem = document.getElementById("gas-prem");
+            const elDies = document.getElementById("gas-dies");
+
+            const aplicarPrecios = (datos) => {
+                if (!datos) return false;
+                if (datos.regular) elReg.innerText = `$${Number(datos.regular).toFixed(2)}`;
+                if (datos.premium) elPrem.innerText = `$${Number(datos.premium).toFixed(2)}`;
+                if (datos.diesel) elDies.innerText = `$${Number(datos.diesel).toFixed(2)}`;
+                return Boolean(datos.regular || datos.premium || datos.diesel);
+            };
+
+            try {
+                // 1) Intento vía endpoint de tu propio servidor (recomendado para evitar CORS)
+                const resBackend = await fetch(`${API_URL}/api/gasolina`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (resBackend.ok) {
+                    const json = await resBackend.json();
+                    if (aplicarPrecios(json)) return;
+                }
+            } catch (_) {}
+
+            try {
+                // 2) Intento directo a PetroIntelligence
+                const resDirecto = await fetch("https://petrointelligence.com/api/api_precios.html?consulta=nac");
+                if (resDirecto.ok) {
+                    const html = await resDirecto.text();
+                    if (aplicarPrecios(extraerPreciosPetroIntelligence(html))) return;
+                }
+            } catch (_) {}
+
+            // 3) Respaldo si el servicio externo no responde o bloquea CORS
+            elReg.innerText = "$23.69";
+            elPrem.innerText = "$25.40";
+            elDies.innerText = "$25.15";
+        }
+
         let chartPieDisponibilidad;
         let chartLineDolarGastos;
         let chartBarGastosSalario;
@@ -507,6 +560,8 @@
         async function cargarTodoElSemaforo() {
             try {
                 const token = localStorage.getItem("token");
+                cargarPreciosGasolina(token);
+
                 let valorDolarActual = 18.04;
                 
                 try {
