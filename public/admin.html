@@ -150,14 +150,15 @@
         .input-box input:focus, .input-box textarea:focus, .input-box select:focus { border-color: #81c784; }
 
         .saldo-readonly-box {
-            background: #121513;
-            border: 1px solid rgba(129, 199, 132, 0.2);
+            background: #202020;
+            border: 1px solid rgba(255, 255, 255, 0.12);
             padding: 13px 15px;
             border-radius: 10px;
-            color: #81c784;
-            font-size: 15px;
+            color: #b8b8b8;
+            font-size: 14.5px;
             font-weight: 600;
             user-select: none;
+            cursor: not-allowed;
         }
 
         .btn-guardar {
@@ -487,7 +488,7 @@
         </div>
     </div>
 
-    <!-- MODAL EDITAR USUARIO (SALDO SOLO LECTURA) -->
+    <!-- MODAL EDITAR USUARIO (SALDO ENCAPSULADO EN GRIS) -->
     <div id="modalEditarUsuario" class="modal-overlay-custom">
         <div class="modal-card-custom">
             <h3 style="color:#81c784;">Editar Perfil de Usuario</h3>
