@@ -388,9 +388,24 @@
             border-radius: 14px;
             padding: 14px 18px;
             margin-top: 15px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.4);
             max-width: 480px;
+        }
+        .racha-aviso-texto {
+            font-size: 12px;
+            color: #b0c4b3;
+            max-width: 480px;
+            line-height: 1.4;
+            margin-bottom: 10px;
+        }
+        .racha-aviso-texto a {
+            color: #81c784;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .racha-aviso-texto a:hover {
+            text-decoration: underline;
         }
         .fuegos-fila { display: flex; gap: 8px; }
         .dia-racha-box {
@@ -845,6 +860,9 @@
                             <span id="txtRachaDiasHeader">0 días</span>
                         </div>
                     </div>
+                    <p class="racha-aviso-texto">
+                        💡 Tu racha se activa y avanza al registrar al menos un gasto o movimiento en el día. <a href="agregar.html">Agrega un gasto aquí</a> para activar o sumar tu racha.
+                    </p>
                 </div>
 
                 <div class="bar-chart-box" id="contenedorBarras">
