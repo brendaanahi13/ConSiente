@@ -165,7 +165,10 @@
         }
         .racha-hero-info h1 { font-size: 24px; color: #ffffff; font-weight: 600; display: flex; align-items: center; gap: 10px; }
         .racha-hero-info h1 span { color: #ff9800; }
-        .racha-hero-info p { font-size: 13px; color: #a0a0a0; margin-top: 5px; margin-bottom: 20px; line-height: 1.5; }
+        .racha-hero-info p { font-size: 13px; color: #a0a0a0; margin-top: 5px; margin-bottom: 12px; line-height: 1.5; }
+        .racha-regla-nota { font-size: 12.5px; color: #c8e6c9; margin-bottom: 20px; line-height: 1.5; }
+        .racha-regla-nota a { color: #81c784; font-weight: 600; text-decoration: none; }
+        .racha-regla-nota a:hover { text-decoration: underline; }
 
         .banner-actions { display: flex; align-items: center; gap: 15px; }
 
@@ -429,6 +432,9 @@
                 <div class="racha-hero-info">
                     <h1><span>🔥</span> Galería de Avatares Web</h1>
                     <p>Completa tus misiones financieras para desbloquear los avatares oficiales y úsalos como tu foto de perfil en ConSiente.</p>
+                    <div class="racha-regla-nota">
+                        💡 <strong>¿Cómo activar o sumar tu racha?</strong> Registra al menos un gasto o movimiento en ConSiente para activar y avanzar tu racha diaria. <a href="agregar.html">Agrega un gasto aquí</a>.
+                    </div>
                     
                     <div class="banner-actions">
                         <a href="https://www.roblox.com/share?code=54b4a1d9e045e848927b6dec0d2ec493&type=ExperienceDetails&stamp=1794021244612" target="_blank" class="btn-jugar-roblox">
@@ -739,7 +745,7 @@
                             textoProgreso = condicionCumplida ? "¡Completado!" : `Faltan (${objetivo - semanasConstantes} sem)`;
                         } else if (tipo === 'simultaneas') {
                             condicionCumplida = metasSimultaneas >= objetivo;
-                            textoProgreso = condicionCumplida ? "¡Completado!" : `Faltan (${objetivo - metasSimultaneas})`;
+                            textoProgreso = condicionCumplida ? "¡Completado!" : `Faltan (${objetivo - metasSimultaneas} metas)`;
                         } else {
                             if (Number(m.id) === 2) { 
                                 condicionCumplida = semanasConstantes >= 5;
