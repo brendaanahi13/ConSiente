@@ -139,15 +139,25 @@
         .grid-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; width: 100%; }
         .card-eco { background: #181c19; border: 1px solid rgba(255, 255, 255, 0.05); border-left: 4px solid #81c784; border-radius: 12px; padding: 18px; transition: transform 0.3s ease; display: flex; flex-direction: column; justify-content: space-between; }
         .card-eco:hover { transform: translateY(-3px); border-left-color: #a2e0a6; }
-        .card-header { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; text-transform: uppercase; color: #81c784; margin-bottom: 6px; }
+        .card-header { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; text-transform: uppercase; color: #81c784; margin-bottom: 8px; }
         .card-value { font-size: clamp(18px, 3vw, 22px); font-weight: bold; color: #ffffff; margin-bottom: 6px; }
         .card-value span { font-size: 12px; color: #888; font-weight: normal; }
-        .card-desc { font-size: 12px; color: #ccc; line-height: 1.4; margin-top: 6px; }
+        .card-desc { font-size: 12px; color: #ccc; line-height: 1.4; margin-top: 8px; }
 
-        .gasolina-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 6px 0; text-align: center; }
-        .gasolina-tipo { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 8px 2px; }
-        .gasolina-tipo span { display: block; font-size: 9.5px; color: #aaa; text-transform: uppercase; margin-bottom: 2px; }
-        .gasolina-tipo strong { font-size: 12px; color: #81c784; }
+        .gasolina-frame-wrapper {
+            width: 100%;
+            background: #ffffff;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(129, 199, 132, 0.25);
+            margin: 4px 0;
+        }
+        .gasolina-frame-wrapper iframe {
+            display: block;
+            width: 100%;
+            height: 185px;
+            border: 0;
+        }
 
         /* MENÚ RESPONSIVO MÓVIL (BARRA INFERIOR FLOTANTE) */
         @media (max-width: 900px) {
@@ -232,6 +242,7 @@
         }
 
         @media (max-width: 600px) {
+            .grid-cards { grid-template-columns: 1fr; }
             .navbar { padding: 0 10px; }
             .logo { width: 24px; height: 24px; }
             .titulo { font-size: 16px; }
@@ -343,23 +354,12 @@
                         
                         <div class="card-eco">
                             <div>
-                                <div class="card-header">⛽ Gasolina (Nuevo León)</div>
-                                <div class="gasolina-grid">
-                                    <div class="gasolina-tipo">
-                                        <span>Regular</span>
-                                        <strong id="gas-reg">$23.69</strong>
-                                    </div>
-                                    <div class="gasolina-tipo">
-                                        <span>Premium</span>
-                                        <strong id="gas-prem">$25.40</strong>
-                                    </div>
-                                    <div class="gasolina-tipo">
-                                        <span>Diésel</span>
-                                        <strong id="gas-dies">$25.15</strong>
-                                    </div>
+                                <div class="card-header">⛽ Gasolina (Nacional)</div>
+                                <div class="gasolina-frame-wrapper">
+                                    <iframe src="https://petrointelligence.com/api/api_precios.html?consulta=nac" title="Precios de gasolina nacional - PetroIntelligence"></iframe>
                                 </div>
                             </div>
-                            <div class="card-desc">Promedios oficiales actualizados de la región.</div>
+                            <div class="card-desc">Precios de referencia vía PetroIntelligence.</div>
                         </div>
 
                         <div class="card-eco">
