@@ -554,11 +554,18 @@
             document.querySelectorAll('.sidebar-menu button').forEach(el => el.classList.remove('active'));
             document.getElementById(tabId).classList.add('active-tab');
             
-            if(tabId === 'generalTab') document.getElementById('btnGeneral').classList.add('active');
-            if(tabId === 'statsTab') { document.getElementById('btnStats').classList.add('active'); cargarEstadisticasReales(); }
-            if(tabId === 'ajustesTab') document.getElementById('btnAjustes').classList.add('active');
-            
-            if(tabId === 'misionesTab') { 
+            if (tabId === 'generalTab') {
+                document.getElementById('btnGeneral').classList.add('active');
+                cargarDatosAdministrador();
+            }
+            if (tabId === 'statsTab') {
+                document.getElementById('btnStats').classList.add('active');
+                cargarEstadisticasReales();
+            }
+            if (tabId === 'ajustesTab') {
+                document.getElementById('btnAjustes').classList.add('active');
+            }
+            if (tabId === 'misionesTab') { 
                 document.getElementById('btnMisiones').classList.add('active'); 
                 cargarHistorialPremios(); 
                 cargarMisionesAdmin();
@@ -732,12 +739,14 @@
             const nombre = document.getElementById("editUserNombre").value;
             const correo = document.getElementById("editUserCorreo").value;
             const rol = document.getElementById("editUserRol").value;
+            const saldoTexto = document.getElementById("editUserSaldoDisplay").innerText.replace(/[^0-9.-]+/g, "");
+            const saldo = Number(saldoTexto) || 0;
 
             try {
                 const res = await fetch(`${API_URL}/api/admin/usuarios/${id}`, {
                     method: "PUT",
                     headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-                    body: JSON.stringify({ nombre, correo, rol })
+                    body: JSON.stringify({ nombre, correo, saldo, rol })
                 });
                 
                 if(res.ok) {
