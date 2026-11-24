@@ -2,6 +2,8 @@ if (typeof window.API_URL === 'undefined') {
     window.API_URL = "";
 }
 
+const LIMITE_NOTIFICACIONES = 4;
+
 function obtenerTokenNotif() {
     return localStorage.getItem("token");
 }
@@ -37,6 +39,26 @@ function obtenerTiempoRelativo(fechaStr) {
     
     const anos = Math.floor(meses / 12);
     return `Hace ${anos} ${anos === 1 ? 'año' : 'anos'}`;
+}
+
+async function purgarExcedenteNotificaciones(notificacionesExcedentes) {
+    const token = obtenerTokenNotif();
+    if (!token || !Array.isArray(notificacionesExcedentes) || notificacionesExcedentes.length === 0) return;
+
+    for (const notif of notificacionesExcedentes) {
+        const idNotif = notif.id || notif._id;
+        if (!idNotif || idNotif === 'local_racha_hoy') continue;
+
+        try {
+            await fetch(`${window.API_URL}/api/notificaciones/${idNotif}`, {
+                method: "DELETE",
+                headers: { "Authorization": `Bearer ${token}` },
+                keepalive: true
+            });
+        } catch (err) {
+            console.error("No se pudo limpiar notificación excedente:", err);
+        }
+    }
 }
 
 async function cargarNotificacionesSistema() {
@@ -164,9 +186,22 @@ async function cargarNotificacionesSistema() {
                 unicasMap.set(claveUnica, notif);
             }
         });
+
         let notificacionesFiltradas = Array.from(unicasMap.values());
 
-        notificacionesFiltradas.sort((a, b) => (b.id || 0) - (a.id || 0));
+        // Ordenar de más reciente a más antigua (la racha local va primero)
+        notificacionesFiltradas.sort((a, b) => {
+            if (a.id === 'local_racha_hoy') return -1;
+            if (b.id === 'local_racha_hoy') return 1;
+            return (Number(b.id) || 0) - (Number(a.id) || 0);
+        });
+
+        // Limitar a máximo 4 notificaciones y eliminar en BD las que sobren
+        if (notificacionesFiltradas.length > LIMITE_NOTIFICACIONES) {
+            const excedentes = notificacionesFiltradas.slice(LIMITE_NOTIFICACIONES);
+            notificacionesFiltradas = notificacionesFiltradas.slice(0, LIMITE_NOTIFICACIONES);
+            purgarExcedenteNotificaciones(excedentes);
+        }
 
         notificacionesFiltradas.forEach(notif => {
             const idNotif = notif.id || notif._id;
@@ -206,7 +241,7 @@ async function cargarNotificacionesSistema() {
                 <button class="btn-eliminar-notif" title="Eliminar" style="background: transparent; border: none; color: #ffffff; cursor: pointer; font-size: 18px; padding: 4px 8px; font-weight: bold; opacity: 0.7; transition: 0.2s; flex-shrink: 0;">&times;</button>
             `;
 
-            // 🎯 Evento de clic infalible para marcar como leída y redirigir con retardo seguro
+            // Evento de clic para marcar como leída y redirigir con retardo seguro
             item.addEventListener("click", async (e) => {
                 if (e.target.closest(".btn-eliminar-notif")) return;
                 e.preventDefault();
