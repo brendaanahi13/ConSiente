@@ -6,7 +6,7 @@
     <title>Términos ConSiente</title>
     <style>
         /* --- RESETEO Y CONFIGURACIÓN BASE --- */
-        * { 
+        *, *::before, *::after { 
             margin: 0; 
             padding: 0; 
             box-sizing: border-box; 
@@ -18,10 +18,10 @@
             background: url("imagenes/fondo.png") center/cover no-repeat fixed;
             display: flex;
             flex-direction: column;
-            overflow: hidden; /* Bloquea el scroll general de la pantalla */
+            overflow: hidden;
         }
 
-        /* --- ESTILOS NAVBAR (COPIADOS EXACTOS DEL INDEX) --- */
+        /* --- ESTILOS NAVBAR --- */
         .navbar {
             position: fixed;
             top: 0;
@@ -85,16 +85,16 @@
             opacity: 1;
         }
 
-        /* --- CONTENEDOR DE SCROLL CORREGIDO --- */
+        /* --- CONTENEDOR DE SCROLL --- */
         .main-content {
             flex: 1;
-            margin-top: 75px; /* IMPORTANTE: Empuja la zona de scroll JUSTO debajo de la altura del menú */
-            overflow-y: auto; /* El scroll ocurre estrictamente dentro de este límite */
+            margin-top: 75px;
+            overflow-y: auto;
             width: 100%;
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            padding: 30px 20px; /* Espaciado normal para la tarjeta */
+            padding: 30px 20px;
         }
 
         .container { 
@@ -198,7 +198,9 @@
             font-weight: 600; 
             padding: 12px 32px;
             background: #66BB6A;
+            border: none;
             border-radius: 10px;
+            cursor: pointer;
             transition: all 0.2s ease;
         }
 
@@ -239,8 +241,8 @@
   <div class="menu">
     <a href="index.html">Más sobre nosotros</a>
     <a href="privacidad.html">Términos y condiciones</a>
-    <a class="btn-login" href="index.html">Iniciar sesión</a>
-    <a class="btn-login" href="index.html">Registrarse</a>
+    <a class="btn-login" href="index.html" onclick="prepararRetornoModal('login')">Iniciar sesión</a>
+    <a class="btn-login" href="index.html" onclick="prepararRetornoModal('registro')">Registrarse</a>
   </div>
 </div>
 
@@ -313,10 +315,36 @@
         <p><strong>Información de contacto:</strong> Ante cualquier duda, reclamación o aclaración sobre los presentes términos o el tratamiento de sus datos personales, puede canalizar su consulta directamente con nuestro Responsable de Privacidad mediante la sección de soporte técnico de la plataforma.</p>
 
         <div class="btn-container">
-            <a href="index.html" class="back-link">Volver al inicio</a>
+            <button type="button" id="btnVolver" class="back-link" onclick="volverAlOrigen()">Volver al inicio</button>
         </div>
     </div>
 </div>
+
+<script>
+    const CLAVE_BORRADOR_REGISTRO = "consiente_borrador_registro";
+    const CLAVE_ACCION_INDEX = "consiente_accion_index";
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const hayBorrador = Boolean(sessionStorage.getItem(CLAVE_BORRADOR_REGISTRO));
+        const btnVolver = document.getElementById("btnVolver");
+
+        if (hayBorrador && btnVolver) {
+            btnVolver.textContent = "Volver al registro";
+        }
+    });
+
+    function prepararRetornoModal(accion) {
+        sessionStorage.setItem(CLAVE_ACCION_INDEX, accion);
+    }
+
+    function volverAlOrigen() {
+        const hayBorrador = Boolean(sessionStorage.getItem(CLAVE_BORRADOR_REGISTRO));
+        if (hayBorrador) {
+            sessionStorage.setItem(CLAVE_ACCION_INDEX, "restaurar_registro");
+        }
+        window.location.href = "index.html";
+    }
+</script>
 
 </body>
 </html>
