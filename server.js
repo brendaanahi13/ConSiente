@@ -765,6 +765,7 @@ app.get("/api/gasolina", verificarToken, async (req, res) => {
         clearTimeout(timeout);
 
         if (!response.ok) {
+            console.warn("PetroIntelligence respondió con estado:", response.status);
             return res.json(respaldo);
         }
 
@@ -781,48 +782,56 @@ app.get("/api/gasolina", verificarToken, async (req, res) => {
             diesel: dies ? parseFloat(dies[1]) : respaldo.diesel
         });
     } catch (error) {
+        console.warn("Error al obtener precios de gasolina, usando respaldo:", error.message);
         res.json(respaldo);
     }
 });
 
 app.get("/api/semaforo-economico", verificarToken, async (req, res) => {
+    const respaldoEco = {
+        success: true,
+        dolar: "18.04",
+        gasolina: "23.69",
+        inflacion: "3.94",
+        salarioMinimo: "315.04",
+        salario_minimo: "315.04"
+    };
+
     try {
         const API_KEY = process.env.FASTFOREX_API_KEY;
 
         if (!API_KEY) {
-            return res.json({
-                success: true,
-                dolar: "18.04",
-                gasolina: "23.69",
-                inflacion: "3.94",
-                salarioMinimo: "315.04"
-            });
+            return res.json(respaldoEco);
         }
 
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
         const url = `https://api.fastforex.io/fetch-one?from=USD&to=MXN&api_key=${API_KEY}`;
-        const response = await fetch(url);
+        const response = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeout);
 
         if (!response.ok) {
-            throw new Error("Error de conexión con el servicio");
+            throw new Error(`FastForex HTTP ${response.status}`);
         }
 
         const data = await response.json();
+        const mxn = data && data.result ? Number(data.result.MXN) : NaN;
+
+        if (!Number.isFinite(mxn)) {
+            throw new Error("Respuesta de FastForex sin MXN válido");
+        }
 
         res.json({
             success: true,
-            dolar: Number(data.result.MXN).toFixed(2),
+            dolar: mxn.toFixed(2),
             gasolina: "23.69",
             inflacion: "3.94",
-            salarioMinimo: "315.04"
+            salarioMinimo: "315.04",
+            salario_minimo: "315.04"
         });
     } catch (error) {
-        res.json({
-            success: true,
-            dolar: "18.04",
-            gasolina: "23.69",
-            inflacion: "3.94",
-            salarioMinimo: "315.04"
-        });
+        console.warn("Error en /api/semaforo-economico, usando respaldo:", error.message);
+        res.json(respaldoEco);
     }
 });
 
