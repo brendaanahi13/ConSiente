@@ -7,20 +7,28 @@ const emailjs = require('@emailjs/nodejs');
 const webpush = require('web-push');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 
 require("dotenv").config();
 
 const db = require("./db");
 const app = express();
 
+if (!process.env.JWT_SECRET) {
+    console.warn("⚠️ Advertencia: JWT_SECRET no está definido en las variables de entorno.");
+}
+
 app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
 
+const perfilesDir = path.join(__dirname, 'public/imagenes/perfiles');
+fs.mkdirSync(perfilesDir, { recursive: true });
+
 // Configuración de almacenamiento inteligente con Multer para avatares duales (gris y color)
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, path.join(__dirname, 'public/imagenes/perfiles'));
+        cb(null, perfilesDir);
     },
     filename: (req, file, cb) => {
         let nombreBase = req.body.recompensa || req.body.titulo || "avatar";
@@ -291,7 +299,7 @@ app.put("/api/perfil/avatar", verificarToken, upload.single('avatar'), (req, res
     db.query(
         "UPDATE usuarios SET avatar = ? WHERE id = ?",
         [rutaAvatar, usuarioId],
-        (err, resultado) => {
+        (err) => {
             if (err) {
                 console.error("Error al actualizar avatar en BD:", err);
                 return res.status(500).json({ message: "Error al actualizar la foto de perfil en el servidor." });
@@ -711,8 +719,41 @@ app.delete("/api/cuenta", verificarToken, (req, res) => {
 });
 
 // ==========================================
-// SEMÁFORO FINANCIERO (Blindado contra errores)
+// SEMÁFORO FINANCIERO Y GASOLINA (Blindado contra errores)
 // ==========================================
+app.get("/api/gasolina", verificarToken, async (req, res) => {
+    const respaldo = { regular: 23.69, premium: 25.40, diesel: 25.15 };
+
+    try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
+
+        const response = await fetch("https://petrointelligence.com/api/api_precios.html?consulta=nac", {
+            signal: controller.signal
+        });
+        clearTimeout(timeout);
+
+        if (!response.ok) {
+            return res.json(respaldo);
+        }
+
+        const html = await response.text();
+        const limpio = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+
+        const reg = limpio.match(/Regular[^0-9]*([0-9]{1,2}\.[0-9]{2})/i);
+        const prem = limpio.match(/Premium[^0-9]*([0-9]{1,2}\.[0-9]{2})/i);
+        const dies = limpio.match(/Di[eé]sel[^0-9]*([0-9]{1,2}\.[0-9]{2})/i);
+
+        res.json({
+            regular: reg ? parseFloat(reg[1]) : respaldo.regular,
+            premium: prem ? parseFloat(prem[1]) : respaldo.premium,
+            diesel: dies ? parseFloat(dies[1]) : respaldo.diesel
+        });
+    } catch (error) {
+        res.json(respaldo);
+    }
+});
+
 app.get("/api/semaforo-economico", verificarToken, async (req, res) => {
     try {
         const API_KEY = process.env.FASTFOREX_API_KEY;
