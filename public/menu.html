@@ -291,6 +291,10 @@
             font-weight: bold;
         }
 
+        .label-movil {
+            display: none;
+        }
+
         .footer-privacidad { padding-top: 15px; text-align: center; }
         .footer-privacidad a { color: rgba(255, 255, 255, 0.5); text-decoration: none; font-size: 13px; font-weight: 500; transition: 0.3s ease; }
         .footer-privacidad a:hover { color: #81c784; }
@@ -689,6 +693,14 @@
                 font-size: 16px; 
             }
 
+            .label-escritorio {
+                display: none;
+            }
+
+            .label-movil {
+                display: inline;
+            }
+
             .sidebar button:hover, .sidebar button.btn-active { 
                 background: rgba(255, 255, 255, 0.03); 
                 color: #81c784;
@@ -733,7 +745,7 @@
         </div>
         
         <div class="menu">
-            <a id="btnVolverAdminMenu" class="btn-volver-admin-menu" onclick="volverAlPanelAdmin()">🛡️ Panel Admin</a>
+            <a id="btnVolverAdminMenu" class="btn-volver-admin-menu" onclick="volverAlPanelAdmin()"> Panel Admin</a>
 
             <div class="notif-wrapper">
                 <img src="imagenes/notificacion.png" class="notif-icon-img" id="notifBtn" alt="Notificaciones" title="Notificaciones">
@@ -767,7 +779,11 @@
         <div class="sidebar">
             <div class="sidebar-menu">
                 <button onclick="window.location.href='menu.html'" class="btn-active"><span>📊</span> Estadísticas</button>
-                <button onclick="window.location.href='agregar.html'"><span>➕</span> Agregar</button>
+                <button onclick="window.location.href='agregar.html'">
+                    <span>➕</span>
+                    <span class="label-escritorio">Agregar gasto</span>
+                    <span class="label-movil">Agregar</span>
+                </button>
                 <button onclick="window.location.href='historial.html'"><span>📅</span> Historial</button>
                 <button onclick="window.location.href='semaforo.html'"><span>🚦</span> Semáforo</button>
                 <button onclick="window.location.href='metas.html'"><span>🎯</span> Metas</button>
