@@ -704,10 +704,10 @@
         }
 
         @media (max-width: 600px) {
-            .navbar { padding: 0 15px; }
+            .navbar { padding: 0 12px; }
             .menu { gap: 10px; }
             .menu a { font-size: 12px; }
-            .btn-volver-admin-menu { padding: 5px 8px; font-size: 11px !important; }
+            .btn-volver-admin-menu { padding: 5px 8px; font-size: 11px !important; gap: 4px; }
             .titulo { font-size: 18px; }
             .sidebar button { font-size: 9px; } 
             .sidebar button span { font-size: 15px; }
@@ -734,10 +734,7 @@
         
         <div class="menu">
             <a id="btnVolverAdminMenu" class="btn-volver-admin-menu" onclick="volverAlPanelAdmin()">🛡️ Panel Admin</a>
-            <a href="menu.html">Home</a>
-            <a href="nosotros.html">Sobre nosotros</a>
-            <a href="ODS.html">ODS</a>
-            
+
             <div class="notif-wrapper">
                 <img src="imagenes/notificacion.png" class="notif-icon-img" id="notifBtn" alt="Notificaciones" title="Notificaciones">
                 <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
@@ -750,6 +747,10 @@
                     <div class="notif-list" id="notifList"></div>
                 </div>
             </div>
+
+            <a href="menu.html">Home</a>
+            <a href="nosotros.html">Sobre nosotros</a>
+            <a href="ODS.html">ODS</a>
             
             <div class="user-menu" onclick="toggleUserMenu(event)">
                 <img src="imagenes/usuario.png" class="user-icon" id="userBtn" alt="Usuario">
