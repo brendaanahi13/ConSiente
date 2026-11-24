@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        * { margin:0; padding:0; box-sizing:border-box; font-family:"Segoe UI",sans-serif; }
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; font-family:"Segoe UI",sans-serif; }
         
         body { 
             background: radial-gradient(circle at 50% 50%, #27312a 0%, #111412 100%); 
@@ -37,8 +37,25 @@
         .titulo { font-size: 20px; font-weight: bold; color: #ffffff; letter-spacing: 0.5px; }
         .logo { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; }
         .menu { display: flex; align-items: center; gap: 20px; }
-        .menu a { text-decoration: none; color: #e0e0e0; font-size: 14px; transition: 0.3s ease; white-space: nowrap; }
+        .menu a { text-decoration: none; color: #e0e0e0; font-size: 14px; transition: 0.3s ease; white-space: nowrap; cursor: pointer; }
         .menu a:hover { color: #81c784; }
+
+        .btn-volver-admin-menu {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            background: rgba(46, 125, 50, 0.25);
+            color: #81c784 !important;
+            border: 1px solid rgba(129, 199, 132, 0.45);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px !important;
+        }
+        .btn-volver-admin-menu:hover {
+            background: #2e7d32;
+            color: #ffffff !important;
+        }
 
         /* NOTIFICACIONES */
         .notif-wrapper {
@@ -688,8 +705,9 @@
 
         @media (max-width: 600px) {
             .navbar { padding: 0 15px; }
-            .menu { gap: 12px; }
-            .menu a { font-size: 13px; }
+            .menu { gap: 10px; }
+            .menu a { font-size: 12px; }
+            .btn-volver-admin-menu { padding: 5px 8px; font-size: 11px !important; }
             .titulo { font-size: 18px; }
             .sidebar button { font-size: 9px; } 
             .sidebar button span { font-size: 15px; }
@@ -715,6 +733,11 @@
         </div>
         
         <div class="menu">
+            <a id="btnVolverAdminMenu" class="btn-volver-admin-menu" onclick="volverAlPanelAdmin()">🛡️ Panel Admin</a>
+            <a href="menu.html">Home</a>
+            <a href="nosotros.html">Sobre nosotros</a>
+            <a href="ODS.html">ODS</a>
+            
             <div class="notif-wrapper">
                 <img src="imagenes/notificacion.png" class="notif-icon-img" id="notifBtn" alt="Notificaciones" title="Notificaciones">
                 <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
@@ -727,10 +750,6 @@
                     <div class="notif-list" id="notifList"></div>
                 </div>
             </div>
-
-            <a href="menu.html">Home</a>
-            <a href="nosotros.html">Sobre nosotros</a>
-            <a href="ODS.html">ODS</a>
             
             <div class="user-menu" onclick="toggleUserMenu(event)">
                 <img src="imagenes/usuario.png" class="user-icon" id="userBtn" alt="Usuario">
@@ -857,9 +876,31 @@
             return `${year}-${month}-${day}`;
         }
 
+        function volverAlPanelAdmin() {
+            localStorage.removeItem("modoVistaAdmin");
+            window.location.href = "admin.html";
+        }
+
+        function evaluarVisibilidadBotonAdmin(rolDesdePerfil = "") {
+            const rolStorage = (localStorage.getItem("rol") || "").toLowerCase();
+            const rolPerfil = String(rolDesdePerfil || "").toLowerCase();
+            const modoVistaAdmin = localStorage.getItem("modoVistaAdmin");
+            const btnAdmin = document.getElementById("btnVolverAdminMenu");
+
+            if (!btnAdmin) return;
+
+            if (rolStorage === "admin" || rolPerfil === "admin" || modoVistaAdmin === "activo") {
+                btnAdmin.style.display = "inline-flex";
+            } else {
+                btnAdmin.style.display = "none";
+            }
+        }
+
         function cerrarSesion(){
             sessionStorage.removeItem("sesionActiva");
             localStorage.removeItem("token");
+            localStorage.removeItem("rol");
+            localStorage.removeItem("modoVistaAdmin");
             window.location.href = "index.html";
         }
 
@@ -877,6 +918,8 @@
         }
 
         document.addEventListener("DOMContentLoaded", () => {
+            evaluarVisibilidadBotonAdmin();
+
             window.addEventListener("click", (e) => {
                 const dropdownMenu = document.getElementById("dropdownMenu");
                 const userMenu = document.querySelector(".user-menu");
@@ -983,6 +1026,10 @@
                     infoUsuario = await resPerfil.json();
                     document.getElementById("nombreUsuario").innerText = infoUsuario.nombre || "Usuario";
                     saldoInicial = Number(infoUsuario.saldo) || 0;
+                    if (infoUsuario.rol) {
+                        localStorage.setItem("rol", infoUsuario.rol);
+                    }
+                    evaluarVisibilidadBotonAdmin(infoUsuario.rol);
                     if (infoUsuario.avatar) {
                         const imgUser = document.getElementById("userBtn");
                         if (imgUser) imgUser.src = infoUsuario.avatar.trim();
