@@ -57,6 +57,70 @@ if (process.env.VAPID_EMAIL && process.env.VAPID_PUBLIC_KEY && process.env.VAPID
 }
 
 // ==========================================
+// HELPERS DE FECHA Y CÁLCULO DE RACHA
+// ==========================================
+function formatearFechaLocal(dateObj) {
+    const anio = dateObj.getFullYear();
+    const mes = String(dateObj.getMonth() + 1).padStart(2, "0");
+    const dia = String(dateObj.getDate()).padStart(2, "0");
+    return `${anio}-${mes}-${dia}`;
+}
+
+function normalizarFechaRegistro(valorFecha) {
+    if (!valorFecha) return null;
+    if (valorFecha instanceof Date) {
+        return formatearFechaLocal(valorFecha);
+    }
+    const texto = String(valorFecha).trim();
+    const matchIso = texto.match(/^(\d{4}-\d{2}-\d{2})/);
+    return matchIso ? matchIso[1] : null;
+}
+
+function calcularRachaConsecutiva(movimientos) {
+    if (!Array.isArray(movimientos) || movimientos.length === 0) {
+        return 0;
+    }
+
+    const fechasConActividad = new Set();
+    movimientos.forEach((mov) => {
+        const fechaStr = normalizarFechaRegistro(mov.fecha);
+        if (fechaStr) {
+            fechasConActividad.add(fechaStr);
+        }
+    });
+
+    if (fechasConActividad.size === 0) {
+        return 0;
+    }
+
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    const ayer = new Date(hoy);
+    ayer.setDate(ayer.getDate() - 1);
+
+    const hoyStr = formatearFechaLocal(hoy);
+    const ayerStr = formatearFechaLocal(ayer);
+
+    let cursor = null;
+    if (fechasConActividad.has(hoyStr)) {
+        cursor = new Date(hoy);
+    } else if (fechasConActividad.has(ayerStr)) {
+        cursor = new Date(ayer);
+    } else {
+        return 0;
+    }
+
+    let racha = 0;
+    while (fechasConActividad.has(formatearFechaLocal(cursor))) {
+        racha++;
+        cursor.setDate(cursor.getDate() - 1);
+    }
+
+    return racha;
+}
+
+// ==========================================
 // VERIFICAR TOKEN
 // ==========================================
 function verificarToken(req, res, next) {
@@ -218,49 +282,13 @@ app.get("/api/perfil", verificarToken, (req, res) => {
     const usuarioId = req.user.id; 
 
     db.query('SELECT fecha FROM movimientos WHERE usuario_id = ? ORDER BY fecha DESC', [usuarioId], (errMov, movs) => {
-        let diasRachaCalculada = 0;
-
-        if (!errMov && movs) {
-            const fechasGastos = new Set();
-            movs.forEach(g => {
-                if (g.fecha) {
-                    const fechaStr = String(g.fecha).split('T')[0].split(' ')[0];
-                    fechasGastos.add(fechaStr);
-                }
-            });
-
-            const hoyObj = new Date();
-            hoyObj.setHours(0, 0, 0, 0);
-            const hoyStr = hoyObj.toISOString().split('T')[0];
-
-            const ayerObj = new Date(hoyObj);
-            ayerObj.setDate(ayerObj.getDate() - 1);
-            const ayerStr = ayerObj.toISOString().split('T')[0];
-
-            fechasGastos.add(hoyStr);
-
-            let fechaCursor = null;
-            if (fechasGastos.has(hoyStr)) {
-                fechaCursor = new Date(hoyObj);
-            } else if (fechasGastos.has(ayerStr)) {
-                fechaCursor = new Date(ayerObj);
-            }
-
-            if (fechaCursor) {
-                let cursor = new Date(fechaCursor);
-                while (true) {
-                    const fStr = cursor.toISOString().split('T')[0];
-                    if (fechasGastos.has(fStr)) {
-                        diasRachaCalculada++;
-                        cursor.setDate(cursor.getDate() - 1);
-                    } else {
-                        break;
-                    }
-                }
-            }
+        if (errMov) {
+            console.error("Error al consultar movimientos para racha:", errMov);
         }
 
-        const hoyStrSql = new Date().toISOString().split('T')[0];
+        const diasRachaCalculada = errMov ? 0 : calcularRachaConsecutiva(movs);
+        const hoyStrSql = formatearFechaLocal(new Date());
+
         db.query('UPDATE usuarios SET racha_dias = ?, ultimo_acceso = ? WHERE id = ?', [diasRachaCalculada, hoyStrSql, usuarioId], (errUpdate) => {
             if (errUpdate) console.error("Error al sincronizar racha en BD:", errUpdate);
         });
@@ -274,7 +302,10 @@ app.get("/api/perfil", verificarToken, (req, res) => {
                     return res.status(500).json({ message: "Error al obtener datos" });
                 }
                 if (perfilResults.length === 0) return res.status(404).json({ message: "Usuario no encontrado" });
-                res.json(perfilResults[0]);
+                res.json({
+                    ...perfilResults[0],
+                    racha_dias: diasRachaCalculada
+                });
             }
         );
     });
@@ -1063,7 +1094,7 @@ function abonarMetaLogica(req, res) {
                         });
                     }
 
-                    const fechaHoy = new Date().toISOString().slice(0, 10);
+                    const fechaHoy = formatearFechaLocal(new Date());
                     const categoria = `Ahorro / Meta: ${meta.nombre}`;
 
                     db.query(
@@ -1143,47 +1174,11 @@ app.get("/api/admin/usuarios/:id/detalle", verificarToken, (req, res) => {
         }
 
         db.query('SELECT fecha FROM movimientos WHERE usuario_id = ? ORDER BY fecha DESC', [usuarioId], (errMov, movs) => {
-            let diasRachaCalculada = 0;
-
-            if (!errMov && movs) {
-                const fechasGastos = new Set();
-                movs.forEach(g => {
-                    if (g.fecha) {
-                        const fechaStr = String(g.fecha).split('T')[0].split(' ')[0];
-                        fechasGastos.add(fechaStr);
-                    }
-                });
-
-                const hoyObj = new Date();
-                hoyObj.setHours(0, 0, 0, 0);
-                const hoyStr = hoyObj.toISOString().split('T')[0];
-
-                const ayerObj = new Date(hoyObj);
-                ayerObj.setDate(ayerObj.getDate() - 1);
-                const ayerStr = ayerObj.toISOString().split('T')[0];
-
-                fechasGastos.add(hoyStr);
-
-                let fechaCursor = null;
-                if (fechasGastos.has(hoyStr)) {
-                    fechaCursor = new Date(hoyObj);
-                } else if (fechasGastos.has(ayerStr)) {
-                    fechaCursor = new Date(ayerStr);
-                }
-
-                if (fechaCursor) {
-                    let cursor = new Date(fechaCursor);
-                    while (true) {
-                        const fStr = cursor.toISOString().split('T')[0];
-                        if (fechasGastos.has(fStr)) {
-                            diasRachaCalculada++;
-                            cursor.setDate(cursor.getDate() - 1);
-                        } else {
-                            break;
-                        }
-                    }
-                }
+            if (errMov) {
+                console.error("Error al consultar movimientos para racha en admin:", errMov);
             }
+
+            const diasRachaCalculada = errMov ? 0 : calcularRachaConsecutiva(movs);
 
             db.query('UPDATE usuarios SET racha_dias = ? WHERE id = ?', [diasRachaCalculada, usuarioId]);
 
