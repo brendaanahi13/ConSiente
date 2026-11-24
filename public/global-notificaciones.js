@@ -154,7 +154,7 @@ async function cargarNotificacionesSistema() {
                     notificaciones.unshift({
                         id: 'local_racha_hoy',
                         titulo: `🔥 ¡Hola ${nombreUsuario}, Racha Activa!`,
-                        mensaje: `Felicidades por ingresar hoy a ConSiente. Tu racha actual es de ${rachaActual} ${rachaActual === 1 ? 'día seguido' : 'días seguidos'}.`,
+                        mensaje: `Felicidades por ingresar hoy a ConSiente. Tu racha actual es de ${rachaActual} ${rachaActual === 1 ? 'día seguido' : 'días seguidos'}. Recuerda agregar un gasto o movimiento para activar y sumar tu racha.`,
                         leida: rachaLeidaHoy ? 1 : 0,
                         fecha: new Date().toISOString()
                     });
