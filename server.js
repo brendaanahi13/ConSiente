@@ -753,7 +753,7 @@ app.delete("/api/cuenta", verificarToken, (req, res) => {
 // SEMÁFORO FINANCIERO Y GASOLINA (Blindado contra errores)
 // ==========================================
 app.get("/api/gasolina", verificarToken, async (req, res) => {
-    const respaldo = { regular: 23.69, premium: 25.40, diesel: 25.15 };
+    const respaldo = { regular: 23.697, premium: 28.585, diesel: 26.987 };
 
     try {
         const controller = new AbortController();
@@ -772,14 +772,16 @@ app.get("/api/gasolina", verificarToken, async (req, res) => {
         const html = await response.text();
         const limpio = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
 
-        const reg = limpio.match(/Regular[^0-9]*([0-9]{1,2}\.[0-9]{2})/i);
-        const prem = limpio.match(/Premium[^0-9]*([0-9]{1,2}\.[0-9]{2})/i);
-        const dies = limpio.match(/Di[eé]sel[^0-9]*([0-9]{1,2}\.[0-9]{2})/i);
+        const reg = limpio.match(/Regular[^0-9]*([0-9]{1,2}\.[0-9]{2,3})/i);
+        const prem = limpio.match(/Premium[^0-9]*([0-9]{1,2}\.[0-9]{2,3})/i);
+        const dies = limpio.match(/Di[eé]sel[^0-9]*([0-9]{1,2}\.[0-9]{2,3})/i);
+
+        const montosLitro = [...limpio.matchAll(/\$\s*\/\s*litro\s*([0-9]{1,2}\.[0-9]{2,3})/gi)].map(m => parseFloat(m[1]));
 
         res.json({
-            regular: reg ? parseFloat(reg[1]) : respaldo.regular,
-            premium: prem ? parseFloat(prem[1]) : respaldo.premium,
-            diesel: dies ? parseFloat(dies[1]) : respaldo.diesel
+            regular: reg ? parseFloat(reg[1]) : (montosLitro[0] ?? respaldo.regular),
+            premium: prem ? parseFloat(prem[1]) : (montosLitro[1] ?? respaldo.premium),
+            diesel: dies ? parseFloat(dies[1]) : (montosLitro[2] ?? respaldo.diesel)
         });
     } catch (error) {
         console.warn("Error al obtener precios de gasolina, usando respaldo:", error.message);
@@ -791,7 +793,7 @@ app.get("/api/semaforo-economico", verificarToken, async (req, res) => {
     const respaldoEco = {
         success: true,
         dolar: "18.04",
-        gasolina: "23.69",
+        gasolina: "23.697",
         inflacion: "3.94",
         salarioMinimo: "315.04",
         salario_minimo: "315.04"
@@ -824,7 +826,7 @@ app.get("/api/semaforo-economico", verificarToken, async (req, res) => {
         res.json({
             success: true,
             dolar: mxn.toFixed(2),
-            gasolina: "23.69",
+            gasolina: "23.697",
             inflacion: "3.94",
             salarioMinimo: "315.04",
             salario_minimo: "315.04"
