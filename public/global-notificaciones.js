@@ -147,7 +147,7 @@ async function cargarNotificacionesSistema() {
                     if (!bienvenidaEliminada) {
                         notificaciones.unshift({
                             id: 'local_racha_bienvenida',
-                            titulo: `👋 ¡Bienvenido, ${nombreUsuario}!`,
+                            titulo: ` ¡Bienvenido, ${nombreUsuario}!`,
                             mensaje: `No olvides activar tu racha del día de hoy. Registra al menos un gasto o movimiento en ConSiente para encender tu fuego diario.`,
                             leida: bienvenidaLeida ? 1 : 0,
                             fecha: new Date().toISOString()
