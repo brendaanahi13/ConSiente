@@ -235,10 +235,12 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08); 
             min-width: 0;
         }
-        .box-formulario { flex: 1.3; width: 100%; }
+        .box-formulario { flex: 1.3; width: 100%; position: relative; z-index: 20; }
         .box-grafica { 
             flex: 1; 
             width: 100%;
+            position: relative;
+            z-index: 1;
             display: flex; 
             flex-direction: column; 
             align-items: center; 
@@ -330,6 +332,7 @@
             position: relative;
             margin-top: 6px;
             width: 100%;
+            z-index: 30;
         }
         .date-trigger-btn {
             width: 100%;
@@ -537,6 +540,16 @@
             .main-layout { flex-direction: column; margin-top: 65px; min-height: auto; }
             .container { padding: 18px 14px 96px 14px; width: 100%; flex-direction: column; gap: 20px; }
             .box { width: 100%; padding: 20px; border-radius: 16px; }
+            .box-formulario { z-index: 25; }
+            .box-grafica { z-index: 1; }
+
+            .date-popover-cal {
+                position: static;
+                top: auto;
+                left: auto;
+                margin-top: 8px;
+                box-shadow: none;
+            }
             
             .sidebar { 
                 position: fixed; bottom: 0; top: auto; left: 0; width: 100%; min-width: 100%; height: 72px; 
@@ -575,7 +588,7 @@
 
             .box { padding: 16px; }
             .cal-days-grid, .cal-weekdays { gap: 3px; }
-            .cal-day-btn, .cal-day-empty { height: 28px; font-size: 11px; }
+            .cal-day-btn, .cal-day-empty { height: 26px; font-size: 10.5px; }
             
             /* AJUSTE RESPONSIVO PARA EL MENÚ DE NOTIFICACIONES EN MÓVIL */
             .notif-dropdown {
