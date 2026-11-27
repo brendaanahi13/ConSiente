@@ -38,7 +38,7 @@ function obtenerTiempoRelativo(fechaStr) {
     if (meses < 12) return `Hace ${meses} ${meses === 1 ? 'mes' : 'meses'}`;
     
     const anos = Math.floor(meses / 12);
-    return `Hace ${anos} ${anos === 1 ? 'año' : 'anos'}`;
+    return `Hace ${anos} ${anos === 1 ? 'año' : 'años'}`;
 }
 
 async function purgarExcedenteNotificaciones(notificacionesExcedentes) {
@@ -115,9 +115,6 @@ async function cargarNotificacionesSistema() {
                 ayer.setDate(ayer.getDate() - 1);
                 let ayerStr = obtenerFechaLocalStr(ayer);
 
-                // Mantener el día actual activo al abrir la app
-                fechasGastos.add(hoyStr);
-
                 let fechaCursor = null;
                 if (fechasGastos.has(hoyStr)) {
                     fechaCursor = new Date(hoy);
@@ -139,8 +136,8 @@ async function cargarNotificacionesSistema() {
                     }
                 }
 
-                // Racha exacta calculada al momento
-                const rachaActual = Math.max(fechasRachaActiva.size, Number(usuario.racha_dias || usuario.racha || 1));
+                const rachaActual = fechasRachaActiva.size;
+                const gastoRegistradoHoy = fechasGastos.has(hoyStr);
                 
                 // Verificar si ya fue leída hoy por ESTE usuario específico
                 const rachaLeidaHoy = localStorage.getItem(`racha_leida_${userId}_${hoyStr}`) === 'true';
@@ -151,10 +148,18 @@ async function cargarNotificacionesSistema() {
                 );
 
                 if (!existeHoy) {
+                    const tituloRacha = gastoRegistradoHoy
+                        ? `🔥 ¡Hola ${nombreUsuario}! Racha de hoy activada`
+                        : `🔥 ¡Hola ${nombreUsuario}! Activa tu racha de hoy`;
+
+                    const mensajeRacha = gastoRegistradoHoy
+                        ? `Ya registraste un movimiento hoy en ConSiente y tu racha actual es de ${rachaActual} ${rachaActual === 1 ? 'día consecutivo' : 'días consecutivos'}. Continúa así para mantenerla activa.`
+                        : `Tu racha actual es de ${rachaActual} ${rachaActual === 1 ? 'día consecutivo' : 'días consecutivos'}. Para activar el día de hoy y sumar a tu racha, registra al menos un gasto o movimiento en ConSiente.`;
+
                     notificaciones.unshift({
                         id: 'local_racha_hoy',
-                        titulo: `🔥 ¡Hola ${nombreUsuario}, Racha Activa!`,
-                        mensaje: `Felicidades por ingresar hoy a ConSiente. Tu racha actual es de ${rachaActual} ${rachaActual === 1 ? 'día seguido' : 'días seguidos'}. Recuerda agregar un gasto o movimiento para activar y sumar tu racha.`,
+                        titulo: tituloRacha,
+                        mensaje: mensajeRacha,
                         leida: rachaLeidaHoy ? 1 : 0,
                         fecha: new Date().toISOString()
                     });
@@ -219,7 +224,9 @@ async function cargarNotificacionesSistema() {
 
             if (textoCompleto.includes("meta") || textoCompleto.includes("abono") || textoCompleto.includes("ahorro")) {
                 destinoUrl = "metas.html";
-            } else if (textoCompleto.includes("racha") || textoCompleto.includes("avatar") || textoCompleto.includes("puerquito") || textoCompleto.includes("días de racha")) {
+            } else if (textoCompleto.includes("racha") && textoCompleto.includes("activada")) {
+                destinoUrl = "racha.html";
+            } else if (textoCompleto.includes("avatar") || textoCompleto.includes("puerquito") || textoCompleto.includes("días de racha")) {
                 destinoUrl = "racha.html";
             } else if (textoCompleto.includes("gasto") || textoCompleto.includes("movimiento") || textoCompleto.includes("historial")) {
                 destinoUrl = "historial.html";
