@@ -750,7 +750,7 @@ app.delete("/api/cuenta", verificarToken, (req, res) => {
 });
 
 // ==========================================
-// SEMÁFORO FINANCIERO Y GASOLINA (Blindado contra errores)
+// SEMÁFORO FINANCIERO Y GASOLINA (Tiempo real + Respaldo)
 // ==========================================
 app.get("/api/gasolina", verificarToken, async (req, res) => {
     const respaldo = { regular: 23.697, premium: 28.585, diesel: 26.987 };
@@ -790,18 +790,61 @@ app.get("/api/gasolina", verificarToken, async (req, res) => {
 });
 
 app.get("/api/semaforo-economico", verificarToken, async (req, res) => {
+    const inflacionActual = "3.96";
+    const salarioMinimoActual = "315.04";
+
     const respaldoEco = {
         success: true,
-        dolar: "18.04",
+        dolar: "20.20",
+        venta: 20.20,
+        compra: 19.60,
+        fix: 20.05,
+        fechaActualizacion: null,
         gasolina: "23.697",
-        inflacion: "3.94",
-        salarioMinimo: "315.04",
-        salario_minimo: "315.04"
+        inflacion: inflacionActual,
+        salarioMinimo: salarioMinimoActual,
+        salario_minimo: salarioMinimoActual
     };
 
     try {
-        const API_KEY = process.env.FASTFOREX_API_KEY;
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
 
+        const response = await fetch("https://mx.dolarapi.com/v1/cotizaciones/usd", {
+            signal: controller.signal
+        });
+        clearTimeout(timeout);
+
+        if (!response.ok) {
+            throw new Error(`DolarApi HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        const candidato = data?.venta ?? data?.compra ?? data?.fix;
+        const mxn = Number(candidato);
+
+        if (!Number.isFinite(mxn) || mxn <= 0) {
+            throw new Error("Respuesta de DolarApi sin cotización válida");
+        }
+
+        return res.json({
+            success: true,
+            dolar: mxn.toFixed(2),
+            venta: data.venta ?? mxn,
+            compra: data.compra ?? null,
+            fix: data.fix ?? null,
+            fechaActualizacion: data.fechaActualizacion ?? null,
+            gasolina: "23.697",
+            inflacion: inflacionActual,
+            salarioMinimo: salarioMinimoActual,
+            salario_minimo: salarioMinimoActual
+        });
+    } catch (error) {
+        console.warn("DolarApi no disponible en /api/semaforo-economico, intentando respaldo:", error.message);
+    }
+
+    try {
+        const API_KEY = process.env.FASTFOREX_API_KEY;
         if (!API_KEY) {
             return res.json(respaldoEco);
         }
@@ -819,21 +862,25 @@ app.get("/api/semaforo-economico", verificarToken, async (req, res) => {
         const data = await response.json();
         const mxn = data && data.result ? Number(data.result.MXN) : NaN;
 
-        if (!Number.isFinite(mxn)) {
+        if (!Number.isFinite(mxn) || mxn <= 0) {
             throw new Error("Respuesta de FastForex sin MXN válido");
         }
 
-        res.json({
+        return res.json({
             success: true,
             dolar: mxn.toFixed(2),
+            venta: mxn,
+            compra: null,
+            fix: null,
+            fechaActualizacion: new Date().toISOString(),
             gasolina: "23.697",
-            inflacion: "3.94",
-            salarioMinimo: "315.04",
-            salario_minimo: "315.04"
+            inflacion: inflacionActual,
+            salarioMinimo: salarioMinimoActual,
+            salario_minimo: salarioMinimoActual
         });
     } catch (error) {
-        console.warn("Error en /api/semaforo-economico, usando respaldo:", error.message);
-        res.json(respaldoEco);
+        console.warn("Error en respaldo de /api/semaforo-economico:", error.message);
+        return res.json(respaldoEco);
     }
 });
 
