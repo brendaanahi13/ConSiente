@@ -186,7 +186,7 @@ async function cargarNotificacionesSistema() {
             return;
         }
 
-        // 🛡️ FILTRO INTELIGENTE: Evitar duplicados el mismo día con el mismo título
+        // FILTRO INTELIGENTE: Evitar duplicados el mismo día con el mismo título
         const unicasMap = new Map();
         notificaciones.forEach(notif => {
             const fechaDia = notif.fecha ? notif.fecha.split('T')[0] : '';
