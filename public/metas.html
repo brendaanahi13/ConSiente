@@ -148,6 +148,127 @@
         .formulario input:focus, .formulario select:focus { outline: none; border-color: rgba(129, 199, 132, 0.7); background: #222222; box-shadow: 0 0 8px rgba(129, 199, 132, 0.2); }
         
         .nota-aclaratoria { display: block; margin-top: 6px; font-size: 11.5px; color: #81c784; font-style: italic; }
+
+        /* CALENDARIO NORMAL MENSUAL */
+        .calendario-normal-box {
+            margin-top: 8px;
+            background: #151916;
+            border: 1px solid rgba(129, 199, 132, 0.28);
+            border-radius: 14px;
+            padding: 14px;
+        }
+        .cal-top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 8px;
+        }
+        .cal-mes-titulo {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: #ffffff;
+            text-transform: capitalize;
+        }
+        .cal-nav-btns {
+            display: flex;
+            gap: 6px;
+        }
+        .cal-nav-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            border: 1px solid rgba(129, 199, 132, 0.35);
+            background: #1e2520;
+            color: #81c784;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s ease;
+        }
+        .cal-nav-btn:hover {
+            background: #2e7d32;
+            color: #ffffff;
+        }
+        .cal-estado-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 11px;
+            color: #b7d7b9;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .cal-badge-ciclo {
+            background: rgba(46, 125, 50, 0.28);
+            border: 1px solid rgba(129, 199, 132, 0.45);
+            color: #81c784;
+            padding: 3px 9px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .cal-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-bottom: 6px;
+            text-align: center;
+        }
+        .cal-weekday {
+            font-size: 10.5px;
+            font-weight: 700;
+            color: #8fa691;
+            padding: 3px 0;
+        }
+        .cal-days-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+        .cal-day-empty {
+            height: 32px;
+        }
+        .cal-day-btn {
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: #1e2420;
+            color: #e4ece5;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .cal-day-btn:hover {
+            border-color: #81c784;
+            background: rgba(46, 125, 50, 0.25);
+            color: #ffffff;
+        }
+        .cal-day-btn.dia-elegido {
+            background: linear-gradient(135deg, #2e7d32 0%, #43a047 100%);
+            border-color: #b9f6ca;
+            color: #ffffff;
+            font-weight: 800;
+            box-shadow: 0 0 10px rgba(129, 199, 132, 0.45);
+        }
+        .cal-day-btn.dia-mas-15 {
+            background: rgba(67, 160, 71, 0.34);
+            border-color: #81c784;
+            color: #dcedc8;
+            font-weight: 800;
+            box-shadow: 0 0 8px rgba(129, 199, 132, 0.28);
+        }
+
         .resumen-calculo {
             background: rgba(46, 125, 50, 0.15); border: 1px solid rgba(129, 199, 132, 0.25);
             border-radius: 12px; padding: 12px 16px; margin-top: 15px; font-size: 13px; color: #81c784;
@@ -422,6 +543,31 @@
                             <option value="Sábado">Sábado</option>
                             <option value="Domingo">Domingo</option>
                         </select>
+
+                        <!-- CALENDARIO NORMAL MENSUAL -->
+                        <div id="calendarioNormalWrapper" class="calendario-normal-box" style="display:none;">
+                            <div class="cal-top-bar">
+                                <span id="calMesTitulo" class="cal-mes-titulo"></span>
+                                <div class="cal-nav-btns">
+                                    <button type="button" class="cal-nav-btn" onclick="cambiarMesCalendario(-1)" title="Mes anterior">&lsaquo;</button>
+                                    <button type="button" class="cal-nav-btn" onclick="cambiarMesCalendario(1)" title="Mes siguiente">&rsaquo;</button>
+                                </div>
+                            </div>
+                            <div class="cal-estado-bar">
+                                <span id="calAyudaTexto">Toca un día para marcar +15 días</span>
+                                <span id="calBadgeCiclo" class="cal-badge-ciclo"></span>
+                            </div>
+                            <div class="cal-weekdays">
+                                <span class="cal-weekday">Lu</span>
+                                <span class="cal-weekday">Ma</span>
+                                <span class="cal-weekday">Mi</span>
+                                <span class="cal-weekday">Ju</span>
+                                <span class="cal-weekday">Vi</span>
+                                <span class="cal-weekday">Sá</span>
+                                <span class="cal-weekday">Do</span>
+                            </div>
+                            <div id="calDaysGrid" class="cal-days-grid"></div>
+                        </div>
                     </div>
 
                     <div class="resumen-calculo" id="resumenCalculo"></div>
@@ -489,6 +635,12 @@
         let cuotaActualMeta = 0;
         let metaEditandoId = null;
         let metaPendienteEliminar = null;
+
+        const fechaBaseHoy = new Date();
+        let calAnioActual = fechaBaseHoy.getFullYear();
+        let calMesActual = fechaBaseHoy.getMonth();
+        let fechaElegidaQuincenal = new Date(calAnioActual, calMesActual, 15);
+        let fechaElegidaMensual = new Date(calAnioActual, calMesActual, 15);
 
         function volverAlPanelAdmin() {
             localStorage.removeItem("modoVistaAdmin");
@@ -583,13 +735,111 @@
             window.location.href = "index.html";
         }
 
+        function formatearClaveFecha(dateObj) {
+            const y = dateObj.getFullYear();
+            const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const d = String(dateObj.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        function cambiarMesCalendario(delta) {
+            const nuevaFecha = new Date(calAnioActual, calMesActual + delta, 1);
+            calAnioActual = nuevaFecha.getFullYear();
+            calMesActual = nuevaFecha.getMonth();
+            const frec = document.getElementById("frecuenciaAbono").value;
+            renderizarCalendarioNormal(frec);
+        }
+
+        function renderizarCalendarioNormal(modo) {
+            const tituloMes = document.getElementById("calMesTitulo");
+            const ayudaTexto = document.getElementById("calAyudaTexto");
+            const badgeCiclo = document.getElementById("calBadgeCiclo");
+            const grid = document.getElementById("calDaysGrid");
+            const selectDia = document.getElementById("diaPago");
+            if (!grid) return;
+
+            const fechaMostrar = new Date(calAnioActual, calMesActual, 1);
+            const nombreMes = fechaMostrar.toLocaleDateString("es-MX", { month: "long", year: "numeric" });
+            tituloMes.textContent = nombreMes;
+
+            const primerDiaSemana = (new Date(calAnioActual, calMesActual, 1).getDay() + 6) % 7;
+            const totalDiasMes = new Date(calAnioActual, calMesActual + 1, 0).getDate();
+
+            let claveElegida = "";
+            let claveMas15 = "";
+
+            if (modo === "Quincenal") {
+                const fechaMas15 = new Date(
+                    fechaElegidaQuincenal.getFullYear(),
+                    fechaElegidaQuincenal.getMonth(),
+                    fechaElegidaQuincenal.getDate() + 15
+                );
+                claveElegida = formatearClaveFecha(fechaElegidaQuincenal);
+                claveMas15 = formatearClaveFecha(fechaMas15);
+
+                const d1 = fechaElegidaQuincenal.getDate();
+                const d2 = fechaMas15.getDate();
+                const textoCiclo = d1 === d2 ? `Día ${d1} (+15 días)` : `Días ${d1} y ${d2}`;
+
+                ayudaTexto.textContent = "Elige un día y se marcará +15 días";
+                badgeCiclo.textContent = textoCiclo;
+                selectDia.innerHTML = `<option value="${textoCiclo}" selected>${textoCiclo}</option>`;
+            } else if (modo === "Mensual") {
+                claveElegida = formatearClaveFecha(fechaElegidaMensual);
+                const dMes = fechaElegidaMensual.getDate();
+                const textoMensual = `Día ${dMes}`;
+
+                ayudaTexto.textContent = "Elige el día de abono mensual";
+                badgeCiclo.textContent = `${textoMensual} de cada mes`;
+                selectDia.innerHTML = `<option value="${textoMensual}" selected>${textoMensual}</option>`;
+            }
+
+            grid.innerHTML = "";
+
+            for (let i = 0; i < primerDiaSemana; i++) {
+                const vacio = document.createElement("div");
+                vacio.className = "cal-day-empty";
+                grid.appendChild(vacio);
+            }
+
+            for (let dia = 1; dia <= totalDiasMes; dia++) {
+                const fechaCelda = new Date(calAnioActual, calMesActual, dia);
+                const claveCelda = formatearClaveFecha(fechaCelda);
+
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.className = "cal-day-btn";
+                btn.textContent = dia;
+
+                if (claveCelda === claveElegida) {
+                    btn.classList.add("dia-elegido");
+                } else if (modo === "Quincenal" && claveCelda === claveMas15) {
+                    btn.classList.add("dia-mas-15");
+                }
+
+                btn.onclick = () => {
+                    if (modo === "Quincenal") {
+                        fechaElegidaQuincenal = new Date(calAnioActual, calMesActual, dia);
+                    } else if (modo === "Mensual") {
+                        fechaElegidaMensual = new Date(calAnioActual, calMesActual, dia);
+                    }
+                    renderizarCalendarioNormal(modo);
+                };
+
+                grid.appendChild(btn);
+            }
+        }
+
         function cambiarFrecuencia() {
             const frec = document.getElementById("frecuenciaAbono").value;
             const selectDia = document.getElementById("diaPago");
             const lblDia = document.getElementById("lblDiaPago");
             const grupoDia = document.getElementById("grupoDiaPago");
+            const calWrapper = document.getElementById("calendarioNormalWrapper");
 
             grupoDia.style.display = "block";
+            selectDia.style.display = "block";
+            calWrapper.style.display = "none";
 
             if (frec === "Semanal") {
                 lblDia.innerText = "Día preferido de la semana";
@@ -604,17 +854,14 @@
                 `;
             } else if (frec === "Quincenal") {
                 lblDia.innerText = "Ciclo de cobro quincenal";
-                selectDia.innerHTML = `
-                    <option value="Días 1 y 16">Días 1 y 16 de cada mes</option>
-                    <option value="Días 15 y 30" selected>Días 15 y 30 de cada mes</option>
-                `;
+                selectDia.style.display = "none";
+                calWrapper.style.display = "block";
+                renderizarCalendarioNormal("Quincenal");
             } else if (frec === "Mensual") {
                 lblDia.innerText = "Día del mes para abonar";
-                selectDia.innerHTML = `
-                    <option value="Día 1">Día 1 del mes</option>
-                    <option value="Día 15" selected>Día 15 del mes</option>
-                    <option value="Día 30">Último día del mes</option>
-                `;
+                selectDia.style.display = "none";
+                calWrapper.style.display = "block";
+                renderizarCalendarioNormal("Mensual");
             } else {
                 grupoDia.style.display = "none";
             }
@@ -720,7 +967,16 @@
                     card.className = `meta-card ${completada ? 'completada' : ''}`;
                     if (!completada) card.onclick = () => abrirModalAbono(meta.id, meta.nombre, cuota);
 
-                    const detalles = `📅 Límite: ${meta.fecha_limite ? String(meta.fecha_limite).split('T')[0] : 'Sin fecha'} | ${meta.frecuencia || ''} (${meta.dia_pago || 'General'})`;
+                    const frecuenciaTexto = meta.frecuencia || '';
+                    const esDiario = frecuenciaTexto.trim().toLowerCase() === 'diario';
+                    const textoFrecuencia = (!esDiario && meta.dia_pago && meta.dia_pago !== 'General')
+                        ? `${frecuenciaTexto} (${meta.dia_pago})`
+                        : frecuenciaTexto;
+                    const fechaLimiteTexto = meta.fecha_limite ? String(meta.fecha_limite).split('T')[0] : 'Sin fecha';
+                    const detalles = textoFrecuencia
+                        ? `📅 Límite: ${fechaLimiteTexto} | ${textoFrecuencia}`
+                        : `📅 Límite: ${fechaLimiteTexto}`;
+
                     card.innerHTML = `
                         <div class="meta-content-wrapper">
                             <div class="meta-header-card">
@@ -770,6 +1026,21 @@
             document.getElementById("montoTarget").value = Number(meta.monto_target || 0);
             document.getElementById("fechaLimite").value = meta.fecha_limite ? String(meta.fecha_limite).split("T")[0] : "";
             document.getElementById("frecuenciaAbono").value = meta.frecuencia || "Semanal";
+
+            if (meta.frecuencia === "Quincenal" && meta.dia_pago) {
+                const matchNums = String(meta.dia_pago).match(/\d+/g);
+                if (matchNums && matchNums.length > 0) {
+                    const diaGuardado = Number(matchNums[0]);
+                    fechaElegidaQuincenal = new Date(calAnioActual, calMesActual, diaGuardado);
+                }
+            } else if (meta.frecuencia === "Mensual" && meta.dia_pago) {
+                const matchNum = String(meta.dia_pago).match(/\d+/);
+                if (matchNum) {
+                    const diaGuardado = Number(matchNum[0]);
+                    fechaElegidaMensual = new Date(calAnioActual, calMesActual, diaGuardado);
+                }
+            }
+
             cambiarFrecuencia();
 
             const diaPago = document.getElementById("diaPago");
@@ -787,6 +1058,10 @@
 
         function cancelarEdicion() {
             metaEditandoId = null;
+            calAnioActual = fechaBaseHoy.getFullYear();
+            calMesActual = fechaBaseHoy.getMonth();
+            fechaElegidaQuincenal = new Date(calAnioActual, calMesActual, 15);
+            fechaElegidaMensual = new Date(calAnioActual, calMesActual, 15);
             document.getElementById("nombreMeta").value = "";
             document.getElementById("montoTarget").value = "";
             document.getElementById("fechaLimite").value = "";
@@ -889,7 +1164,7 @@
             const monto_target = parseFloat(document.getElementById("montoTarget").value);
             const fecha_limite = document.getElementById("fechaLimite").value;
             const frecuencia = document.getElementById("frecuenciaAbono").value;
-            const dia_pago = document.getElementById("diaPago").value || "General";
+            const dia_pago = frecuencia === "Diario" ? null : (document.getElementById("diaPago").value || null);
 
             if (!nombre || !Number.isFinite(monto_target) || monto_target <= 0 || !fecha_limite) {
                 alert("Completa los campos correctamente.");
