@@ -859,7 +859,7 @@
         async function ejecutarAbonoPersonalizado() {
             const montoPersonalizado = parseFloat(document.getElementById("inputAbonoPersonalizado").value);
             if (!montoPersonalizado || montoPersonalizado <= 0) {
-                alert("⚠️ Ingresa un monto válido.");
+                alert("Ingresa un monto válido.");
                 return;
             }
             await enviarAbonoServidor(montoPersonalizado);
