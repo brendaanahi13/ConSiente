@@ -47,7 +47,7 @@ async function purgarExcedenteNotificaciones(notificacionesExcedentes) {
 
     for (const notif of notificacionesExcedentes) {
         const idNotif = notif.id || notif._id;
-        if (!idNotif || idNotif === 'local_racha_hoy') continue;
+        if (!idNotif || String(idNotif).startsWith('local_racha_')) continue;
 
         try {
             await fetch(`${window.API_URL}/api/notificaciones/${idNotif}`, {
@@ -138,31 +138,35 @@ async function cargarNotificacionesSistema() {
 
                 const rachaActual = fechasRachaActiva.size;
                 const gastoRegistradoHoy = fechasGastos.has(hoyStr);
-                
-                // Verificar si ya fue leída hoy por ESTE usuario específico
-                const rachaLeidaHoy = localStorage.getItem(`racha_leida_${userId}_${hoyStr}`) === 'true';
 
-                const existeHoy = notificaciones.some(n => 
-                    (n.titulo || "").includes("Racha") && 
-                    n.fecha && n.fecha.startsWith(hoyStr)
-                );
+                if (!gastoRegistradoHoy) {
+                    // ETAPA 1: Aún no registra un movimiento hoy -> Notificación de bienvenida
+                    const bienvenidaLeida = localStorage.getItem(`racha_bienvenida_leida_${userId}_${hoyStr}`) === 'true';
+                    const bienvenidaEliminada = localStorage.getItem(`racha_bienvenida_eliminada_${userId}_${hoyStr}`) === 'true';
 
-                if (!existeHoy) {
-                    const tituloRacha = gastoRegistradoHoy
-                        ? `🔥 ¡Hola ${nombreUsuario}! Racha de hoy activada`
-                        : `🔥 ¡Hola ${nombreUsuario}! Activa tu racha de hoy`;
+                    if (!bienvenidaEliminada) {
+                        notificaciones.unshift({
+                            id: 'local_racha_bienvenida',
+                            titulo: `👋 ¡Bienvenido, ${nombreUsuario}!`,
+                            mensaje: `No olvides activar tu racha del día de hoy. Registra al menos un gasto o movimiento en ConSiente para encender tu fuego diario.`,
+                            leida: bienvenidaLeida ? 1 : 0,
+                            fecha: new Date().toISOString()
+                        });
+                    }
+                } else {
+                    // ETAPA 2: Ya registró al menos un movimiento hoy -> Notificación de racha activada
+                    const activadaLeida = localStorage.getItem(`racha_activada_leida_${userId}_${hoyStr}`) === 'true';
+                    const activadaEliminada = localStorage.getItem(`racha_activada_eliminada_${userId}_${hoyStr}`) === 'true';
 
-                    const mensajeRacha = gastoRegistradoHoy
-                        ? `Ya registraste un movimiento hoy en ConSiente y tu racha actual es de ${rachaActual} ${rachaActual === 1 ? 'día consecutivo' : 'días consecutivos'}. Continúa así para mantenerla activa.`
-                        : `Tu racha actual es de ${rachaActual} ${rachaActual === 1 ? 'día consecutivo' : 'días consecutivos'}. Para activar el día de hoy y sumar a tu racha, registra al menos un gasto o movimiento en ConSiente.`;
-
-                    notificaciones.unshift({
-                        id: 'local_racha_hoy',
-                        titulo: tituloRacha,
-                        mensaje: mensajeRacha,
-                        leida: rachaLeidaHoy ? 1 : 0,
-                        fecha: new Date().toISOString()
-                    });
+                    if (!activadaEliminada) {
+                        notificaciones.unshift({
+                            id: 'local_racha_activada',
+                            titulo: `🔥 ¡Felicidades, ${nombreUsuario}! Racha activada`,
+                            mensaje: `Tu racha actual es de ${rachaActual} ${rachaActual === 1 ? 'día consecutivo' : 'días consecutivos'}. Sigue registrando tus movimientos diariamente para alcanzar nuevas recompensas.`,
+                            leida: activadaLeida ? 1 : 0,
+                            fecha: new Date().toISOString()
+                        });
+                    }
                 }
             }
         } catch (errPerfil) {
@@ -194,10 +198,10 @@ async function cargarNotificacionesSistema() {
 
         let notificacionesFiltradas = Array.from(unicasMap.values());
 
-        // Ordenar de más reciente a más antigua (la racha local va primero)
+        // Ordenar de más reciente a más antigua (las notificaciones locales de racha van primero)
         notificacionesFiltradas.sort((a, b) => {
-            if (a.id === 'local_racha_hoy') return -1;
-            if (b.id === 'local_racha_hoy') return 1;
+            if (String(a.id).startsWith('local_racha_')) return -1;
+            if (String(b.id).startsWith('local_racha_')) return 1;
             return (Number(b.id) || 0) - (Number(a.id) || 0);
         });
 
@@ -222,11 +226,13 @@ async function cargarNotificacionesSistema() {
             const textoCompleto = ((notif.titulo || "") + " " + (notif.mensaje || "")).toLowerCase();
             let destinoUrl = "agregar.html";
 
-            if (textoCompleto.includes("meta") || textoCompleto.includes("abono") || textoCompleto.includes("ahorro")) {
-                destinoUrl = "metas.html";
-            } else if (textoCompleto.includes("racha") && textoCompleto.includes("activada")) {
+            if (idNotif === 'local_racha_bienvenida') {
+                destinoUrl = "agregar.html";
+            } else if (idNotif === 'local_racha_activada') {
                 destinoUrl = "racha.html";
-            } else if (textoCompleto.includes("avatar") || textoCompleto.includes("puerquito") || textoCompleto.includes("días de racha")) {
+            } else if (textoCompleto.includes("meta") || textoCompleto.includes("abono") || textoCompleto.includes("ahorro")) {
+                destinoUrl = "metas.html";
+            } else if (textoCompleto.includes("avatar") || textoCompleto.includes("puerquito") || textoCompleto.includes("días de racha") || textoCompleto.includes("racha")) {
                 destinoUrl = "racha.html";
             } else if (textoCompleto.includes("gasto") || textoCompleto.includes("movimiento") || textoCompleto.includes("historial")) {
                 destinoUrl = "historial.html";
@@ -255,8 +261,10 @@ async function cargarNotificacionesSistema() {
 
                 const hoyStr = obtenerFechaLocalStr(new Date());
 
-                if (idNotif === 'local_racha_hoy') {
-                    localStorage.setItem(`racha_leida_${userId}_${hoyStr}`, 'true');
+                if (idNotif === 'local_racha_bienvenida') {
+                    localStorage.setItem(`racha_bienvenida_leida_${userId}_${hoyStr}`, 'true');
+                } else if (idNotif === 'local_racha_activada') {
+                    localStorage.setItem(`racha_activada_leida_${userId}_${hoyStr}`, 'true');
                 } else {
                     await marcarUnaLeida(idNotif);
                 }
@@ -273,8 +281,14 @@ async function cargarNotificacionesSistema() {
             btnEliminar.addEventListener("click", async (e) => {
                 e.stopPropagation();
                 const hoyStr = obtenerFechaLocalStr(new Date());
-                if (idNotif === 'local_racha_hoy') {
-                    localStorage.setItem(`racha_leida_${userId}_${hoyStr}`, 'true');
+                if (idNotif === 'local_racha_bienvenida') {
+                    localStorage.setItem(`racha_bienvenida_eliminada_${userId}_${hoyStr}`, 'true');
+                    item.remove();
+                    cargarNotificacionesSistema();
+                    return;
+                }
+                if (idNotif === 'local_racha_activada') {
+                    localStorage.setItem(`racha_activada_eliminada_${userId}_${hoyStr}`, 'true');
                     item.remove();
                     cargarNotificacionesSistema();
                     return;
@@ -298,7 +312,7 @@ async function cargarNotificacionesSistema() {
 }
 
 async function marcarUnaLeida(idNotificacion) {
-    if (idNotificacion === 'local_racha_hoy') return;
+    if (String(idNotificacion).startsWith('local_racha_')) return;
     const token = obtenerTokenNotif();
     if (!token) return;
     try {
@@ -311,7 +325,7 @@ async function marcarUnaLeida(idNotificacion) {
 }
 
 async function eliminarNotificacion(idNotificacion) {
-    if (idNotificacion === 'local_racha_hoy') return;
+    if (String(idNotificacion).startsWith('local_racha_')) return;
     const token = obtenerTokenNotif();
     if (!token) return;
     try {
@@ -330,7 +344,8 @@ async function marcarTodasLeidas() {
     try {
         const hoyStr = obtenerFechaLocalStr(new Date());
         const userId = window.currentNotifUserId || 'user';
-        localStorage.setItem(`racha_leida_${userId}_${hoyStr}`, 'true');
+        localStorage.setItem(`racha_bienvenida_leida_${userId}_${hoyStr}`, 'true');
+        localStorage.setItem(`racha_activada_leida_${userId}_${hoyStr}`, 'true');
 
         const res = await fetch(`${window.API_URL}/api/notificaciones/marcar-leidas`, {
             method: "PUT",
