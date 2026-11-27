@@ -1006,9 +1006,7 @@
             ayer.setDate(ayer.getDate() - 1);
             let ayerStr = obtenerFechaLocalStr(ayer);
 
-            // Abrir la app hoy mantiene el día actual activo
-            fechasGastos.add(hoyStr);
-
+            // Solo se consideran días con movimientos reales registrados en la app
             let fechaCursor = null;
             if (fechasGastos.has(hoyStr)) {
                 fechaCursor = new Date(hoy);
