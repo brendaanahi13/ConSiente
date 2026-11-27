@@ -362,7 +362,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="card-desc">Promedios nacionales consultados desde tu servidor.</div>
+                            <div class="card-desc">Promedios nacionales por litro para calcular gastos de traslado.</div>
                         </div>
 
                         <div class="card-eco">
@@ -569,7 +569,7 @@
             let datosEco = null;
             let valorDolar = null;
             let etiquetaDolar = "";
-            let inflacionAnual = 3.94;
+            let inflacionAnual = 3.96;
             let salarioMinimoDiario = 315.04;
 
             try {
@@ -600,7 +600,6 @@
                 console.warn("Error al consultar /api/semaforo-economico:", err);
             }
 
-            // Respaldo directo a mx.dolarapi.com si el backend no devolvió un valor válido de USD
             if (valorDolar === null) {
                 try {
                     const resUsd = await fetch("https://mx.dolarapi.com/v1/cotizaciones/usd");
@@ -609,7 +608,7 @@
                         valorDolar = extraerValorDolar(usdJson, null);
                         if (valorDolar !== null) {
                             const fechaUsd = usdJson.fechaActualizacion ? String(usdJson.fechaActualizacion).split("T")[0] : "";
-                            etiquetaDolar = fechaUsd ? `Venta USD · ${fechaUsd}` : "Venta USD · DolarApi";
+                            etiquetaDolar = fechaUsd ? `Actualizado: ${fechaUsd}` : "";
                         }
                     }
                 } catch (err) {
