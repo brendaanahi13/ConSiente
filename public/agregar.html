@@ -8,13 +8,17 @@
     <style>
         *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; font-family:"Segoe UI",sans-serif; }
         
+        html, body {
+            overflow-x: hidden;
+            max-width: 100%;
+        }
+
         body { 
             background: radial-gradient(circle at 50% 50%, #27312a 0%, #111412 100%); 
             min-height: 100vh; 
             color: #ffffff;
             display: flex;
             flex-direction: column;
-            overflow-x: hidden;
         }
 
         /* NAVBAR */
@@ -155,6 +159,7 @@
             margin-top: 65px;
             min-height: calc(100vh - 65px);
             width: 100%;
+            max-width: 100%;
         }
 
         /* SIDEBAR */
@@ -211,26 +216,29 @@
         /* CONTENEDOR PRINCIPAL */
         .container { 
             flex: 1;
-            padding: 40px; 
+            padding: 32px; 
             display: flex; 
             gap: 25px; 
             max-width: 1200px;
             margin: 0 auto;
             align-items: flex-start;
             width: 100%;
+            min-width: 0;
         }
         
         .box { 
             background: rgba(22, 22, 22, 0.85);
             backdrop-filter: blur(10px);
             border-radius: 20px; 
-            padding: 30px; 
+            padding: 28px; 
             border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08); 
+            min-width: 0;
         }
-        .box-formulario { flex: 1.3; }
+        .box-formulario { flex: 1.3; width: 100%; }
         .box-grafica { 
             flex: 1; 
+            width: 100%;
             display: flex; 
             flex-direction: column; 
             align-items: center; 
@@ -264,7 +272,7 @@
             flex-shrink: 0;
         }
 
-        .nota-content { flex: 1; }
+        .nota-content { flex: 1; min-width: 0; }
 
         .nota-titulo {
             color: #ffffff;
@@ -316,6 +324,157 @@
             background: #222222;
             box-shadow: 0 0 8px rgba(129, 199, 132, 0.2);
         }
+
+        /* SELECTOR DE FECHA PERSONALIZADO */
+        .date-picker-custom {
+            position: relative;
+            margin-top: 6px;
+            width: 100%;
+        }
+        .date-trigger-btn {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: #1a1a1a;
+            color: #ffffff;
+            font-size: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+        .date-trigger-btn:hover,
+        .date-trigger-btn.open {
+            border-color: rgba(129, 199, 132, 0.7);
+            background: #222222;
+            box-shadow: 0 0 8px rgba(129, 199, 132, 0.2);
+        }
+        .date-trigger-value {
+            color: #ffffff;
+            font-weight: 600;
+        }
+        .date-trigger-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #81c784;
+            flex-shrink: 0;
+        }
+        .date-popover-cal {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            width: 100%;
+            max-width: 100%;
+            background: #151916;
+            border: 1px solid rgba(129, 199, 132, 0.35);
+            border-radius: 14px;
+            padding: 12px;
+            z-index: 1500;
+            box-shadow: 0 16px 38px rgba(0, 0, 0, 0.75);
+        }
+        .date-popover-cal.show {
+            display: block;
+        }
+        .cal-top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 8px;
+        }
+        .cal-mes-titulo {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: #ffffff;
+            text-transform: capitalize;
+        }
+        .cal-nav-btns {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        .cal-nav-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            border: 1px solid rgba(129, 199, 132, 0.35);
+            background: #1e2520;
+            color: #81c784;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s ease;
+        }
+        .cal-nav-btn:hover:not(:disabled) {
+            background: #2e7d32;
+            color: #ffffff;
+        }
+        .cal-nav-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+        .cal-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            gap: 4px;
+            margin-bottom: 6px;
+            text-align: center;
+        }
+        .cal-weekday {
+            font-size: 10.5px;
+            font-weight: 700;
+            color: #8fa691;
+            padding: 3px 0;
+        }
+        .cal-days-grid {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            gap: 4px;
+        }
+        .cal-day-empty {
+            height: 32px;
+        }
+        .cal-day-btn {
+            height: 32px;
+            width: 100%;
+            min-width: 0;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: #1e2420;
+            color: #e4ece5;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .cal-day-btn:hover:not(:disabled) {
+            border-color: #81c784;
+            background: rgba(46, 125, 50, 0.25);
+            color: #ffffff;
+        }
+        .cal-day-btn:disabled {
+            opacity: 0.25;
+            cursor: not-allowed;
+        }
+        .cal-day-btn.dia-elegido {
+            background: linear-gradient(135deg, #2e7d32 0%, #43a047 100%);
+            border-color: #b9f6ca;
+            color: #ffffff;
+            font-weight: 800;
+            box-shadow: 0 0 10px rgba(129, 199, 132, 0.45);
+        }
         
         .btn-guardar { 
             width: 100%; 
@@ -350,6 +509,7 @@
             justify-content: center;
             align-items: center;
             z-index: 3000;
+            padding: 15px;
         }
 
         .modal-bienvenida {
@@ -375,8 +535,8 @@
         /* RESPONSIVIDAD */
         @media (max-width: 900px) {
             .main-layout { flex-direction: column; margin-top: 65px; min-height: auto; }
-            .container { padding: 20px 15px 100px 15px; width: 100%; flex-direction: column; }
-            .box { width: 100%; }
+            .container { padding: 18px 14px 96px 14px; width: 100%; flex-direction: column; gap: 20px; }
+            .box { width: 100%; padding: 20px; border-radius: 16px; }
             
             .sidebar { 
                 position: fixed; bottom: 0; top: auto; left: 0; width: 100%; min-width: 100%; height: 72px; 
@@ -402,23 +562,27 @@
         @media (max-width: 600px) {
             .navbar { padding: 0 10px; }
             .logo { width: 24px; height: 24px; }
-            .titulo { font-size: 16px; }
-            .menu { gap: 8px; }
-            .menu a { font-size: 11px; }
-            .btn-volver-admin-menu { padding: 5px 7px; font-size: 10.5px !important; gap: 3px; }
+            .titulo { font-size: 15px; }
+            .menu { gap: 6px; }
+            .menu a { font-size: 10.5px; }
+            .btn-volver-admin-menu { padding: 5px 7px; font-size: 10px !important; gap: 3px; }
             .admin-texto-largo { display: none; }
             .admin-texto-corto { display: inline; }
-            .notif-icon-img, .user-icon { width: 32px; height: 32px; }
-            .notif-icon-img { padding: 5px; }
+            .notif-icon-img, .user-icon { width: 30px; height: 30px; }
+            .notif-icon-img { padding: 4px; }
             .sidebar button { font-size: 9px; } 
             .sidebar button span:first-child { font-size: 15px; }
+
+            .box { padding: 16px; }
+            .cal-days-grid, .cal-weekdays { gap: 3px; }
+            .cal-day-btn, .cal-day-empty { height: 28px; font-size: 11px; }
             
             /* AJUSTE RESPONSIVO PARA EL MENÚ DE NOTIFICACIONES EN MÓVIL */
             .notif-dropdown {
                 position: fixed !important;
                 top: 70px !important;
-                left: 15px !important;
-                right: 15px !important;
+                left: 12px !important;
+                right: 12px !important;
                 width: auto !important;
                 max-width: none !important;
             }
@@ -529,8 +693,42 @@
 
                     <label>Monto</label>
                     <input type="number" id="cantidadGasto" placeholder="$ 0.00" step="0.01" min="0.01">
+
                     <label>Fecha</label>
-                    <input type="date" id="fechaGasto">
+                    <div class="date-picker-custom" id="fechaGastoPicker">
+                        <input type="hidden" id="fechaGasto" value="">
+                        <button type="button" class="date-trigger-btn" id="btnFechaGasto" onclick="toggleCalendarioGasto(event)">
+                            <span id="textoFechaGasto" class="date-trigger-value">Selecciona una fecha</span>
+                            <span class="date-trigger-icon" aria-hidden="true">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                                </svg>
+                            </span>
+                        </button>
+                        <div class="date-popover-cal" id="popoverFechaGasto" onclick="event.stopPropagation()">
+                            <div class="cal-top-bar">
+                                <span id="gastoMesTitulo" class="cal-mes-titulo"></span>
+                                <div class="cal-nav-btns">
+                                    <button type="button" class="cal-nav-btn" id="btnGastoMesPrev" onclick="cambiarMesGasto(-1)" title="Mes anterior">&lsaquo;</button>
+                                    <button type="button" class="cal-nav-btn" id="btnGastoMesNext" onclick="cambiarMesGasto(1)" title="Mes siguiente">&rsaquo;</button>
+                                </div>
+                            </div>
+                            <div class="cal-weekdays">
+                                <span class="cal-weekday">Lu</span>
+                                <span class="cal-weekday">Ma</span>
+                                <span class="cal-weekday">Mi</span>
+                                <span class="cal-weekday">Ju</span>
+                                <span class="cal-weekday">Vi</span>
+                                <span class="cal-weekday">Sá</span>
+                                <span class="cal-weekday">Do</span>
+                            </div>
+                            <div id="gastoDaysGrid" class="cal-days-grid"></div>
+                        </div>
+                    </div>
+
                     <button class="btn-guardar" onclick="guardarGasto()">Guardar gasto</button>
                 </div>
             </div>
@@ -559,6 +757,14 @@
 
     <script>
         const API_URL = "";
+
+        const hoyBase = new Date();
+        hoyBase.setHours(0, 0, 0, 0);
+        const limitePasadoBase = new Date(hoyBase.getFullYear() - 1, hoyBase.getMonth(), hoyBase.getDate());
+        const limiteFuturoBase = new Date(hoyBase.getFullYear(), hoyBase.getMonth(), hoyBase.getDate() + 30);
+
+        let gastoAnioActual = hoyBase.getFullYear();
+        let gastoMesActual = hoyBase.getMonth();
 
         function obtenerFechaLocalStr(dateObj) {
             const year = dateObj.getFullYear();
@@ -595,6 +801,128 @@
             }
         }
 
+        function actualizarEtiquetaFechaGasto(fechaStr) {
+            const spanTexto = document.getElementById("textoFechaGasto");
+            if (!spanTexto) return;
+
+            if (!fechaStr) {
+                spanTexto.textContent = "Selecciona una fecha";
+                return;
+            }
+
+            const partes = String(fechaStr).split("T")[0].split("-");
+            if (partes.length === 3) {
+                const fechaObj = new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]));
+                spanTexto.textContent = fechaObj.toLocaleDateString("es-MX", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric"
+                });
+            } else {
+                spanTexto.textContent = fechaStr;
+            }
+        }
+
+        function toggleCalendarioGasto(e) {
+            if (e) e.stopPropagation();
+            const popover = document.getElementById("popoverFechaGasto");
+            const btn = document.getElementById("btnFechaGasto");
+            if (!popover || !btn) return;
+
+            const seraVisible = !popover.classList.contains("show");
+            if (seraVisible) {
+                const actual = document.getElementById("fechaGasto").value;
+                if (actual) {
+                    const partes = actual.split("-");
+                    if (partes.length === 3) {
+                        gastoAnioActual = Number(partes[0]);
+                        gastoMesActual = Number(partes[1]) - 1;
+                    }
+                } else {
+                    gastoAnioActual = hoyBase.getFullYear();
+                    gastoMesActual = hoyBase.getMonth();
+                }
+                renderizarCalendarioGasto();
+            }
+            popover.classList.toggle("show", seraVisible);
+            btn.classList.toggle("open", seraVisible);
+        }
+
+        function cerrarCalendarioGasto() {
+            const popover = document.getElementById("popoverFechaGasto");
+            const btn = document.getElementById("btnFechaGasto");
+            if (popover) popover.classList.remove("show");
+            if (btn) btn.classList.remove("open");
+        }
+
+        function cambiarMesGasto(delta) {
+            const nuevaFecha = new Date(gastoAnioActual, gastoMesActual + delta, 1);
+            const mesMin = new Date(limitePasadoBase.getFullYear(), limitePasadoBase.getMonth(), 1);
+            const mesMax = new Date(limiteFuturoBase.getFullYear(), limiteFuturoBase.getMonth(), 1);
+
+            if (nuevaFecha < mesMin || nuevaFecha > mesMax) return;
+
+            gastoAnioActual = nuevaFecha.getFullYear();
+            gastoMesActual = nuevaFecha.getMonth();
+            renderizarCalendarioGasto();
+        }
+
+        function renderizarCalendarioGasto() {
+            const tituloMes = document.getElementById("gastoMesTitulo");
+            const grid = document.getElementById("gastoDaysGrid");
+            const btnPrev = document.getElementById("btnGastoMesPrev");
+            const btnNext = document.getElementById("btnGastoMesNext");
+            if (!tituloMes || !grid) return;
+
+            const fechaMostrar = new Date(gastoAnioActual, gastoMesActual, 1);
+            tituloMes.textContent = fechaMostrar.toLocaleDateString("es-MX", { month: "long", year: "numeric" });
+
+            const mesMin = new Date(limitePasadoBase.getFullYear(), limitePasadoBase.getMonth(), 1);
+            const mesMax = new Date(limiteFuturoBase.getFullYear(), limiteFuturoBase.getMonth(), 1);
+            if (btnPrev) btnPrev.disabled = fechaMostrar <= mesMin;
+            if (btnNext) btnNext.disabled = fechaMostrar >= mesMax;
+
+            const primerDiaSemana = (new Date(gastoAnioActual, gastoMesActual, 1).getDay() + 6) % 7;
+            const totalDiasMes = new Date(gastoAnioActual, gastoMesActual + 1, 0).getDate();
+            const seleccionadaStr = document.getElementById("fechaGasto").value;
+
+            grid.innerHTML = "";
+
+            for (let i = 0; i < primerDiaSemana; i++) {
+                const vacio = document.createElement("div");
+                vacio.className = "cal-day-empty";
+                grid.appendChild(vacio);
+            }
+
+            for (let dia = 1; dia <= totalDiasMes; dia++) {
+                const fechaCelda = new Date(gastoAnioActual, gastoMesActual, dia);
+                fechaCelda.setHours(0, 0, 0, 0);
+                const claveCelda = obtenerFechaLocalStr(fechaCelda);
+                const fueraDeRango = fechaCelda < limitePasadoBase || fechaCelda > limiteFuturoBase;
+
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.className = "cal-day-btn";
+                btn.textContent = dia;
+                btn.disabled = fueraDeRango;
+
+                if (claveCelda === seleccionadaStr) {
+                    btn.classList.add("dia-elegido");
+                }
+
+                if (!fueraDeRango) {
+                    btn.onclick = () => {
+                        document.getElementById("fechaGasto").value = claveCelda;
+                        actualizarEtiquetaFechaGasto(claveCelda);
+                        renderizarCalendarioGasto();
+                        cerrarCalendarioGasto();
+                    };
+                }
+
+                grid.appendChild(btn);
+            }
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
             evaluarVisibilidadBotonAdmin();
 
@@ -603,6 +931,11 @@
                 const userMenu = document.querySelector(".user-menu");
                 if (dropdownMenu && userMenu && !userMenu.contains(e.target)) {
                     dropdownMenu.classList.remove("show");
+                }
+
+                const pickerGasto = document.getElementById("fechaGastoPicker");
+                if (pickerGasto && !pickerGasto.contains(e.target)) {
+                    cerrarCalendarioGasto();
                 }
             });
 
@@ -613,15 +946,10 @@
             }
 
             const inputFecha = document.getElementById('fechaGasto');
-            const hoy = new Date();
-            hoy.setHours(0, 0, 0, 0);
-            inputFecha.value = obtenerFechaLocalStr(hoy);
-
-            const unAnoAtras = new Date(hoy.getFullYear() - 1, hoy.getMonth(), hoy.getDate());
-            const unMesFuturo = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + 30);
-
-            inputFecha.min = obtenerFechaLocalStr(unAnoAtras);
-            inputFecha.max = obtenerFechaLocalStr(unMesFuturo);
+            const fechaHoyStr = obtenerFechaLocalStr(hoyBase);
+            inputFecha.value = fechaHoyStr;
+            actualizarEtiquetaFechaGasto(fechaHoyStr);
+            renderizarCalendarioGasto();
 
             cargarPerfilUsuario().then(() => renderizarGrafica());
         });
