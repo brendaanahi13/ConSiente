@@ -327,7 +327,7 @@
             box-shadow: 0 0 8px rgba(129, 199, 132, 0.2);
         }
 
-        /* SELECTOR DE FECHA PERSONALIZADO */
+        /* SELECTOR DE FECHA PERSONALIZADO (COMPACTO) */
         .date-picker-custom {
             position: relative;
             margin-top: 6px;
@@ -370,52 +370,78 @@
         .date-popover-cal {
             display: none;
             position: absolute;
-            top: calc(100% + 8px);
+            top: calc(100% + 6px);
             left: 0;
-            width: 100%;
+            width: 280px;
             max-width: 100%;
-            background: #151916;
-            border: 1px solid rgba(129, 199, 132, 0.35);
+            background: #141916;
+            border: 1px solid rgba(129, 199, 132, 0.38);
             border-radius: 14px;
-            padding: 12px;
+            padding: 10px;
             z-index: 1500;
-            box-shadow: 0 16px 38px rgba(0, 0, 0, 0.75);
+            box-shadow: 0 14px 32px rgba(0, 0, 0, 0.8);
         }
         .date-popover-cal.show {
             display: block;
+        }
+        .cal-atajos-bar {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 8px;
+        }
+        .cal-atajo-btn {
+            flex: 1;
+            padding: 4px 6px;
+            border-radius: 7px;
+            border: 1px solid rgba(129, 199, 132, 0.28);
+            background: #1c231e;
+            color: #c8e6c9;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.16s ease;
+            text-align: center;
+        }
+        .cal-atajo-btn:hover {
+            background: rgba(46, 125, 50, 0.35);
+            border-color: #81c784;
+            color: #ffffff;
         }
         .cal-top-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
-            gap: 8px;
+            margin-bottom: 7px;
+            padding-top: 6px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            gap: 6px;
         }
         .cal-mes-titulo {
-            font-size: 13.5px;
+            font-size: 12.5px;
             font-weight: 700;
             color: #ffffff;
             text-transform: capitalize;
         }
         .cal-nav-btns {
             display: flex;
-            gap: 6px;
+            gap: 4px;
             flex-shrink: 0;
         }
         .cal-nav-btn {
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
+            width: 25px;
+            height: 25px;
+            border-radius: 7px;
             border: 1px solid rgba(129, 199, 132, 0.35);
             background: #1e2520;
             color: #81c784;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 700;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: 0.2s ease;
+            transition: 0.18s ease;
         }
         .cal-nav-btn:hover:not(:disabled) {
             background: #2e7d32;
@@ -428,55 +454,58 @@
         .cal-weekdays {
             display: grid;
             grid-template-columns: repeat(7, minmax(0, 1fr));
-            gap: 4px;
-            margin-bottom: 6px;
+            gap: 3px;
+            margin-bottom: 4px;
             text-align: center;
         }
         .cal-weekday {
-            font-size: 10.5px;
+            font-size: 10px;
             font-weight: 700;
             color: #8fa691;
-            padding: 3px 0;
+            padding: 2px 0;
         }
         .cal-days-grid {
             display: grid;
             grid-template-columns: repeat(7, minmax(0, 1fr));
-            gap: 4px;
+            gap: 3px;
         }
         .cal-day-empty {
-            height: 32px;
+            height: 29px;
         }
         .cal-day-btn {
-            height: 32px;
+            height: 29px;
             width: 100%;
             min-width: 0;
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 7px;
+            border: 1px solid rgba(255, 255, 255, 0.09);
             background: #1e2420;
             color: #e4ece5;
-            font-size: 12px;
+            font-size: 11.5px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.18s ease;
+            transition: all 0.15s ease;
             display: flex;
             align-items: center;
             justify-content: center;
         }
         .cal-day-btn:hover:not(:disabled) {
             border-color: #81c784;
-            background: rgba(46, 125, 50, 0.25);
+            background: rgba(46, 125, 50, 0.28);
             color: #ffffff;
         }
         .cal-day-btn:disabled {
-            opacity: 0.25;
+            opacity: 0.24;
             cursor: not-allowed;
+        }
+        .cal-day-btn.dia-hoy:not(.dia-elegido) {
+            border-color: rgba(129, 199, 132, 0.65);
+            color: #a5d6a7;
         }
         .cal-day-btn.dia-elegido {
             background: linear-gradient(135deg, #2e7d32 0%, #43a047 100%);
             border-color: #b9f6ca;
             color: #ffffff;
             font-weight: 800;
-            box-shadow: 0 0 10px rgba(129, 199, 132, 0.45);
         }
         
         .btn-guardar { 
@@ -547,6 +576,8 @@
                 position: static;
                 top: auto;
                 left: auto;
+                width: 100%;
+                max-width: 100%;
                 margin-top: 8px;
                 box-shadow: none;
             }
@@ -588,7 +619,7 @@
 
             .box { padding: 16px; }
             .cal-days-grid, .cal-weekdays { gap: 3px; }
-            .cal-day-btn, .cal-day-empty { height: 26px; font-size: 10.5px; }
+            .cal-day-btn, .cal-day-empty { height: 27px; font-size: 11px; }
             
             /* AJUSTE RESPONSIVO PARA EL MENÚ DE NOTIFICACIONES EN MÓVIL */
             .notif-dropdown {
@@ -722,6 +753,11 @@
                             </span>
                         </button>
                         <div class="date-popover-cal" id="popoverFechaGasto" onclick="event.stopPropagation()">
+                            <div class="cal-atajos-bar">
+                                <button type="button" class="cal-atajo-btn" onclick="seleccionarAtajoFecha(0)">Hoy</button>
+                                <button type="button" class="cal-atajo-btn" onclick="seleccionarAtajoFecha(-1)">Ayer</button>
+                                <button type="button" class="cal-atajo-btn" onclick="seleccionarAtajoFecha(7)">+7 días</button>
+                            </div>
                             <div class="cal-top-bar">
                                 <span id="gastoMesTitulo" class="cal-mes-titulo"></span>
                                 <div class="cal-nav-btns">
@@ -836,6 +872,23 @@
             }
         }
 
+        function seleccionarFechaGasto(claveFecha) {
+            document.getElementById("fechaGasto").value = claveFecha;
+            actualizarEtiquetaFechaGasto(claveFecha);
+            renderizarCalendarioGasto();
+            cerrarCalendarioGasto();
+        }
+
+        function seleccionarAtajoFecha(offsetDias) {
+            const destino = new Date(hoyBase.getFullYear(), hoyBase.getMonth(), hoyBase.getDate() + offsetDias);
+            destino.setHours(0, 0, 0, 0);
+            if (destino < limitePasadoBase || destino > limiteFuturoBase) return;
+
+            gastoAnioActual = destino.getFullYear();
+            gastoMesActual = destino.getMonth();
+            seleccionarFechaGasto(obtenerFechaLocalStr(destino));
+        }
+
         function toggleCalendarioGasto(e) {
             if (e) e.stopPropagation();
             const popover = document.getElementById("popoverFechaGasto");
@@ -898,6 +951,7 @@
             const primerDiaSemana = (new Date(gastoAnioActual, gastoMesActual, 1).getDay() + 6) % 7;
             const totalDiasMes = new Date(gastoAnioActual, gastoMesActual + 1, 0).getDate();
             const seleccionadaStr = document.getElementById("fechaGasto").value;
+            const hoyStr = obtenerFechaLocalStr(hoyBase);
 
             grid.innerHTML = "";
 
@@ -919,17 +973,16 @@
                 btn.textContent = dia;
                 btn.disabled = fueraDeRango;
 
+                if (claveCelda === hoyStr) {
+                    btn.classList.add("dia-hoy");
+                }
+
                 if (claveCelda === seleccionadaStr) {
                     btn.classList.add("dia-elegido");
                 }
 
                 if (!fueraDeRango) {
-                    btn.onclick = () => {
-                        document.getElementById("fechaGasto").value = claveCelda;
-                        actualizarEtiquetaFechaGasto(claveCelda);
-                        renderizarCalendarioGasto();
-                        cerrarCalendarioGasto();
-                    };
+                    btn.onclick = () => seleccionarFechaGasto(claveCelda);
                 }
 
                 grid.appendChild(btn);
@@ -948,6 +1001,12 @@
 
                 const pickerGasto = document.getElementById("fechaGastoPicker");
                 if (pickerGasto && !pickerGasto.contains(e.target)) {
+                    cerrarCalendarioGasto();
+                }
+            });
+
+            window.addEventListener("keydown", (e) => {
+                if (e.key === "Escape") {
                     cerrarCalendarioGasto();
                 }
             });
