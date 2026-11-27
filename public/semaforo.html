@@ -142,7 +142,8 @@
         .card-header { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; text-transform: uppercase; color: #81c784; margin-bottom: 6px; }
         .card-value { font-size: clamp(18px, 3vw, 22px); font-weight: bold; color: #ffffff; margin-bottom: 6px; }
         .card-value span { font-size: 12px; color: #888; font-weight: normal; }
-        .card-desc { font-size: 12px; color: #ccc; line-height: 1.4; margin-top: 6px; }
+        .card-meta { font-size: 11px; color: #81c784; margin-bottom: 4px; min-height: 14px; }
+        .card-desc { font-size: 12px; color: #ccc; line-height: 1.4; margin-top: 4px; }
 
         /* DISEÑO ORIGINAL DE GASOLINA */
         .gasolina-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 6px 0; text-align: center; }
@@ -162,6 +163,7 @@
 
             .content-row { flex-direction: column; gap: 20px; }
             .box { padding: 20px; }
+            .grid-cards { grid-template-columns: 1fr; }
 
             .sidebar { 
                 position: fixed; 
@@ -330,15 +332,16 @@
             <div class="content-row">
                 <div class="box box-formulario">
                     <h2>🚦 Semáforo Financiero</h2>
-                    <div class="subtitulo">Información del entorno en tiempo real para ayudarte a decidir si avanzar o frenar tus gastos.</div>
+                    <div class="subtitulo">Información del entorno para ayudarte a decidir si avanzar o frenar tus gastos.</div>
 
                     <div class="grid-cards">
                         <div class="card-eco">
                             <div>
-                                <div class="card-header">💵 El Dólar</div>
+                                <div class="card-header">💵 El Dólar (USD/MXN)</div>
                                 <div class="card-value">$<span id="txt-dolar">...</span> <span>MXN</span></div>
+                                <div class="card-meta" id="meta-dolar"></div>
                             </div>
-                            <div class="card-desc">Costo de la divisa internacional para presupuestos de tecnología o insumos.</div>
+                            <div class="card-desc">Cotización de referencia para presupuestos de tecnología o compras en dólares.</div>
                         </div>
                         
                         <div class="card-eco">
@@ -359,13 +362,13 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="card-desc">Promedios nacionales actualizados vía PetroIntelligence.</div>
+                            <div class="card-desc">Promedios nacionales consultados desde tu servidor.</div>
                         </div>
 
                         <div class="card-eco">
                             <div>
                                 <div class="card-header">📈 Inflación Anual</div>
-                                <div class="card-value"><span id="txt-inflacion">3.94</span><span>%</span></div>
+                                <div class="card-value"><span id="txt-inflacion">...</span><span>%</span></div>
                             </div>
                             <div class="card-desc">Tasa de aumento general de precios del mercado de consumo masivo.</div>
                         </div>
@@ -373,9 +376,9 @@
                         <div class="card-eco">
                             <div>
                                 <div class="card-header">💼 Salario Mínimo</div>
-                                <div class="card-value">$<span id="txt-salario">315.04</span> <span>/ Día</span></div>
+                                <div class="card-value">$<span id="txt-salario">...</span> <span>/ Día</span></div>
                             </div>
-                            <div class="card-desc">Indicador laboral unificado de la zona económica general.</div>
+                            <div class="card-desc">Indicador laboral diario de referencia para comparar tu gasto diario.</div>
                         </div>
                     </div>
                 </div>
@@ -391,7 +394,7 @@
 
             <div class="content-row">
                 <div class="box box-tendencia">
-                    <h3>📈 Tendencia: Dólar vs. Tus Gastos Diarios</h3>
+                    <h3>📈 Ritmo del Mes: Gasto Acumulado vs. Gasto Diario</h3>
                     <div style="width: 100%; height: 260px; position: relative;">
                         <canvas id="graficaDolarGastos"></canvas>
                     </div>
@@ -484,19 +487,34 @@
             window.location.href = "index.html";
         }
 
-        function extraerPreciosPetroIntelligence(htmlTexto) {
-            const limpio = htmlTexto.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
-            const regMatch = limpio.match(/Regular[^0-9]*([0-9]{1,2}\.[0-9]{2})/i);
-            const premMatch = limpio.match(/Premium[^0-9]*([0-9]{1,2}\.[0-9]{2})/i);
-            const diesMatch = limpio.match(/Di[eé]sel[^0-9]*([0-9]{1,2}\.[0-9]{2})/i);
+        function extraerNumero(val, fallback) {
+            if (val === undefined || val === null || String(val).trim() === "") return fallback;
+            const limpio = String(val).replace(/[^0-9.-]+/g, "");
+            const num = parseFloat(limpio);
+            return Number.isNaN(num) ? fallback : num;
+        }
 
-            if (!regMatch && !premMatch && !diesMatch) return null;
-
-            return {
-                regular: regMatch ? parseFloat(regMatch[1]) : null,
-                premium: premMatch ? parseFloat(premMatch[1]) : null,
-                diesel: diesMatch ? parseFloat(diesMatch[1]) : null
-            };
+        function extraerValorDolar(fuente, fallback) {
+            if (!fuente || typeof fuente !== "object") return fallback;
+            const candidatos = [
+                fuente.venta,
+                fuente.compra,
+                fuente.fix,
+                fuente.dolar,
+                fuente.tipo_cambio,
+                fuente.tipoCambio,
+                fuente.usd,
+                fuente.valor
+            ];
+            for (const candidato of candidatos) {
+                if (candidato !== undefined && candidato !== null && String(candidato).trim() !== "") {
+                    const num = extraerNumero(candidato, NaN);
+                    if (!Number.isNaN(num) && num > 0) {
+                        return num;
+                    }
+                }
+            }
+            return fallback;
         }
 
         async function cargarPreciosGasolina(token, datosEco = null) {
@@ -510,6 +528,7 @@
                 const prem = datos.premium ?? datos.gasolina_premium ?? datos.gasPremium;
                 const dies = datos.diesel ?? datos.diésel ?? datos.gasolina_diesel ?? datos.gasDiesel;
                 let actualizo = false;
+
                 if (reg !== undefined && reg !== null && !Number.isNaN(parseFloat(reg))) {
                     elReg.innerText = `$${parseFloat(reg).toFixed(2)}`;
                     actualizo = true;
@@ -537,30 +556,78 @@
                     const json = await resBackend.json();
                     if (aplicarPrecios(json) || aplicarPrecios(json.gasolina) || aplicarPrecios(json.data)) return;
                 }
-            } catch (_) {}
+            } catch (err) {
+                console.warn("Error al consultar /api/gasolina:", err);
+            }
 
-            try {
-                const resDirecto = await fetch("https://petrointelligence.com/api/api_precios.html?consulta=nac");
-                if (resDirecto.ok) {
-                    const html = await resDirecto.text();
-                    if (aplicarPrecios(extraerPreciosPetroIntelligence(html))) return;
-                }
-            } catch (_) {}
-
-            elReg.innerText = "$23.69";
-            elPrem.innerText = "$25.40";
-            elDies.innerText = "$25.15";
+            elReg.innerText = "N/D";
+            elPrem.innerText = "N/D";
+            elDies.innerText = "N/D";
         }
 
-        function extraerNumero(val, fallback) {
-            if (val === undefined || val === null) return fallback;
-            const limpio = String(val).replace(/[^0-9.-]+/g, "");
-            const num = parseFloat(limpio);
-            return Number.isNaN(num) ? fallback : num;
+        async function obtenerDatosEconomicos(token) {
+            let datosEco = null;
+            let valorDolar = null;
+            let etiquetaDolar = "";
+            let inflacionAnual = 3.94;
+            let salarioMinimoDiario = 315.04;
+
+            try {
+                const resEco = await fetch(`${API_URL}/api/semaforo-economico`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (resEco.ok) {
+                    datosEco = await resEco.json();
+                    const fuente = datosEco.data || datosEco.cotizacion || datosEco;
+                    valorDolar = extraerValorDolar(fuente, null);
+
+                    const inflacionRaw = fuente.inflacion ?? fuente.inflacion_anual;
+                    if (inflacionRaw !== undefined && inflacionRaw !== null) {
+                        inflacionAnual = extraerNumero(inflacionRaw, inflacionAnual);
+                    }
+
+                    const salarioRaw = fuente.salario_minimo ?? fuente.salarioMinimo ?? fuente.salario;
+                    if (salarioRaw !== undefined && salarioRaw !== null) {
+                        salarioMinimoDiario = extraerNumero(salarioRaw, salarioMinimoDiario);
+                    }
+
+                    const fechaAct = fuente.fechaActualizacion || fuente.fecha_actualizacion || fuente.fecha;
+                    if (valorDolar !== null && fechaAct) {
+                        etiquetaDolar = `Actualizado: ${String(fechaAct).split("T")[0]}`;
+                    }
+                }
+            } catch (err) {
+                console.warn("Error al consultar /api/semaforo-economico:", err);
+            }
+
+            // Respaldo directo a mx.dolarapi.com si el backend no devolvió un valor válido de USD
+            if (valorDolar === null) {
+                try {
+                    const resUsd = await fetch("https://mx.dolarapi.com/v1/cotizaciones/usd");
+                    if (resUsd.ok) {
+                        const usdJson = await resUsd.json();
+                        valorDolar = extraerValorDolar(usdJson, null);
+                        if (valorDolar !== null) {
+                            const fechaUsd = usdJson.fechaActualizacion ? String(usdJson.fechaActualizacion).split("T")[0] : "";
+                            etiquetaDolar = fechaUsd ? `Venta USD · ${fechaUsd}` : "Venta USD · DolarApi";
+                        }
+                    }
+                } catch (err) {
+                    console.warn("Error al consultar mx.dolarapi.com:", err);
+                }
+            }
+
+            return {
+                datosEco,
+                valorDolar: valorDolar !== null ? valorDolar : 0,
+                etiquetaDolar,
+                inflacionAnual,
+                salarioMinimoDiario
+            };
         }
 
         let chartPieDisponibilidad;
-        let chartLineDolarGastos;
+        let chartLineAcumuladoDiario;
         let chartBarGastosSalario;
 
         async function cargarTodoElSemaforo() {
@@ -592,43 +659,20 @@
                     console.error("Error al cargar perfil:", e);
                 }
 
-                let valorDolarActual = 18.04;
-                let inflacionAnual = 3.94;
-                let salarioMinimoDiario = 315.04;
-                let datosEco = null;
+                const {
+                    datosEco,
+                    valorDolar,
+                    etiquetaDolar,
+                    inflacionAnual,
+                    salarioMinimoDiario
+                } = await obtenerDatosEconomicos(token);
 
-                try {
-                    const resEco = await fetch(`${API_URL}/api/semaforo-economico`, {
-                        headers: { "Authorization": `Bearer ${token}` }
-                    });
-                    if (resEco.ok) {
-                        datosEco = await resEco.json();
-                        console.log("Respuesta /api/semaforo-economico:", datosEco);
-                        const fuente = datosEco.data || datosEco;
-                        const dolarRaw = fuente.dolar ?? fuente.tipo_cambio ?? fuente.usd ?? fuente.valor;
-                        if (dolarRaw !== undefined && dolarRaw !== null) {
-                            valorDolarActual = extraerNumero(dolarRaw, valorDolarActual);
-                        }
-                        const inflacionRaw = fuente.inflacion ?? fuente.inflacion_anual;
-                        if (inflacionRaw !== undefined && inflacionRaw !== null) {
-                            inflacionAnual = extraerNumero(inflacionRaw, inflacionAnual);
-                        }
-                        const salarioRaw = fuente.salario_minimo ?? fuente.salarioMinimo ?? fuente.salario;
-                        if (salarioRaw !== undefined && salarioRaw !== null) {
-                            salarioMinimoDiario = extraerNumero(salarioRaw, salarioMinimoDiario);
-                        }
-                    } else {
-                        console.warn("Error HTTP en /api/semaforo-economico:", resEco.status);
-                    }
-                } catch (err) {
-                    console.error("Error al consultar /api/semaforo-economico:", err);
-                }
-
-                document.getElementById('txt-dolar').innerText = valorDolarActual.toFixed(2);
+                document.getElementById('txt-dolar').innerText = valorDolar > 0 ? valorDolar.toFixed(2) : "N/D";
+                document.getElementById('meta-dolar').innerText = etiquetaDolar;
                 document.getElementById('txt-inflacion').innerText = inflacionAnual.toFixed(2);
                 document.getElementById('txt-salario').innerText = salarioMinimoDiario.toFixed(2);
 
-                cargarPreciosGasolina(token, datosEco);
+                await cargarPreciosGasolina(token, datosEco);
 
                 const resGastos = await fetch(`${API_URL}/api/lista-gastos`, {
                     headers: { "Authorization": `Bearer ${token}` }
@@ -690,32 +734,35 @@
                     }
                 });
 
-                const tendenciaDolarSimulado = gastosPorDia.map((_, index) => {
-                    return valorDolarActual + Math.sin(index) * 0.3 - (index * 0.01);
+                let acumulado = 0;
+                const gastoAcumuladoDia = gastosPorDia.map(monto => {
+                    acumulado += monto;
+                    return acumulado;
                 });
 
-                if (chartLineDolarGastos) chartLineDolarGastos.destroy();
-                chartLineDolarGastos = new Chart(document.getElementById('graficaDolarGastos').getContext('2d'), {
+                if (chartLineAcumuladoDiario) chartLineAcumuladoDiario.destroy();
+                chartLineAcumuladoDiario = new Chart(document.getElementById('graficaDolarGastos').getContext('2d'), {
                     type: 'line',
                     data: {
                         labels: labelsDias,
                         datasets: [
                             {
-                                label: 'Precio Dólar ($)',
-                                data: tendenciaDolarSimulado,
+                                label: 'Acumulado del Mes ($)',
+                                data: gastoAcumuladoDia,
                                 borderColor: '#ffb74d',
-                                backgroundColor: 'transparent',
-                                yAxisID: 'yDolar',
+                                backgroundColor: 'rgba(255, 183, 77, 0.08)',
+                                fill: true,
+                                yAxisID: 'yAcumulado',
                                 borderWidth: 2,
-                                tension: 0.3
+                                tension: 0.25
                             },
                             {
-                                label: 'Tus Gastos ($)',
+                                label: 'Gasto del Día ($)',
                                 data: gastosPorDia,
                                 borderColor: '#81c784',
-                                backgroundColor: 'rgba(129, 199, 132, 0.1)',
+                                backgroundColor: 'rgba(129, 199, 132, 0.12)',
                                 fill: true,
-                                yAxisID: 'yGastos',
+                                yAxisID: 'yDiario',
                                 borderWidth: 2,
                                 tension: 0.2
                             }
@@ -727,8 +774,8 @@
                         plugins: { legend: { labels: { color: '#ffffff', font: { size: 11 } } } },
                         scales: {
                             x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#aaa', font: { size: 9 }, maxTicksLimit: 15 } },
-                            yDolar: { type: 'linear', position: 'left', title: { display: true, text: 'Dólar', color: '#ffb74d' }, ticks: { color: '#ffb74d', font: { size: 10 } }, grid: { display: false } },
-                            yGastos: { type: 'linear', position: 'right', title: { display: true, text: 'Gastos', color: '#81c784' }, ticks: { color: '#81c784', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                            yAcumulado: { type: 'linear', position: 'left', title: { display: true, text: 'Acumulado ($)', color: '#ffb74d' }, ticks: { color: '#ffb74d', font: { size: 10 } }, grid: { display: false } },
+                            yDiario: { type: 'linear', position: 'right', title: { display: true, text: 'Diario ($)', color: '#81c784' }, ticks: { color: '#81c784', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.05)' } }
                         }
                     }
                 });
