@@ -433,7 +433,7 @@
                     <h1><span>🔥</span> Galería de Avatares Web</h1>
                     <p>Completa tus misiones financieras para desbloquear los avatares oficiales y úsalos como tu foto de perfil en ConSiente.</p>
                     <div class="racha-regla-nota">
-                        <strong>¿Cómo activar o sumar tu racha?</strong> Registra al menos un gasto o movimiento en ConSiente para activar y avanzar tu racha diaria. <a href="agregar.html">Agrega un gasto aquí</a>.
+                        <strong>¿Cómo activar o sumar tu racha?</strong> Registra al menos un gasto o movimiento en ConSiente el día de hoy para encender el fuego de hoy y avanzar tu racha diaria. <a href="agregar.html">Agrega un gasto aquí</a>.
                     </div>
                     
                     <div class="banner-actions">
@@ -657,8 +657,7 @@
             ayer.setDate(ayer.getDate() - 1);
             let ayerStr = obtenerFechaLocalStr(ayer);
 
-            fechasGastos.add(hoyStr);
-
+            // Solo se consideran días con movimientos reales registrados en la app
             let fechaCursor = null;
             if (fechasGastos.has(hoyStr)) {
                 fechaCursor = new Date(hoy);
@@ -700,6 +699,7 @@
                 fechaCaja.setDate(lunesActual.getDate() + offset);
                 let fechaCajaStr = obtenerFechaLocalStr(fechaCaja);
 
+                // Encender únicamente si ese día de la semana forma parte de la racha activa real
                 if (fechasRachaActiva.has(fechaCajaStr)) {
                     caja.classList.add("activo");
                 }
