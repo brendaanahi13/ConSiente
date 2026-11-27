@@ -149,6 +149,64 @@
         
         .nota-aclaratoria { display: block; margin-top: 6px; font-size: 11.5px; color: #81c784; font-style: italic; }
 
+        /* SELECTOR DE FECHA LÍMITE PERSONALIZADO */
+        .date-picker-custom {
+            position: relative;
+            margin-top: 6px;
+        }
+        .date-trigger-btn {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: #1a1a1a;
+            color: #ffffff;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+        .date-trigger-btn:hover,
+        .date-trigger-btn.open {
+            border-color: rgba(129, 199, 132, 0.7);
+            background: #222222;
+            box-shadow: 0 0 8px rgba(129, 199, 132, 0.2);
+        }
+        .date-trigger-placeholder {
+            color: #9aa59c;
+        }
+        .date-trigger-value {
+            color: #ffffff;
+            font-weight: 600;
+        }
+        .date-trigger-icon {
+            color: #81c784;
+            font-size: 15px;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+        .date-popover-cal {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            width: 100%;
+            min-width: 270px;
+            background: #151916;
+            border: 1px solid rgba(129, 199, 132, 0.35);
+            border-radius: 14px;
+            padding: 14px;
+            z-index: 1500;
+            box-shadow: 0 16px 38px rgba(0, 0, 0, 0.75);
+        }
+        .date-popover-cal.show {
+            display: block;
+        }
+
         /* CALENDARIO NORMAL MENSUAL */
         .calendario-normal-box {
             margin-top: 8px;
@@ -189,9 +247,13 @@
             justify-content: center;
             transition: 0.2s ease;
         }
-        .cal-nav-btn:hover {
+        .cal-nav-btn:hover:not(:disabled) {
             background: #2e7d32;
             color: #ffffff;
+        }
+        .cal-nav-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
         }
         .cal-estado-bar {
             display: flex;
@@ -249,10 +311,14 @@
             align-items: center;
             justify-content: center;
         }
-        .cal-day-btn:hover {
+        .cal-day-btn:hover:not(:disabled) {
             border-color: #81c784;
             background: rgba(46, 125, 50, 0.25);
             color: #ffffff;
+        }
+        .cal-day-btn:disabled {
+            opacity: 0.28;
+            cursor: not-allowed;
         }
         .cal-day-btn.dia-elegido {
             background: linear-gradient(135deg, #2e7d32 0%, #43a047 100%);
@@ -524,7 +590,32 @@
                     <input type="number" id="montoTarget" placeholder="$ 0.00" oninput="calcularCuotaMetas()">
 
                     <label>Fecha Límite</label>
-                    <input type="date" id="fechaLimite" onchange="calcularCuotaMetas()">
+                    <div class="date-picker-custom" id="fechaLimitePicker">
+                        <input type="hidden" id="fechaLimite" value="">
+                        <button type="button" class="date-trigger-btn" id="btnFechaLimite" onclick="toggleCalendarioLimite(event)">
+                            <span id="textoFechaLimite" class="date-trigger-placeholder">Selecciona una fecha límite</span>
+                            <span class="date-trigger-icon">📅</span>
+                        </button>
+                        <div class="date-popover-cal" id="popoverFechaLimite" onclick="event.stopPropagation()">
+                            <div class="cal-top-bar">
+                                <span id="limiteMesTitulo" class="cal-mes-titulo"></span>
+                                <div class="cal-nav-btns">
+                                    <button type="button" class="cal-nav-btn" id="btnLimiteMesPrev" onclick="cambiarMesLimite(-1)" title="Mes anterior">&lsaquo;</button>
+                                    <button type="button" class="cal-nav-btn" onclick="cambiarMesLimite(1)" title="Mes siguiente">&rsaquo;</button>
+                                </div>
+                            </div>
+                            <div class="cal-weekdays">
+                                <span class="cal-weekday">Lu</span>
+                                <span class="cal-weekday">Ma</span>
+                                <span class="cal-weekday">Mi</span>
+                                <span class="cal-weekday">Ju</span>
+                                <span class="cal-weekday">Vi</span>
+                                <span class="cal-weekday">Sá</span>
+                                <span class="cal-weekday">Do</span>
+                            </div>
+                            <div id="limiteDaysGrid" class="cal-days-grid"></div>
+                        </div>
+                    </div>
                     <span class="nota-aclaratoria">* Nota: Solo puedes seleccionar fechas de hoy en adelante.</span>
 
                     <label>Frecuencia de Abono</label>
@@ -637,6 +728,11 @@
         let metaPendienteEliminar = null;
 
         const fechaBaseHoy = new Date();
+        fechaBaseHoy.setHours(0, 0, 0, 0);
+
+        let limiteAnioActual = fechaBaseHoy.getFullYear();
+        let limiteMesActual = fechaBaseHoy.getMonth();
+
         let calAnioActual = fechaBaseHoy.getFullYear();
         let calMesActual = fechaBaseHoy.getMonth();
         let fechaElegidaQuincenal = new Date(calAnioActual, calMesActual, 15);
@@ -679,6 +775,11 @@
                 if (dropdownMenu && userMenu && !userMenu.contains(e.target)) {
                     dropdownMenu.classList.remove("show");
                 }
+
+                const pickerLimite = document.getElementById("fechaLimitePicker");
+                if (pickerLimite && !pickerLimite.contains(e.target)) {
+                    cerrarCalendarioLimite();
+                }
             });
 
             const avatarGuardado = localStorage.getItem("userAvatar");
@@ -688,14 +789,8 @@
             }
 
             cargarPerfilUsuario();
-
-            const inputFecha = document.getElementById("fechaLimite");
-            const hoy = new Date();
-            const anio = hoy.getFullYear();
-            const mes = String(hoy.getMonth() + 1).padStart(2, '0');
-            const dia = String(hoy.getDate()).padStart(2, '0');
-            inputFecha.min = `${anio}-${mes}-${dia}`;
-
+            actualizarEtiquetaFechaLimite("");
+            renderizarCalendarioLimite();
             cambiarFrecuencia();
             obtenerMetas();
         });
@@ -740,6 +835,129 @@
             const m = String(dateObj.getMonth() + 1).padStart(2, '0');
             const d = String(dateObj.getDate()).padStart(2, '0');
             return `${y}-${m}-${d}`;
+        }
+
+        function toggleCalendarioLimite(e) {
+            if (e) e.stopPropagation();
+            const popover = document.getElementById("popoverFechaLimite");
+            const btn = document.getElementById("btnFechaLimite");
+            if (!popover || !btn) return;
+
+            const seraVisible = !popover.classList.contains("show");
+            if (seraVisible) {
+                const actual = document.getElementById("fechaLimite").value;
+                if (actual) {
+                    const partes = actual.split("-");
+                    if (partes.length === 3) {
+                        limiteAnioActual = Number(partes[0]);
+                        limiteMesActual = Number(partes[1]) - 1;
+                    }
+                } else {
+                    limiteAnioActual = fechaBaseHoy.getFullYear();
+                    limiteMesActual = fechaBaseHoy.getMonth();
+                }
+                renderizarCalendarioLimite();
+            }
+            popover.classList.toggle("show", seraVisible);
+            btn.classList.toggle("open", seraVisible);
+        }
+
+        function cerrarCalendarioLimite() {
+            const popover = document.getElementById("popoverFechaLimite");
+            const btn = document.getElementById("btnFechaLimite");
+            if (popover) popover.classList.remove("show");
+            if (btn) btn.classList.remove("open");
+        }
+
+        function actualizarEtiquetaFechaLimite(fechaStr) {
+            const spanTexto = document.getElementById("textoFechaLimite");
+            if (!spanTexto) return;
+
+            if (!fechaStr) {
+                spanTexto.textContent = "Selecciona una fecha límite";
+                spanTexto.className = "date-trigger-placeholder";
+                return;
+            }
+
+            const partes = String(fechaStr).split("T")[0].split("-");
+            if (partes.length === 3) {
+                const fechaObj = new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]));
+                const formateada = fechaObj.toLocaleDateString("es-MX", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric"
+                });
+                spanTexto.textContent = formateada;
+                spanTexto.className = "date-trigger-value";
+            } else {
+                spanTexto.textContent = fechaStr;
+                spanTexto.className = "date-trigger-value";
+            }
+        }
+
+        function cambiarMesLimite(delta) {
+            const nuevaFecha = new Date(limiteAnioActual, limiteMesActual + delta, 1);
+            const mesMinimo = new Date(fechaBaseHoy.getFullYear(), fechaBaseHoy.getMonth(), 1);
+            if (nuevaFecha < mesMinimo) return;
+
+            limiteAnioActual = nuevaFecha.getFullYear();
+            limiteMesActual = nuevaFecha.getMonth();
+            renderizarCalendarioLimite();
+        }
+
+        function renderizarCalendarioLimite() {
+            const tituloMes = document.getElementById("limiteMesTitulo");
+            const grid = document.getElementById("limiteDaysGrid");
+            const btnPrev = document.getElementById("btnLimiteMesPrev");
+            if (!tituloMes || !grid) return;
+
+            const fechaMostrar = new Date(limiteAnioActual, limiteMesActual, 1);
+            tituloMes.textContent = fechaMostrar.toLocaleDateString("es-MX", { month: "long", year: "numeric" });
+
+            if (btnPrev) {
+                const mesMinimo = new Date(fechaBaseHoy.getFullYear(), fechaBaseHoy.getMonth(), 1);
+                btnPrev.disabled = fechaMostrar <= mesMinimo;
+            }
+
+            const primerDiaSemana = (new Date(limiteAnioActual, limiteMesActual, 1).getDay() + 6) % 7;
+            const totalDiasMes = new Date(limiteAnioActual, limiteMesActual + 1, 0).getDate();
+            const seleccionadaStr = document.getElementById("fechaLimite").value;
+
+            grid.innerHTML = "";
+
+            for (let i = 0; i < primerDiaSemana; i++) {
+                const vacio = document.createElement("div");
+                vacio.className = "cal-day-empty";
+                grid.appendChild(vacio);
+            }
+
+            for (let dia = 1; dia <= totalDiasMes; dia++) {
+                const fechaCelda = new Date(limiteAnioActual, limiteMesActual, dia);
+                const claveCelda = formatearClaveFecha(fechaCelda);
+                const esPasada = fechaCelda < fechaBaseHoy;
+
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.className = "cal-day-btn";
+                btn.textContent = dia;
+                btn.disabled = esPasada;
+
+                if (claveCelda === seleccionadaStr) {
+                    btn.classList.add("dia-elegido");
+                }
+
+                if (!esPasada) {
+                    btn.onclick = () => {
+                        document.getElementById("fechaLimite").value = claveCelda;
+                        actualizarEtiquetaFechaLimite(claveCelda);
+                        renderizarCalendarioLimite();
+                        cerrarCalendarioLimite();
+                        calcularCuotaMetas();
+                    };
+                }
+
+                grid.appendChild(btn);
+            }
         }
 
         function cambiarMesCalendario(delta) {
@@ -1024,7 +1242,19 @@
             metaEditandoId = meta.id;
             document.getElementById("nombreMeta").value = meta.nombre || "";
             document.getElementById("montoTarget").value = Number(meta.monto_target || 0);
-            document.getElementById("fechaLimite").value = meta.fecha_limite ? String(meta.fecha_limite).split("T")[0] : "";
+
+            const fechaLim = meta.fecha_limite ? String(meta.fecha_limite).split("T")[0] : "";
+            document.getElementById("fechaLimite").value = fechaLim;
+            actualizarEtiquetaFechaLimite(fechaLim);
+            if (fechaLim) {
+                const partes = fechaLim.split("-");
+                if (partes.length === 3) {
+                    limiteAnioActual = Number(partes[0]);
+                    limiteMesActual = Number(partes[1]) - 1;
+                }
+            }
+            renderizarCalendarioLimite();
+
             document.getElementById("frecuenciaAbono").value = meta.frecuencia || "Semanal";
 
             if (meta.frecuencia === "Quincenal" && meta.dia_pago) {
@@ -1058,6 +1288,8 @@
 
         function cancelarEdicion() {
             metaEditandoId = null;
+            limiteAnioActual = fechaBaseHoy.getFullYear();
+            limiteMesActual = fechaBaseHoy.getMonth();
             calAnioActual = fechaBaseHoy.getFullYear();
             calMesActual = fechaBaseHoy.getMonth();
             fechaElegidaQuincenal = new Date(calAnioActual, calMesActual, 15);
@@ -1065,6 +1297,9 @@
             document.getElementById("nombreMeta").value = "";
             document.getElementById("montoTarget").value = "";
             document.getElementById("fechaLimite").value = "";
+            actualizarEtiquetaFechaLimite("");
+            renderizarCalendarioLimite();
+            cerrarCalendarioLimite();
             document.getElementById("frecuenciaAbono").value = "Semanal";
             cambiarFrecuencia();
             document.getElementById("tituloFormulario").textContent = "Nueva Meta de Ahorro";
