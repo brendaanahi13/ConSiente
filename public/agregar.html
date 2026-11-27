@@ -327,7 +327,7 @@
             box-shadow: 0 0 8px rgba(129, 199, 132, 0.2);
         }
 
-        /* SELECTOR DE FECHA PERSONALIZADO (COMPACTO) */
+        /* SELECTOR DE FECHA PERSONALIZADO */
         .date-picker-custom {
             position: relative;
             margin-top: 6px;
@@ -384,15 +384,20 @@
         .date-popover-cal.show {
             display: block;
         }
-        .cal-atajos-bar {
+        .cal-top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            gap: 6px;
+        }
+        .cal-atajos-grupo {
             display: flex;
             align-items: center;
-            gap: 5px;
-            margin-bottom: 8px;
+            gap: 4px;
         }
         .cal-atajo-btn {
-            flex: 1;
-            padding: 4px 6px;
+            padding: 4px 8px;
             border-radius: 7px;
             border: 1px solid rgba(129, 199, 132, 0.28);
             background: #1c231e;
@@ -401,27 +406,11 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.16s ease;
-            text-align: center;
         }
         .cal-atajo-btn:hover {
             background: rgba(46, 125, 50, 0.35);
             border-color: #81c784;
             color: #ffffff;
-        }
-        .cal-top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 7px;
-            padding-top: 6px;
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
-            gap: 6px;
-        }
-        .cal-mes-titulo {
-            font-size: 12.5px;
-            font-weight: 700;
-            color: #ffffff;
-            text-transform: capitalize;
         }
         .cal-nav-btns {
             display: flex;
@@ -450,6 +439,17 @@
         .cal-nav-btn:disabled {
             opacity: 0.35;
             cursor: not-allowed;
+        }
+        .cal-mes-subbar {
+            margin-bottom: 7px;
+            padding-top: 6px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .cal-mes-titulo {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: #81c784;
+            text-transform: capitalize;
         }
         .cal-weekdays {
             display: grid;
@@ -753,17 +753,18 @@
                             </span>
                         </button>
                         <div class="date-popover-cal" id="popoverFechaGasto" onclick="event.stopPropagation()">
-                            <div class="cal-atajos-bar">
-                                <button type="button" class="cal-atajo-btn" onclick="seleccionarAtajoFecha(0)">Hoy</button>
-                                <button type="button" class="cal-atajo-btn" onclick="seleccionarAtajoFecha(-1)">Ayer</button>
-                                <button type="button" class="cal-atajo-btn" onclick="seleccionarAtajoFecha(7)">+7 días</button>
-                            </div>
                             <div class="cal-top-bar">
-                                <span id="gastoMesTitulo" class="cal-mes-titulo"></span>
+                                <div class="cal-atajos-grupo">
+                                    <button type="button" class="cal-atajo-btn" onclick="seleccionarAtajoFecha(0)">Hoy</button>
+                                    <button type="button" class="cal-atajo-btn" onclick="seleccionarAtajoFecha(-1)">Ayer</button>
+                                </div>
                                 <div class="cal-nav-btns">
                                     <button type="button" class="cal-nav-btn" id="btnGastoMesPrev" onclick="cambiarMesGasto(-1)" title="Mes anterior">&lsaquo;</button>
                                     <button type="button" class="cal-nav-btn" id="btnGastoMesNext" onclick="cambiarMesGasto(1)" title="Mes siguiente">&rsaquo;</button>
                                 </div>
+                            </div>
+                            <div class="cal-mes-subbar">
+                                <span id="gastoMesTitulo" class="cal-mes-titulo"></span>
                             </div>
                             <div class="cal-weekdays">
                                 <span class="cal-weekday">Lu</span>
