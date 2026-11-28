@@ -100,29 +100,29 @@
 
         /* SIDEBAR */
         .sidebar { 
-            width: 280px; 
-            min-width: 280px;
+            width: 260px; 
+            min-width: 260px;
             background: #121212; 
             border-right: 1px solid rgba(129, 199, 132, 0.15); 
-            padding: 25px 15px;
+            padding: 20px 14px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            flex-shrink: 0;
         }
-        .sidebar-menu { display: flex; flex-direction: column; }
+        .sidebar-menu { display: flex; flex-direction: column; gap: 10px; }
         .sidebar button { 
             width: 100%; 
-            padding: 16px; 
-            margin-bottom: 15px; 
-            border: none; 
+            padding: 13px 15px; 
+            border: 1px solid rgba(255, 255, 255, 0.04); 
             border-radius: 12px; 
             background: #1b1b1b; 
             color: #ffffff;
-            font-size: 15px; 
+            font-size: 14px; 
             cursor: pointer; 
             text-align: left; 
-            border-bottom: 1px solid rgba(130,199,132,0.2); 
-            transition: 0.3s ease;
+            border-bottom: 1px solid rgba(129, 199, 132, 0.2); 
+            transition: 0.25s ease;
             display: flex;
             align-items: center;
             gap: 10px;
@@ -130,12 +130,12 @@
         .sidebar button:hover, .sidebar button.btn-active { 
             background: #1c2d20; 
             color: #81c784; 
-            border-bottom: 1px solid rgba(130,199,132,0.5); 
-            padding-left: 22px; 
+            border-color: rgba(129, 199, 132, 0.35);
+            transform: translateX(3px);
         }
         .sidebar button.btn-active {
             color: #81c784;
-            font-weight: bold;
+            font-weight: 600;
         }
 
         .label-movil {
@@ -148,42 +148,74 @@
 
         /* CONTENEDOR PRINCIPAL */
         .container { 
-            flex: 1; padding: 35px 40px; display: flex; flex-direction: column; gap: 25px; max-width: 1200px; margin: 0 auto; width: 100%; 
+            flex: 1; padding: 30px 35px; display: flex; flex-direction: column; gap: 25px; max-width: 1200px; margin: 0 auto; width: 100%; 
         }
 
         /* BANNER SUPERIOR UNIFICADO */
         .racha-hero-banner {
-            background: rgba(22, 22, 22, 0.85);
+            background: rgba(22, 22, 22, 0.88);
             backdrop-filter: blur(10px);
             border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(129, 199, 132, 0.16);
             box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
-            padding: 30px;
+            padding: 28px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 24px;
+        }
+        .racha-hero-info {
+            flex: 1;
+            min-width: 0;
+            text-align: left;
         }
         .racha-hero-info h1 { font-size: 24px; color: #ffffff; font-weight: 600; display: flex; align-items: center; gap: 10px; }
         .racha-hero-info h1 span { color: #ff9800; }
-        .racha-hero-info p { font-size: 13px; color: #a0a0a0; margin-top: 5px; margin-bottom: 12px; line-height: 1.5; }
-        .racha-regla-nota { font-size: 12.5px; color: #c8e6c9; margin-bottom: 20px; line-height: 1.5; }
-        .racha-regla-nota a { color: #81c784; font-weight: 600; text-decoration: none; }
-        .racha-regla-nota a:hover { text-decoration: underline; }
+        .racha-hero-info p { font-size: 13.5px; color: #b5b5b5; margin-top: 6px; margin-bottom: 10px; line-height: 1.5; }
+        
+        .racha-regla-nota {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            column-gap: 6px;
+            row-gap: 4px;
+            font-size: 12.5px;
+            color: #c8e6c9;
+            margin-bottom: 18px;
+            line-height: 1.55;
+            text-align: left;
+        }
+        .racha-regla-nota strong {
+            color: #ffffff;
+            flex-shrink: 0;
+        }
+        .racha-regla-nota .regla-texto {
+            display: inline;
+        }
+        .racha-regla-nota .link-agregar-gasto {
+            color: #81c784;
+            font-weight: 600;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        .racha-regla-nota .link-agregar-gasto:hover {
+            text-decoration: underline;
+        }
 
-        .banner-actions { display: flex; align-items: center; gap: 15px; }
+        .banner-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 
         .btn-jugar-roblox {
-            background: rgba(46, 125, 50, 0.15);
+            background: rgba(46, 125, 50, 0.18);
             color: #81c784;
-            padding: 11px 20px;
+            padding: 10px 18px;
             border-radius: 12px;
-            font-size: 13.5px;
+            font-size: 13px;
             font-weight: 600;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 10px;
-            border: 1px solid rgba(129, 199, 132, 0.3);
+            gap: 8px;
+            border: 1px solid rgba(129, 199, 132, 0.35);
             transition: all 0.3s ease;
         }
         .btn-jugar-roblox:hover {
@@ -195,14 +227,15 @@
         }
 
         .racha-tracker-pill {
-            background: #1b1b1b;
-            border: 1px solid rgba(129, 199, 132, 0.3);
-            border-radius: 14px;
-            padding: 15px 20px;
+            background: #181b19;
+            border: 1px solid rgba(129, 199, 132, 0.28);
+            border-radius: 16px;
+            padding: 16px 22px;
             display: flex;
             align-items: center;
             gap: 20px;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.45);
+            flex-shrink: 0;
         }
         
         /* ESTILOS PARA LOS FUEGUITOS CON LETRAS DE LA SEMANA */
@@ -211,7 +244,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
+            gap: 5px;
         }
         .dia-letra {
             font-size: 11px;
@@ -220,7 +253,7 @@
         }
         .fuego-icono {
             font-size: 18px;
-            filter: grayscale(100%) opacity(0.25);
+            filter: grayscale(100%) opacity(0.28);
             transition: 0.3s ease;
         }
         .dia-racha-box.activo .fuego-icono {
@@ -232,20 +265,20 @@
             color: #81c784;
         }
 
-        .racha-contador-txt { display: flex; flex-direction: column; text-align: right; border-left: 1px solid rgba(255,255,255,0.1); padding-left: 15px; }
-        .racha-contador-txt span:first-child { font-size: 11px; color: #a0a0a0; text-transform: uppercase; font-weight: 600; }
+        .racha-contador-txt { display: flex; flex-direction: column; text-align: right; border-left: 1px solid rgba(255,255,255,0.1); padding-left: 16px; }
+        .racha-contador-txt span:first-child { font-size: 10.5px; color: #a0a0a0; text-transform: uppercase; font-weight: 600; letter-spacing: 0.4px; }
         .racha-contador-txt span:last-child { font-size: 20px; font-weight: bold; color: #81c784; }
 
         /* GRID DE MISIONES */
-        .nook-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 25px; }
+        .nook-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; }
 
         .nook-card {
-            background: rgba(22, 22, 22, 0.85);
+            background: rgba(22, 22, 22, 0.88);
             backdrop-filter: blur(10px);
             border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
-            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06);
+            padding: 24px 26px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -253,64 +286,129 @@
             transition: 0.3s ease;
         }
         .nook-card:hover { border-color: rgba(129, 199, 132, 0.4); transform: translateY(-3px); }
+        .nook-card.card-desbloqueada { border-color: rgba(129, 199, 132, 0.38); }
 
-        .nook-card-header { font-size: 17px; font-weight: 600; color: #ffffff; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-        .nook-card-desc { font-size: 13.5px; color: #b0b0b0; line-height: 1.5; margin-bottom: 20px; }
+        .nook-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        .nook-card-header { font-size: 17px; font-weight: 600; color: #ffffff; display: flex; align-items: center; gap: 8px; }
+        .estado-badge {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.06);
+            color: #b0b0b0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            white-space: nowrap;
+        }
+        .estado-badge.listo {
+            background: rgba(76, 175, 80, 0.18);
+            color: #a5d6a7;
+            border-color: rgba(129, 199, 132, 0.45);
+        }
+        .estado-badge.desbloqueado {
+            background: rgba(46, 125, 50, 0.25);
+            color: #81c784;
+            border-color: rgba(129, 199, 132, 0.5);
+        }
+
+        .nook-card-desc { font-size: 13px; color: #b0b0b0; line-height: 1.5; margin-bottom: 14px; }
+
+        .progreso-box {
+            margin-bottom: 14px;
+        }
+        .progreso-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11.5px;
+            color: #9e9e9e;
+            margin-bottom: 6px;
+        }
+        .progreso-meta strong {
+            color: #81c784;
+            font-weight: 600;
+        }
+        .barra-progreso {
+            width: 100%;
+            height: 7px;
+            background: #141715;
+            border-radius: 999px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .barra-progreso-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2e7d32, #81c784);
+            border-radius: 999px;
+            transition: width 0.35s ease;
+        }
 
         .personaje-preview-container {
             display: flex;
-            gap: 15px;
+            gap: 16px;
             justify-content: center;
             align-items: center;
-            margin: 15px 0;
-            background: #1b1b1b;
+            margin: 12px 0;
+            background: #181a19;
             padding: 14px;
             border-radius: 14px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.06);
         }
         .personaje-miniatura {
-            width: 60px; height: 60px;
+            width: 64px; height: 64px;
             border-radius: 50%;
             object-fit: cover;
-            filter: grayscale(100%) opacity(0.3);
-            border: 2px dashed rgba(255, 255, 255, 0.2);
+            filter: grayscale(100%) opacity(0.35);
+            border: 2px dashed rgba(255, 255, 255, 0.22);
             transition: 0.3s ease;
         }
         .personaje-miniatura.desbloqueado {
             filter: grayscale(0%) opacity(1);
             border: 2px solid #81c784;
-            box-shadow: 0 0 12px rgba(129, 199, 132, 0.5);
+            box-shadow: 0 0 14px rgba(129, 199, 132, 0.45);
         }
 
         .nook-card-footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            gap: 12px;
+            margin-top: 12px;
+            padding-top: 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
         }
         .recompensa-txt { font-size: 12px; font-weight: 600; color: #81c784; }
         
         .btn-reclamar {
-            background: #1b1b1b; color: #666; border: 1px solid rgba(255, 255, 255, 0.1); padding: 9px 18px;
+            background: #1b1b1b; color: #777; border: 1px solid rgba(255, 255, 255, 0.1); padding: 9px 16px;
             border-radius: 10px; font-size: 12px; font-weight: 600; cursor: not-allowed;
-            transition: 0.3s ease;
+            transition: 0.3s ease; white-space: nowrap;
         }
         .btn-reclamar.activo {
             background: #2e7d32; color: white; cursor: pointer; border-color: #81c784;
             box-shadow: 0 4px 15px rgba(46, 125, 50, 0.4);
         }
-        .btn-reclamar.activo:hover { background: #388e3c; }
-        .btn-reclamar:disabled { background: #1b1b1b; color: #555; cursor: not-allowed; border-color: rgba(255,255,255,0.05); }
+        .btn-reclamar.activo:hover { background: #388e3c; transform: translateY(-1px); }
+        .btn-reclamar:disabled { background: #1b1b1b; color: #666; cursor: not-allowed; border-color: rgba(255,255,255,0.05); }
 
         @media (max-width: 900px) {
             .main-layout { flex-direction: column; margin-top: 65px; min-height: auto; }
             .container { padding: 20px 15px 100px 15px; width: 100%; }
             .nook-grid { grid-template-columns: 1fr; }
-            .racha-hero-banner { flex-direction: column; gap: 20px; text-align: center; }
+            .racha-hero-banner { flex-direction: column; gap: 20px; padding: 22px 18px; align-items: stretch; }
+            .racha-hero-info { text-align: center; }
+            .racha-hero-info h1 { justify-content: center; }
+            .racha-regla-nota {
+                justify-content: center;
+                text-align: center;
+            }
             .banner-actions { justify-content: center; flex-wrap: wrap; }
-            .racha-tracker-pill { flex-direction: column; gap: 15px; }
+            .racha-tracker-pill { flex-direction: column; gap: 14px; width: 100%; }
             .racha-contador-txt { border-left: none; border-top: 1px solid rgba(255,255,255,0.1); padding-left: 0; padding-top: 10px; text-align: center; }
             
             .sidebar { 
@@ -318,16 +416,16 @@
                 background: rgba(14, 14, 14, 0.97); backdrop-filter: blur(15px); border-top: 1px solid rgba(129, 199, 132, 0.3); 
                 padding: 0; flex-direction: row; justify-content: space-around; align-items: center; z-index: 1000;
             }
-            .sidebar-menu { flex-direction: row; width: 100%; height: 100%; justify-content: space-around; align-items: center; }
+            .sidebar-menu { flex-direction: row; width: 100%; height: 100%; justify-content: space-around; align-items: center; gap: 0; }
             .sidebar button { 
                 width: auto; flex: 1; height: 100%; padding: 8px 2px; margin-bottom: 0; border: none; background: transparent; 
                 font-size: 10px; font-weight: 500; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: #cccccc;
                 white-space: nowrap;
             }
+            .sidebar button:hover, .sidebar button.btn-active { transform: none; background: rgba(255, 255, 255, 0.03); color: #81c784; }
             .sidebar button span:first-child { font-size: 16px; line-height: 1; }
             .label-escritorio { display: none; }
             .label-movil { display: inline; }
-            .sidebar button:hover, .sidebar button.btn-active { background: rgba(255, 255, 255, 0.03); color: #81c784; padding-left: 2px; }
             .sidebar button.btn-active { color: #81c784; font-weight: bold; }
             .footer-privacidad { display: none; }
         }
@@ -343,6 +441,10 @@
             .admin-texto-corto { display: inline; }
             .notif-icon-img, .user-icon { width: 32px; height: 32px; }
             .notif-icon-img { padding: 5px; }
+            .racha-hero-info h1 { font-size: 20px; }
+            .racha-regla-nota { font-size: 12px; }
+            .fuegos-fila { gap: 7px; }
+            .fuego-icono { font-size: 16px; }
             .sidebar button { font-size: 9px; } 
             .sidebar button span:first-child { font-size: 15px; }
             
@@ -433,7 +535,9 @@
                     <h1><span>🔥</span> Galería de Avatares Web</h1>
                     <p>Completa tus misiones financieras para desbloquear los avatares oficiales y úsalos como tu foto de perfil en ConSiente.</p>
                     <div class="racha-regla-nota">
-                        <strong>¿Cómo activar o sumar tu racha?</strong> Registra al menos un gasto o movimiento en ConSiente el día de hoy para encender el fuego de hoy y avanzar tu racha diaria. <a href="agregar.html">Agrega un gasto aquí</a>.
+                        <strong>¿Cómo activar o sumar tu racha?</strong>
+                        <span class="regla-texto">Registra al menos un gasto o movimiento en ConSiente el día de hoy para encender el fuego de hoy y avanzar tu racha diaria.</span>
+                        <a href="agregar.html" class="link-agregar-gasto">Agrega un gasto aquí.</a>
                     </div>
                     
                     <div class="banner-actions">
@@ -444,7 +548,6 @@
                 </div>
 
                 <div class="racha-tracker-pill">
-                    <!-- FUEGOS CON LAS LETRAS DE LOS DÍAS DE LA SEMANA (L, M, Mi, J, V, S, D) -->
                     <div class="fuegos-fila" id="fuegosRachaHeader">
                         <div class="dia-racha-box" data-js-dia="1"><span class="dia-letra">L</span><span class="fuego-icono">🔥</span></div>
                         <div class="dia-racha-box" data-js-dia="2"><span class="dia-letra">M</span><span class="fuego-icono">🔥</span></div>
@@ -472,7 +575,6 @@
     <script>
         const API_URL = "";
 
-        // Función auxiliar para obtener la fecha local exacta (YYYY-MM-DD) evitando desfase UTC
         function obtenerFechaLocalStr(dateObj) {
             const year = dateObj.getFullYear();
             const month = String(dateObj.getMonth() + 1).padStart(2, '0');
@@ -566,7 +668,6 @@
             const token = localStorage.getItem("token");
             if (!token) return window.location.href = "index.html";
 
-            // 🌟 Extracción segura del ID real desde el token JWT
             let userId = "usuario_actual";
             try {
                 const base64Url = token.split('.')[1];
@@ -613,7 +714,6 @@
                 });
                 if (resMetas.ok) metas = await resMetas.json();
 
-                // 🌟 Consultar al servidor los premios reales del usuario para sincronizar localStorage
                 const resPremios = await fetch(`${API_URL}/api/mis-premios`, {
                     headers: { "Authorization": `Bearer ${token}` }
                 });
@@ -623,7 +723,6 @@
 
             } catch (e) { console.error("Error al cargar datos del usuario:", e); }
 
-            // Sincronizar el localStorage con la base de datos del servidor automáticamente tras iniciar sesión
             const sufijoUser = `_${userId}`;
             if (Array.isArray(premiosReclamadosServidor)) {
                 premiosReclamadosServidor.forEach(p => {
@@ -638,7 +737,6 @@
                 });
             }
 
-            // --- CÁLCULO DE RACHA ESTRICTO Y SINCRONIZADO ---
             const fechasGastos = new Set();
             if (Array.isArray(gastos)) {
                 gastos.forEach(g => {
@@ -657,7 +755,6 @@
             ayer.setDate(ayer.getDate() - 1);
             let ayerStr = obtenerFechaLocalStr(ayer);
 
-            // Solo se consideran días con movimientos reales registrados en la app
             let fechaCursor = null;
             if (fechasGastos.has(hoyStr)) {
                 fechaCursor = new Date(hoy);
@@ -693,13 +790,11 @@
 
             cajasDias.forEach(caja => {
                 const diaBoxNum = Number(caja.getAttribute("data-js-dia")); 
-                
                 let offset = (diaBoxNum === 0) ? 6 : diaBoxNum - 1;
                 let fechaCaja = new Date(lunesActual);
                 fechaCaja.setDate(lunesActual.getDate() + offset);
                 let fechaCajaStr = obtenerFechaLocalStr(fechaCaja);
 
-                // Encender únicamente si ese día de la semana forma parte de la racha activa real
                 if (fechasRachaActiva.has(fechaCajaStr)) {
                     caja.classList.add("activo");
                 }
@@ -728,56 +823,91 @@
                         const tipo = m.tipo_condicion || 'racha';
                         const objetivo = Number(m.cantidad_objetivo || 1);
 
+                        let actualValor = diasRacha;
+                        let unidadEtiqueta = "días";
                         let condicionCumplida = false;
                         let textoProgreso = "";
 
                         if (tipo === 'racha') {
+                            actualValor = diasRacha;
+                            unidadEtiqueta = objetivo === 1 ? "día" : "días";
                             condicionCumplida = diasRacha >= objetivo;
-                            textoProgreso = condicionCumplida ? "¡Completado!" : `Faltan (${objetivo - diasRacha}d)`;
+                            textoProgreso = condicionCumplida ? "¡Completado!" : `Faltan (${Math.max(0, objetivo - diasRacha)}d)`;
                         } else if (tipo === 'metas_cumplidas') {
+                            actualValor = metasCumplidas;
+                            unidadEtiqueta = objetivo === 1 ? "meta" : "metas";
                             condicionCumplida = metasCumplidas >= objetivo;
-                            textoProgreso = condicionCumplida ? "¡Completado!" : `Faltan (${objetivo - metasCumplidas} metas)`;
+                            textoProgreso = condicionCumplida ? "¡Completado!" : `Faltan (${Math.max(0, objetivo - metasCumplidas)} metas)`;
                         } else if (tipo === 'gastos') {
+                            actualValor = gastos.length;
+                            unidadEtiqueta = objetivo === 1 ? "movimiento" : "movimientos";
                             condicionCumplida = gastos.length >= objetivo;
-                            textoProgreso = condicionCumplida ? "¡Completado!" : `Faltan (${objetivo - gastos.length})`;
+                            textoProgreso = condicionCumplida ? "¡Completado!" : `Faltan (${Math.max(0, objetivo - gastos.length)})`;
                         } else if (tipo === 'semanas') {
+                            actualValor = semanasConstantes;
+                            unidadEtiqueta = objetivo === 1 ? "semana" : "semanas";
                             condicionCumplida = semanasConstantes >= objetivo;
-                            textoProgreso = condicionCumplida ? "¡Completado!" : `Faltan (${objetivo - semanasConstantes} sem)`;
+                            textoProgreso = condicionCumplida ? "¡Completado!" : `Faltan (${Math.max(0, objetivo - semanasConstantes)} sem)`;
                         } else if (tipo === 'simultaneas') {
+                            actualValor = metasSimultaneas;
+                            unidadEtiqueta = objetivo === 1 ? "meta" : "metas";
                             condicionCumplida = metasSimultaneas >= objetivo;
-                            textoProgreso = condicionCumplida ? "¡Completado!" : `Faltan (${objetivo - metasSimultaneas} metas)`;
+                            textoProgreso = condicionCumplida ? "¡Completado!" : `Faltan (${Math.max(0, objetivo - metasSimultaneas)} metas)`;
                         } else {
-                            if (Number(m.id) === 2) { 
+                            if (Number(m.id) === 2) {
+                                actualValor = semanasConstantes;
+                                unidadEtiqueta = "semanas";
                                 condicionCumplida = semanasConstantes >= 5;
-                                textoProgreso = condicionCumplida ? "¡Completado!" : `Faltan (${5 - semanasConstantes} sem)`;
-                            } else if (Number(m.id) === 4) { 
+                                textoProgreso = condicionCumplida ? "¡Completado!" : `Faltan (${Math.max(0, 5 - semanasConstantes)} sem)`;
+                            } else if (Number(m.id) === 4) {
+                                actualValor = metasCumplidas;
+                                unidadEtiqueta = "metas";
                                 condicionCumplida = metasCumplidas >= 10;
-                                textoProgreso = condicionCumplida ? "¡Completado!" : `Faltan (${10 - metasCumplidas} metas)`;
-                            } else if (Number(m.id) === 6) { 
+                                textoProgreso = condicionCumplida ? "¡Completado!" : `Faltan (${Math.max(0, 10 - metasCumplidas)} metas)`;
+                            } else if (Number(m.id) === 6) {
+                                actualValor = metasSimultaneas;
+                                unidadEtiqueta = "metas";
                                 condicionCumplida = metasSimultaneas >= 2;
-                                textoProgreso = condicionCumplida ? "¡Completado!" : `Faltan (${2 - metasSimultaneas} metas)`;
+                                textoProgreso = condicionCumplida ? "¡Completado!" : `Faltan (${Math.max(0, 2 - metasSimultaneas)} metas)`;
                             } else {
+                                actualValor = diasRacha;
+                                unidadEtiqueta = "días";
                                 condicionCumplida = diasRacha >= objetivo;
-                                textoProgreso = condicionCumplida ? "¡Completado!" : `Faltan (${objetivo - diasRacha}d)`;
+                                textoProgreso = condicionCumplida ? "¡Completado!" : `Faltan (${Math.max(0, objetivo - diasRacha)}d)`;
                             }
                         }
 
-                        // 🛡️ Validación robusta combinando localStorage y respaldo del Servidor
                         const yaReclamadoLocal = localStorage.getItem(`reclamado_mision_${m.id}${sufijoUser}`) === "true";
                         const yaReclamadoGeneral = localStorage.getItem(`reclamado_mision_${m.id}`) === "true";
                         const reclamadoEnServidor = premiosReclamadosServidor.some(p => p.mision_titulo && p.mision_titulo.includes(String(m.id)));
                         
                         const yaReclamado = yaReclamadoLocal || yaReclamadoGeneral || reclamadoEnServidor;
-                        
+                        const porcentaje = Math.min(100, Math.max(0, Math.round((actualValor / Math.max(1, objetivo)) * 100)));
+
+                        const badgeClass = yaReclamado ? "desbloqueado" : (condicionCumplida ? "listo" : "");
+                        const badgeText = yaReclamado ? "Desbloqueado" : (condicionCumplida ? "Listo" : "Bloqueado");
+
                         const imgGris = m.imagen_gris || 'imagenes/perfiles/puerquito_gris.png';
                         const imgColor = m.imagen_color || 'imagenes/perfiles/puerquito_color.png';
 
                         const card = document.createElement("div");
-                        card.className = "nook-card";
+                        card.className = `nook-card ${yaReclamado ? 'card-desbloqueada' : ''}`;
                         card.innerHTML = `
                             <div>
-                                <div class="nook-card-header">${m.titulo}</div>
+                                <div class="nook-card-top">
+                                    <div class="nook-card-header">${m.titulo}</div>
+                                    <span class="estado-badge ${badgeClass}">${badgeText}</span>
+                                </div>
                                 <div class="nook-card-desc">${m.descripcion || 'Completa esta misión para reclamar tu recompensa.'}</div>
+                                <div class="progreso-box">
+                                    <div class="progreso-meta">
+                                        <span>Progreso: <strong>${Math.min(actualValor, objetivo)} / ${objetivo} ${unidadEtiqueta}</strong></span>
+                                        <span>${porcentaje}%</span>
+                                    </div>
+                                    <div class="barra-progreso">
+                                        <div class="barra-progreso-fill" style="width: ${porcentaje}%;"></div>
+                                    </div>
+                                </div>
                                 <div class="personaje-preview-container">
                                     <img src="${imgGris}" class="personaje-miniatura ${yaReclamado ? 'desbloqueado' : ''}" alt="Bloqueado" style="${yaReclamado ? 'display:none;' : 'display:block;'}">
                                     <img src="${imgColor}" class="personaje-miniatura ${yaReclamado ? 'desbloqueado' : ''}" alt="Desbloqueado" style="${yaReclamado ? 'display:block;' : 'display:none;'}">
@@ -817,7 +947,6 @@
                 userId = window.infoUsuario.id || window.infoUsuario.usuario_id;
             }
             
-            // 🛡️ Guardado seguro con doble llave para persistencia absoluta
             const sufijoUser = `_${userId}`;
             localStorage.setItem(`reclamado_mision_${idMision}${sufijoUser}`, "true");
             localStorage.setItem(`reclamado_mision_${idMision}`, "true");
