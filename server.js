@@ -1139,6 +1139,9 @@ function abonarMetaLogica(req, res) {
                 });
             }
 
+            const nuevoAhorro = Math.min(objetivo, ahorroActual + abono);
+            const metaCompletada = objetivo > 0 && nuevoAhorro >= objetivo;
+
             db.query(
                 `UPDATE metas
                  SET monto_ahorrado = LEAST(monto_target, monto_ahorrado + ?)
@@ -1176,9 +1179,24 @@ function abonarMetaLogica(req, res) {
                                 );
                             }
 
+                            if (metaCompletada) {
+                                const tituloFelicitacion = "🎉 ¡Felicidades! Meta cumplida";
+                                const mensajeFelicitacion = `¡Lograste completar tu meta "${meta.nombre}"! Crea nuevos ahorros para seguir creciendo y desbloquea nuevos avatares en tu sección de recompensas.`;
+                                db.query(
+                                    `INSERT INTO notificaciones (usuario_id, titulo, mensaje, leida) VALUES (?, ?, ?, 0)`,
+                                    [usuarioId, tituloFelicitacion, mensajeFelicitacion],
+                                    (errNotifMeta) => {
+                                        if (errNotifMeta) {
+                                            console.error("Error al guardar notificación de meta cumplida:", errNotifMeta);
+                                        }
+                                    }
+                                );
+                            }
+
                             res.json({
                                 mensaje: "Abono registrado correctamente",
-                                montoAbonado: abono
+                                montoAbonado: abono,
+                                metaCompletada
                             });
                         }
                     );
@@ -1511,15 +1529,20 @@ app.delete('/api/notificaciones/:id', verificarToken, (req, res) => {
 
 function verificarYEnviarAbonosHoy() {
   const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-  const hoyEnEspañol = diasSemana[new Date().getDay()];
+  const hoyDate = new Date();
+  const hoyEnEspañol = diasSemana[hoyDate.getDay()];
+  const hoyStr = formatearFechaLocal(hoyDate);
 
   const query = `
     SELECT usuario_id, nombre AS nombre_meta 
     FROM metas 
-    WHERE dia_pago = ? AND frecuencia = 'Semanal'
+    WHERE dia_pago = ?
+      AND frecuencia = 'Semanal'
+      AND COALESCE(monto_ahorrado, 0) < monto_target
+      AND (fecha_limite IS NULL OR fecha_limite >= ?)
   `;
 
-  db.query(query, [hoyEnEspañol], (err, results) => {
+  db.query(query, [hoyEnEspañol, hoyStr], (err, results) => {
     if (err) return console.error('Error en consulta de metas automáticas:', err);
 
     results.forEach(row => {
