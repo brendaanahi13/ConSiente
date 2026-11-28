@@ -283,8 +283,8 @@ async function cargarNotificacionesSistema() {
             const textoCompleto = ((notif.titulo || "") + " " + (notif.mensaje || "")).toLowerCase();
             let destinoUrl = "agregar.html";
 
-            if (String(idNotif).startsWith('local_meta_cumplida_') || textoCompleto.includes("desbloquea nuevos avatares")) {
-                destinoUrl = "racha.html";
+            if (String(idNotif).startsWith('local_meta_cumplida_') || textoCompleto.includes("meta cumplida")) {
+                destinoUrl = "metas.html";
             } else if (idNotif === 'local_racha_bienvenida') {
                 destinoUrl = "agregar.html";
             } else if (idNotif === 'local_racha_activada') {
