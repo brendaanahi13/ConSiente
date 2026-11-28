@@ -41,13 +41,25 @@ function obtenerTiempoRelativo(fechaStr) {
     return `Hace ${anos} ${anos === 1 ? 'año' : 'años'}`;
 }
 
+function esNotificacionLocal(idNotif) {
+    const idStr = String(idNotif || "");
+    return idStr.startsWith('local_racha_') || idStr.startsWith('local_meta_cumplida_');
+}
+
+function esMetaCumplida(meta) {
+    if (!meta || typeof meta !== "object") return false;
+    const objetivo = Number(meta.monto_target ?? meta.objetivo ?? 0);
+    const ahorrado = Number(meta.monto_ahorrado ?? meta.ahorro_actual ?? 0);
+    return Number.isFinite(objetivo) && objetivo > 0 && Number.isFinite(ahorrado) && ahorrado >= objetivo;
+}
+
 async function purgarExcedenteNotificaciones(notificacionesExcedentes) {
     const token = obtenerTokenNotif();
     if (!token || !Array.isArray(notificacionesExcedentes) || notificacionesExcedentes.length === 0) return;
 
     for (const notif of notificacionesExcedentes) {
         const idNotif = notif.id || notif._id;
-        if (!idNotif || String(idNotif).startsWith('local_racha_')) continue;
+        if (!idNotif || esNotificacionLocal(idNotif)) continue;
 
         try {
             await fetch(`${window.API_URL}/api/notificaciones/${idNotif}`, {
@@ -66,15 +78,40 @@ async function cargarNotificacionesSistema() {
     if (!token) return;
 
     try {
-        // 1. Obtener las notificaciones del servidor
-        const response = await fetch(`${window.API_URL}/api/notificaciones`, {
-            headers: { "Authorization": `Bearer ${token}` }
-        });
+        // 1. Obtener notificaciones y metas en paralelo
+        const [response, resMetas] = await Promise.all([
+            fetch(`${window.API_URL}/api/notificaciones`, {
+                headers: { "Authorization": `Bearer ${token}` }
+            }),
+            fetch(`${window.API_URL}/api/metas`, {
+                headers: { "Authorization": `Bearer ${token}` }
+            })
+        ]);
         
         let notificaciones = [];
         if (response.ok) {
             notificaciones = await response.json();
         }
+
+        let metas = [];
+        if (resMetas.ok) {
+            const payloadMetas = await resMetas.json();
+            metas = Array.isArray(payloadMetas) ? payloadMetas : [];
+        }
+
+        const metasCumplidas = metas.filter(esMetaCumplida);
+        const nombresMetasCumplidas = metasCumplidas
+            .map(m => String(m.nombre || "").trim().toLowerCase())
+            .filter(Boolean);
+
+        // Ocultar recordatorios de abono si corresponden a una meta ya cumplida
+        notificaciones = notificaciones.filter(notif => {
+            const texto = ((notif.titulo || "") + " " + (notif.mensaje || "")).toLowerCase();
+            const esRecordatorioAbono = texto.includes("abono") || texto.includes("aportar a tu meta") || texto.includes("día de abono");
+            if (!esRecordatorioAbono) return true;
+            if (metasCumplidas.length === 0) return true;
+            return !nombresMetasCumplidas.some(nombreMeta => texto.includes(nombreMeta));
+        });
 
         let userId = 'user';
 
@@ -95,6 +132,26 @@ async function cargarNotificacionesSistema() {
                 if (resGastos.ok) {
                     gastos = await resGastos.json();
                 }
+
+                // --- NOTIFICACIONES DE METAS CUMPLIDAS ---
+                metasCumplidas.forEach(meta => {
+                    const metaId = meta.id ?? meta.nombre;
+                    const nombreMeta = meta.nombre || "tu meta";
+                    const idLocalMeta = `local_meta_cumplida_${metaId}`;
+                    const claveBase = `meta_cumplida_${userId}_${metaId}`;
+                    const eliminada = localStorage.getItem(`${claveBase}_eliminada`) === 'true';
+
+                    if (!eliminada) {
+                        const leida = localStorage.getItem(`${claveBase}_leida`) === 'true';
+                        notificaciones.unshift({
+                            id: idLocalMeta,
+                            titulo: `🎉 ¡Felicidades, ${nombreUsuario}! Meta cumplida`,
+                            mensaje: `Completaste tu meta "${nombreMeta}". Crea nuevos ahorros para seguir creciendo y desbloquea nuevos avatares en tu sección de recompensas.`,
+                            leida: leida ? 1 : 0,
+                            fecha: new Date().toISOString()
+                        });
+                    }
+                });
 
                 // --- CÁLCULO DE RACHA DINÁMICO Y SINCRONIZADO ---
                 const fechasGastos = new Set();
@@ -198,10 +255,10 @@ async function cargarNotificacionesSistema() {
 
         let notificacionesFiltradas = Array.from(unicasMap.values());
 
-        // Ordenar de más reciente a más antigua (las notificaciones locales de racha van primero)
+        // Ordenar de más reciente a más antigua (las notificaciones locales van primero)
         notificacionesFiltradas.sort((a, b) => {
-            if (String(a.id).startsWith('local_racha_')) return -1;
-            if (String(b.id).startsWith('local_racha_')) return 1;
+            if (esNotificacionLocal(a.id) && !esNotificacionLocal(b.id)) return -1;
+            if (!esNotificacionLocal(a.id) && esNotificacionLocal(b.id)) return 1;
             return (Number(b.id) || 0) - (Number(a.id) || 0);
         });
 
@@ -226,7 +283,9 @@ async function cargarNotificacionesSistema() {
             const textoCompleto = ((notif.titulo || "") + " " + (notif.mensaje || "")).toLowerCase();
             let destinoUrl = "agregar.html";
 
-            if (idNotif === 'local_racha_bienvenida') {
+            if (String(idNotif).startsWith('local_meta_cumplida_') || textoCompleto.includes("desbloquea nuevos avatares")) {
+                destinoUrl = "racha.html";
+            } else if (idNotif === 'local_racha_bienvenida') {
                 destinoUrl = "agregar.html";
             } else if (idNotif === 'local_racha_activada') {
                 destinoUrl = "racha.html";
@@ -261,7 +320,10 @@ async function cargarNotificacionesSistema() {
 
                 const hoyStr = obtenerFechaLocalStr(new Date());
 
-                if (idNotif === 'local_racha_bienvenida') {
+                if (String(idNotif).startsWith('local_meta_cumplida_')) {
+                    const metaKey = String(idNotif).replace('local_meta_cumplida_', '');
+                    localStorage.setItem(`meta_cumplida_${userId}_${metaKey}_leida`, 'true');
+                } else if (idNotif === 'local_racha_bienvenida') {
                     localStorage.setItem(`racha_bienvenida_leida_${userId}_${hoyStr}`, 'true');
                 } else if (idNotif === 'local_racha_activada') {
                     localStorage.setItem(`racha_activada_leida_${userId}_${hoyStr}`, 'true');
@@ -281,6 +343,13 @@ async function cargarNotificacionesSistema() {
             btnEliminar.addEventListener("click", async (e) => {
                 e.stopPropagation();
                 const hoyStr = obtenerFechaLocalStr(new Date());
+                if (String(idNotif).startsWith('local_meta_cumplida_')) {
+                    const metaKey = String(idNotif).replace('local_meta_cumplida_', '');
+                    localStorage.setItem(`meta_cumplida_${userId}_${metaKey}_eliminada`, 'true');
+                    item.remove();
+                    cargarNotificacionesSistema();
+                    return;
+                }
                 if (idNotif === 'local_racha_bienvenida') {
                     localStorage.setItem(`racha_bienvenida_eliminada_${userId}_${hoyStr}`, 'true');
                     item.remove();
@@ -312,7 +381,7 @@ async function cargarNotificacionesSistema() {
 }
 
 async function marcarUnaLeida(idNotificacion) {
-    if (String(idNotificacion).startsWith('local_racha_')) return;
+    if (esNotificacionLocal(idNotificacion)) return;
     const token = obtenerTokenNotif();
     if (!token) return;
     try {
@@ -325,7 +394,7 @@ async function marcarUnaLeida(idNotificacion) {
 }
 
 async function eliminarNotificacion(idNotificacion) {
-    if (String(idNotificacion).startsWith('local_racha_')) return;
+    if (esNotificacionLocal(idNotificacion)) return;
     const token = obtenerTokenNotif();
     if (!token) return;
     try {
@@ -346,6 +415,12 @@ async function marcarTodasLeidas() {
         const userId = window.currentNotifUserId || 'user';
         localStorage.setItem(`racha_bienvenida_leida_${userId}_${hoyStr}`, 'true');
         localStorage.setItem(`racha_activada_leida_${userId}_${hoyStr}`, 'true');
+
+        Object.keys(localStorage).forEach(key => {
+            if (key.startsWith(`meta_cumplida_${userId}_`) && key.endsWith('_eliminada') === false) {
+                localStorage.setItem(key.endsWith('_leida') ? key : `${key}_leida`, 'true');
+            }
+        });
 
         const res = await fetch(`${window.API_URL}/api/notificaciones/marcar-leidas`, {
             method: "PUT",
